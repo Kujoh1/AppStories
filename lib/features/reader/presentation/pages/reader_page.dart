@@ -25,21 +25,44 @@ class ReaderPage extends ConsumerStatefulWidget {
   ConsumerState<ReaderPage> createState() => _ReaderPageState();
 }
 
-class _ReaderPageState extends ConsumerState<ReaderPage> {
+class _ReaderPageState extends ConsumerState<ReaderPage> 
+    with SingleTickerProviderStateMixin {
   late String _currentPageId;
-  late ScrollController _scrollController;
+  bool _isPaused = false;
+  late AnimationController _barsAnimationController;
+  late Animation<double> _barsAnimation;
 
   @override
   void initState() {
     super.initState();
     _currentPageId = widget.initialPageId;
-    _scrollController = ScrollController();
+    
+    // Animation for bars visibility
+    _barsAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+    );
+    _barsAnimation = CurvedAnimation(
+      parent: _barsAnimationController,
+      curve: Curves.easeOutCubic,
+    );
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    _barsAnimationController.dispose();
     super.dispose();
+  }
+  
+  void _onPauseChanged(bool isPaused) {
+    setState(() {
+      _isPaused = isPaused;
+    });
+    if (isPaused) {
+      _barsAnimationController.forward();
+    } else {
+      _barsAnimationController.reverse();
+    }
   }
 
   void _navigateToPage(String pageId) {
@@ -108,16 +131,27 @@ class _ReaderPageState extends ConsumerState<ReaderPage> {
           final hasPrevious = navigation.hasPreviousPage(_currentPageId);
 
           return Scaffold(
-            appBar: PreferredSize(
+            extendBodyBehindAppBar: true,
+            appBar: _isPaused ? PreferredSize(
               preferredSize: const Size.fromHeight(kToolbarHeight + 4),
-              child: ReaderAppBar(
-                title: currentPage.title,
-                currentPage: currentPageNum,
-                totalPages: totalPages,
-                onBackTap: () => Navigator.of(context).pop(),
-                onSettingsTap: () => _showSettingsSheet(context),
+              child: AnimatedBuilder(
+                animation: _barsAnimation,
+                builder: (context, child) => Transform.translate(
+                  offset: Offset(0, -kToolbarHeight * (1 - _barsAnimation.value)),
+                  child: Opacity(
+                    opacity: _barsAnimation.value,
+                    child: child,
+                  ),
+                ),
+                child: ReaderAppBar(
+                  title: currentPage.title,
+                  currentPage: currentPageNum,
+                  totalPages: totalPages,
+                  onBackTap: () => Navigator.of(context).pop(),
+                  onSettingsTap: () => _showSettingsSheet(context),
+                ),
               ),
-            ),
+            ) : null,
             body: Align(
               alignment: Alignment.topCenter,
               child: ConstrainedBox(
@@ -128,14 +162,24 @@ class _ReaderPageState extends ConsumerState<ReaderPage> {
                 child: _buildPageContent(currentPage, readerState),
               ),
             ),
-            bottomNavigationBar: currentPage.hasBranching
-                ? _buildChoicesSection(currentPage.choices)
-                : PageNavigationBar(
-                    canGoBack: hasPrevious,
-                    canGoForward: hasNext,
-                    onPreviousPressed: _handlePreviousPage,
-                    onNextPressed: _handleNextPage,
-                  ),
+            bottomNavigationBar: _isPaused ? AnimatedBuilder(
+              animation: _barsAnimation,
+              builder: (context, child) => Transform.translate(
+                offset: Offset(0, 80 * (1 - _barsAnimation.value)),
+                child: Opacity(
+                  opacity: _barsAnimation.value,
+                  child: child,
+                ),
+              ),
+              child: currentPage.hasBranching
+                  ? _buildChoicesSection(currentPage.choices)
+                  : PageNavigationBar(
+                      canGoBack: hasPrevious,
+                      canGoForward: hasNext,
+                      onPreviousPressed: _handlePreviousPage,
+                      onNextPressed: _handleNextPage,
+                    ),
+            ) : null,
           );
         },
       ),
@@ -147,7 +191,7 @@ class _ReaderPageState extends ConsumerState<ReaderPage> {
     if (_currentPageId == 'page_1') {
       return DecorativeStoryText(
         text: currentPage.content,
-        scrollController: _scrollController,
+        onPauseChanged: _onPauseChanged,
       );
     }
 

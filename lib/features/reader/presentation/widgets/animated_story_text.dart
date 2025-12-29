@@ -3,16 +3,15 @@ import 'package:flutter/scheduler.dart';
 import 'dart:async';
 import 'dart:ui' as ui;
 
-/// Ultra high-performance typewriter animation
-/// With REAL blur effect using ImageFilter
+/// Paged typewriter animation - no scrolling, page by page
 class DecorativeStoryText extends StatelessWidget {
   final String text;
-  final ScrollController scrollController;
+  final ValueChanged<bool>? onPauseChanged;
 
   const DecorativeStoryText({
     super.key,
     required this.text,
-    required this.scrollController,
+    this.onPauseChanged,
   });
 
   @override
@@ -23,9 +22,9 @@ class DecorativeStoryText extends StatelessWidget {
         minWidth: 320,
         maxWidth: 415,
       ),
-      child: _TypewriterWithBlur(
+      child: _PagedTypewriter(
         text: text,
-        scrollController: scrollController,
+        onPauseChanged: onPauseChanged,
       ),
     );
   }
@@ -37,20 +36,25 @@ class _Config {
   static const int punctuationDelayMs = 300;
   static const int sentenceDelayMs = 1200;
   static const int newlineDelayMs = 600;
+  static const int pageTransitionMs = 3000;
   
   static const int glowDurationMs = 1800;
   static const int blurDurationMs = 1500;
-  static const double maxBlurSigma = 8.0; // Max blur strength
+  static const double maxBlurSigma = 8.0;
   
   static const double fontSize = 18.0;
   static const double lineHeight = 1.9;
   static const double letterSpacing = 2.0;
+  static const double horizontalPadding = 16.0;
+  static const double verticalPadding = 40.0;
   
   static const Color glowColor = Color(0xFF30ACFF);
   static const Color darkTextColor = Color(0xFFE8DCC0);
   static const Color lightTextColor = Color(0xFF2C1810);
-  static const Color darkCursorColor = Color(0xFFD4AF37);
-  static const Color lightCursorColor = Color(0xFF8B4513);
+  
+  // Ghost text (preview) settings
+  static const double ghostOpacity = 0.08;
+  static const double ghostBlurSigma = 3.0;
 }
 
 class _WordInfo {
@@ -60,24 +64,36 @@ class _WordInfo {
   _WordInfo(this.startIndex, this.endIndex, this.revealTime);
 }
 
-class _TypewriterWithBlur extends StatefulWidget {
+/// Page boundary info
+class _PageInfo {
+  final int startCharIndex;
+  final int endCharIndex;
   final String text;
-  final ScrollController scrollController;
-
-  const _TypewriterWithBlur({
+  
+  _PageInfo({
+    required this.startCharIndex,
+    required this.endCharIndex,
     required this.text,
-    required this.scrollController,
+  });
+}
+
+class _PagedTypewriter extends StatefulWidget {
+  final String text;
+  final ValueChanged<bool>? onPauseChanged;
+
+  const _PagedTypewriter({
+    required this.text,
+    this.onPauseChanged,
   });
 
   @override
-  State<_TypewriterWithBlur> createState() => _TypewriterWithBlurState();
+  State<_PagedTypewriter> createState() => _PagedTypewriterState();
 }
 
-class _TypewriterWithBlurState extends State<_TypewriterWithBlur>
+class _PagedTypewriterState extends State<_PagedTypewriter>
     with SingleTickerProviderStateMixin {
   
   int _charIndex = 0;
-  double _cursorOpacity = 1.0;
   
   final List<_WordInfo> _glowingWords = [];
   int _currentWordStart = 0;
@@ -85,40 +101,35 @@ class _TypewriterWithBlurState extends State<_TypewriterWithBlur>
   
   Timer? _typeTimer;
   Ticker? _ticker;
-  int _lastScrollTime = 0;
   
   bool _isPaused = false;
   Timer? _pauseTimer;
   
   late Color _textColor;
-  late Color _cursorColor;
+  
+  // Page system
+  List<_PageInfo> _pages = [];
+  int _currentPageIndex = 0;
+  bool _isPageTransitioning = false;
+  double _pageOpacity = 1.0;
+  Size? _availableSize;
   
   @override
   void initState() {
     super.initState();
     _ticker = createTicker(_onTick)..start();
-    
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (mounted) _startTypewriter();
-    });
   }
   
   void _onTick(Duration elapsed) {
     if (!mounted) return;
     
     final now = elapsed.inMilliseconds;
-    final cursorPhase = (now % 1060) / 1060.0;
-    final newCursorOpacity = cursorPhase < 0.5 ? 1.0 : 0.0;
-    
-    if (newCursorOpacity != _cursorOpacity) {
-      setState(() => _cursorOpacity = newCursorOpacity);
-    }
     
     // Cleanup old glows and trigger repaint for blur animation
     if (now % 50 < 16) {
       _cleanupOldGlows();
       if (_hasActiveEffects()) {
-        setState(() {}); // Trigger repaint for blur/glow animation
+        setState(() {});
       }
     }
   }
@@ -143,11 +154,102 @@ class _TypewriterWithBlurState extends State<_TypewriterWithBlur>
     }
   }
   
+  /// Calculate how many lines fit on a page
+  int _calculateLinesPerPage(double availableHeight) {
+    final lineHeight = _Config.fontSize * _Config.lineHeight;
+    final usableHeight = availableHeight - (_Config.verticalPadding * 2);
+    return (usableHeight / lineHeight).floor();
+  }
+  
+  /// Split text into pages based on available size
+  void _calculatePages(Size size) {
+    if (_availableSize == size && _pages.isNotEmpty) return;
+    _availableSize = size;
+    
+    final linesPerPage = _calculateLinesPerPage(size.height);
+    final textWidth = size.width - (_Config.horizontalPadding * 2);
+    
+    // Create TextPainter to measure text layout
+    final baseStyle = TextStyle(
+      fontFamily: 'Mynerve',
+      fontSize: _Config.fontSize,
+      height: _Config.lineHeight,
+      letterSpacing: _Config.letterSpacing,
+      fontWeight: FontWeight.w600,
+    );
+    
+    _pages = [];
+    int charIndex = 0;
+    
+    while (charIndex < widget.text.length) {
+      // Find how many characters fit on this page
+      int pageEndIndex = charIndex;
+      int linesUsed = 0;
+      
+      while (pageEndIndex < widget.text.length && linesUsed < linesPerPage) {
+        // Find end of current line
+        int lineEnd = pageEndIndex;
+        double lineWidth = 0;
+        
+        while (lineEnd < widget.text.length) {
+          final char = widget.text[lineEnd];
+          
+          if (char == '\n') {
+            lineEnd++;
+            break;
+          }
+          
+          // Measure character width (approximate)
+          final charPainter = TextPainter(
+            text: TextSpan(text: char, style: baseStyle),
+            textDirection: TextDirection.ltr,
+          )..layout();
+          
+          if (lineWidth + charPainter.width > textWidth) {
+            // Word wrap: find last space
+            int wrapPoint = lineEnd;
+            while (wrapPoint > pageEndIndex && widget.text[wrapPoint] != ' ') {
+              wrapPoint--;
+            }
+            if (wrapPoint > pageEndIndex) {
+              lineEnd = wrapPoint + 1;
+            }
+            charPainter.dispose();
+            break;
+          }
+          
+          lineWidth += charPainter.width;
+          charPainter.dispose();
+          lineEnd++;
+        }
+        
+        pageEndIndex = lineEnd;
+        linesUsed++;
+      }
+      
+      // Create page
+      _pages.add(_PageInfo(
+        startCharIndex: charIndex,
+        endCharIndex: pageEndIndex,
+        text: widget.text.substring(charIndex, pageEndIndex),
+      ));
+      
+      charIndex = pageEndIndex;
+    }
+    
+    // Start typewriter after pages are calculated
+    if (_charIndex == 0 && _pages.isNotEmpty) {
+      Future.delayed(const Duration(milliseconds: 800), () {
+        if (mounted) _startTypewriter();
+      });
+    }
+  }
+  
   bool _isWhitespace(String char) => char == ' ' || char == '\n' || char == '\t';
   
   void _startTypewriter() {
     _typeTimer?.cancel();
-    if (_isPaused || !mounted) return;
+    if (_isPaused || !mounted || _isPageTransitioning) return;
     if (_charIndex >= widget.text.length) return;
     
     final now = DateTime.now().millisecondsSinceEpoch;
@@ -170,9 +272,11 @@ class _TypewriterWithBlurState extends State<_TypewriterWithBlur>
     }
     
     setState(() => _charIndex++);
-    _checkScroll();
     
-    if (_charIndex < widget.text.length) {
+    // Check if we need to transition to next page
+    _checkPageTransition();
+    
+    if (_charIndex < widget.text.length && !_isPageTransitioning) {
       int delay = _Config.charDelayMs;
       if (char == '.' || char == '!' || char == '?') {
         delay = _Config.sentenceDelayMs;
@@ -182,35 +286,58 @@ class _TypewriterWithBlurState extends State<_TypewriterWithBlur>
         delay = _Config.newlineDelayMs;
       }
       _typeTimer = Timer(Duration(milliseconds: delay), _startTypewriter);
-    } else if (_charIndex > _currentWordStart) {
+    } else if (_charIndex >= widget.text.length && _charIndex > _currentWordStart) {
       _glowingWords.add(_WordInfo(_currentWordStart, _charIndex, _currentWordStartTime));
     }
   }
   
-  void _checkScroll() {
-    final now = DateTime.now().millisecondsSinceEpoch;
-    if (now - _lastScrollTime < 150) return;
-    _lastScrollTime = now;
+  void _checkPageTransition() {
+    if (_pages.isEmpty || _currentPageIndex >= _pages.length) return;
     
-    if (!widget.scrollController.hasClients) return;
+    final currentPage = _pages[_currentPageIndex];
     
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !widget.scrollController.hasClients) return;
-      
-      final position = widget.scrollController.position;
-      final viewportHeight = position.viewportDimension;
-      final charsPerLine = ((415.0 - 32.0) / 11.0).floor();
-      final lines = (_charIndex / charsPerLine).ceil();
-      final cursorY = lines * _Config.fontSize * _Config.lineHeight + 60;
-      
-      final keepInView = viewportHeight * 0.7;
-      if (cursorY > position.pixels + keepInView) {
-        widget.scrollController.animateTo(
-          (cursorY - keepInView).clamp(0.0, position.maxScrollExtent),
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOut,
-        );
-      }
+    // If we've reached the end of this page
+    if (_charIndex >= currentPage.endCharIndex && _currentPageIndex < _pages.length - 1) {
+      _performPageTransition();
+    }
+  }
+  
+  void _performPageTransition() {
+    if (_isPageTransitioning) return;
+    
+    setState(() {
+      _isPageTransitioning = true;
+    });
+    
+    // Fade out
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (!mounted) return;
+      setState(() => _pageOpacity = 0.0);
+    });
+    
+    // Switch page and fade in
+    Future.delayed(Duration(milliseconds: _Config.pageTransitionMs ~/ 2), () {
+      if (!mounted) return;
+      setState(() {
+        _currentPageIndex++;
+        _glowingWords.clear();
+        _currentWordStart = _pages[_currentPageIndex].startCharIndex;
+        _currentWordStartTime = 0;
+      });
+    });
+    
+    Future.delayed(Duration(milliseconds: _Config.pageTransitionMs ~/ 2 + 100), () {
+      if (!mounted) return;
+      setState(() => _pageOpacity = 1.0);
+    });
+    
+    // Resume typing
+    Future.delayed(Duration(milliseconds: _Config.pageTransitionMs), () {
+      if (!mounted) return;
+      setState(() {
+        _isPageTransitioning = false;
+      });
+      _startTypewriter();
     });
   }
   
@@ -220,6 +347,7 @@ class _TypewriterWithBlurState extends State<_TypewriterWithBlur>
       if (mounted && !_isPaused) {
         _isPaused = true;
         _typeTimer?.cancel();
+        widget.onPauseChanged?.call(true);
       }
     });
   }
@@ -228,6 +356,7 @@ class _TypewriterWithBlurState extends State<_TypewriterWithBlur>
     _pauseTimer?.cancel();
     if (_isPaused) {
       _isPaused = false;
+      widget.onPauseChanged?.call(false);
       _startTypewriter();
     }
   }
@@ -245,94 +374,140 @@ class _TypewriterWithBlurState extends State<_TypewriterWithBlur>
     super.didChangeDependencies();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     _textColor = isDark ? _Config.darkTextColor : _Config.lightTextColor;
-    _cursorColor = isDark ? _Config.darkCursorColor : _Config.lightCursorColor;
   }
   
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now().millisecondsSinceEpoch;
-    
-    // Calculate blur intensity for current word
-    double blurIntensity = 0.0;
-    if (_currentWordStartTime > 0) {
-      final elapsed = now - _currentWordStartTime;
-      if (elapsed < _Config.blurDurationMs) {
-        final t = elapsed / _Config.blurDurationMs;
-        blurIntensity = (1.0 - t) * (1.0 - t) * (1.0 - t); // Cubic ease-in
-      }
-    }
-    
-    final baseStyle = TextStyle(
-      fontFamily: 'Mynerve',
-      fontSize: _Config.fontSize,
-      height: _Config.lineHeight,
-      letterSpacing: _Config.letterSpacing,
-      fontWeight: FontWeight.w600,
-      color: _textColor,
-    );
-    
-    return Listener(
-      onPointerDown: (_) => _onPressStart(),
-      onPointerUp: (_) => _onPressEnd(),
-      onPointerCancel: (_) => _onPressEnd(),
-      child: SingleChildScrollView(
-        controller: widget.scrollController,
-        physics: const BouncingScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 60),
-          child: RepaintBoundary(
-            child: Stack(
-              children: [
-                // Layer 1: Invisible placeholder for layout
-                Opacity(
-                  opacity: 0.0,
-                  child: Text(widget.text, style: baseStyle),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calculate pages based on available space
+        final size = Size(constraints.maxWidth, constraints.maxHeight);
+        _calculatePages(size);
+        
+        if (_pages.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        
+        final currentPage = _pages[_currentPageIndex];
+        final now = DateTime.now().millisecondsSinceEpoch;
+        
+        // Calculate blur intensity for current word
+        double blurIntensity = 0.0;
+        if (_currentWordStartTime > 0) {
+          final elapsed = now - _currentWordStartTime;
+          if (elapsed < _Config.blurDurationMs) {
+            final t = elapsed / _Config.blurDurationMs;
+            blurIntensity = (1.0 - t) * (1.0 - t) * (1.0 - t);
+          }
+        }
+        
+        final baseStyle = TextStyle(
+          fontFamily: 'Mynerve',
+          fontSize: _Config.fontSize,
+          height: _Config.lineHeight,
+          letterSpacing: _Config.letterSpacing,
+          fontWeight: FontWeight.w600,
+          color: _textColor,
+        );
+        
+        return Listener(
+          onPointerDown: (_) => _onPressStart(),
+          onPointerUp: (_) => _onPressEnd(),
+          onPointerCancel: (_) => _onPressEnd(),
+          child: AnimatedOpacity(
+            opacity: _pageOpacity,
+            duration: Duration(milliseconds: _Config.pageTransitionMs ~/ 2),
+            curve: Curves.easeInOut,
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: _Config.horizontalPadding,
+                vertical: _Config.verticalPadding,
+              ),
+              child: RepaintBoundary(
+                child: Stack(
+                  children: [
+                    // Layer 0: Invisible layout placeholder (defines exact size)
+                    Opacity(
+                      opacity: 0.0,
+                      child: Text(currentPage.text, style: baseStyle),
+                    ),
+                    
+                    // Layer 1: Ghost text (entire page, blurry & dim)
+                    Positioned.fill(
+                      child: _buildGhostText(currentPage.text, baseStyle),
+                    ),
+                    
+                    // Layer 2: Sharp revealed text
+                    Positioned.fill(
+                      child: _buildRevealedText(currentPage, baseStyle, now, blurIntensity),
+                    ),
+                    
+                    // Layer 3: Blurred overlay for current word
+                    if (blurIntensity > 0.05 && _currentWordStart < _charIndex)
+                      Positioned.fill(
+                        child: _buildBlurredCurrentWord(currentPage, baseStyle, blurIntensity),
+                      ),
+                    
+                    // Layer 4: Blurred recently completed words
+                    ..._buildBlurredCompletedWords(currentPage, baseStyle, now),
+                  ],
                 ),
-                
-                // Layer 2: Sharp text (revealed portion)
-                _buildTextWithEffects(baseStyle, now, blurIntensity, isBlurred: false),
-                
-                // Layer 3: Blurred overlay for current word (fades out)
-                if (blurIntensity > 0.05 && _currentWordStart < _charIndex)
-                  _buildBlurredCurrentWord(baseStyle, blurIntensity),
-                
-                // Layer 4: Blurred overlay for recently completed words
-                ..._buildBlurredCompletedWords(baseStyle, now),
-              ],
+              ),
             ),
           ),
+        );
+      },
+    );
+  }
+  
+  /// Ghost text - full page preview, blurry and dim
+  Widget _buildGhostText(String pageText, TextStyle baseStyle) {
+    return ImageFiltered(
+      imageFilter: ui.ImageFilter.blur(
+        sigmaX: _Config.ghostBlurSigma,
+        sigmaY: _Config.ghostBlurSigma,
+        tileMode: TileMode.decal,
+      ),
+      child: Opacity(
+        opacity: _Config.ghostOpacity,
+        child: Text(
+          pageText,
+          style: baseStyle,
         ),
       ),
     );
   }
   
-  Widget _buildTextWithEffects(TextStyle baseStyle, int now, double blurIntensity, {required bool isBlurred}) {
-    final spans = <TextSpan>[];
+  /// Build revealed text with glow effects - renders FULL page text for layout stability
+  Widget _buildRevealedText(_PageInfo page, TextStyle baseStyle, int now, double blurIntensity) {
+    final pageRevealedChars = (_charIndex - page.startCharIndex).clamp(0, page.text.length);
     
     // Calculate glow intensities AND track which chars are still blurred
     final Map<int, double> glowMap = {};
-    final Set<int> blurredChars = {}; // Chars that should be hidden (rendered in blur layer)
+    final Set<int> blurredChars = {};
     
     for (final word in _glowingWords) {
+      final wordStart = word.startIndex - page.startCharIndex;
+      final wordEnd = word.endIndex - page.startCharIndex;
+      
+      if (wordEnd <= 0 || wordStart >= page.text.length) continue;
+      
       final elapsed = now - word.revealTime;
       
-      // Check if this word is still in blur phase
       if (elapsed < _Config.blurDurationMs) {
         final t = elapsed / _Config.blurDurationMs;
         final wordBlurIntensity = (1.0 - t) * (1.0 - t) * (1.0 - t);
         if (wordBlurIntensity > 0.05) {
-          // This word is still blurred - hide it in this layer
-          for (int i = word.startIndex; i < word.endIndex && i < _charIndex; i++) {
+          for (int i = wordStart.clamp(0, page.text.length); i < wordEnd.clamp(0, pageRevealedChars); i++) {
             blurredChars.add(i);
           }
         }
       }
       
-      // Glow effect (longer duration)
       if (elapsed < _Config.glowDurationMs) {
         final t = elapsed / _Config.glowDurationMs;
         final intensity = 1.0 - (t * t);
-        for (int i = word.startIndex; i < word.endIndex && i < _charIndex; i++) {
+        for (int i = wordStart.clamp(0, page.text.length); i < wordEnd.clamp(0, pageRevealedChars); i++) {
           if (!blurredChars.contains(i)) {
             glowMap[i] = intensity;
           }
@@ -340,83 +515,55 @@ class _TypewriterWithBlurState extends State<_TypewriterWithBlur>
       }
     }
     
-    // Current word: only gets glow if blur is done, otherwise HIDE it here
+    // Current word (page-relative)
+    final currentWordStartRel = _currentWordStart - page.startCharIndex;
+    final currentWordEndRel = _charIndex - page.startCharIndex;
+    
     final bool currentWordIsBlurred = blurIntensity > 0.05;
-    if (currentWordIsBlurred) {
-      for (int i = _currentWordStart; i < _charIndex; i++) {
+    if (currentWordIsBlurred && currentWordStartRel >= 0) {
+      for (int i = currentWordStartRel.clamp(0, page.text.length); i < currentWordEndRel.clamp(0, pageRevealedChars); i++) {
         blurredChars.add(i);
       }
-    } else {
-      for (int i = _currentWordStart; i < _charIndex; i++) {
+    } else if (currentWordStartRel >= 0) {
+      for (int i = currentWordStartRel.clamp(0, page.text.length); i < currentWordEndRel.clamp(0, pageRevealedChars); i++) {
         glowMap[i] = 1.0;
       }
     }
     
-    // Build text segments
-    int segmentStart = 0;
-    double? currentGlow;
-    bool? isHidden;
+    // Build COMPLETE page text - character by character for stable layout
+    final spans = <TextSpan>[];
     
-    for (int i = 0; i <= _charIndex && i <= widget.text.length; i++) {
-      final charIsHidden = blurredChars.contains(i);
-      final glow = (!charIsHidden && i < _charIndex) ? glowMap[i] : null;
-      final glowLevel = (glow != null && glow > 0.1) ? glow : null;
+    for (int i = 0; i < page.text.length; i++) {
+      final char = page.text[i];
+      final isRevealed = i < pageRevealedChars;
+      final isBlurred = blurredChars.contains(i);
+      final glowIntensity = glowMap[i];
       
-      final glowChanged = (glowLevel == null) != (currentGlow == null) ||
-          (glowLevel != null && currentGlow != null && (glowLevel - currentGlow).abs() > 0.15);
-      final hiddenChanged = charIsHidden != isHidden;
-      
-      if (i == _charIndex || glowChanged || hiddenChanged) {
-        if (i > segmentStart) {
-          final text = widget.text.substring(segmentStart, i);
-          
-          // If this segment is blurred, make it TRANSPARENT
-          if (isHidden == true) {
-            spans.add(TextSpan(
-              text: text,
-              style: baseStyle.copyWith(color: Colors.transparent),
-            ));
-          } else if (currentGlow != null && currentGlow > 0.1) {
-            final glowColor = Color.lerp(_Config.glowColor, _textColor, 1.0 - currentGlow)!;
-            spans.add(TextSpan(
-              text: text,
-              style: baseStyle.copyWith(
-                color: glowColor,
-                shadows: [
-                  Shadow(
-                    color: _Config.glowColor.withOpacity(0.8 * currentGlow),
-                    blurRadius: 15.0 * currentGlow,
-                  ),
-                ],
+      if (!isRevealed) {
+        // Not yet revealed - transparent
+        spans.add(TextSpan(text: char, style: baseStyle.copyWith(color: Colors.transparent)));
+      } else if (isBlurred) {
+        // Blurred (rendered in blur layer) - transparent here
+        spans.add(TextSpan(text: char, style: baseStyle.copyWith(color: Colors.transparent)));
+      } else if (glowIntensity != null && glowIntensity > 0.1) {
+        // Glowing
+        final glowColor = Color.lerp(_Config.glowColor, _textColor, 1.0 - glowIntensity)!;
+        spans.add(TextSpan(
+          text: char,
+          style: baseStyle.copyWith(
+            color: glowColor,
+            shadows: [
+              Shadow(
+                color: _Config.glowColor.withOpacity(0.8 * glowIntensity),
+                blurRadius: 15.0 * glowIntensity,
               ),
-            ));
-          } else {
-            spans.add(TextSpan(text: text, style: baseStyle));
-          }
-        }
-        segmentStart = i;
-        currentGlow = glowLevel;
-        isHidden = charIsHidden;
+            ],
+          ),
+        ));
+      } else {
+        // Normal revealed text - use exact same style as base
+        spans.add(TextSpan(text: char, style: baseStyle));
       }
-    }
-    
-    // Hidden text
-    if (_charIndex < widget.text.length) {
-      spans.add(TextSpan(
-        text: widget.text.substring(_charIndex),
-        style: baseStyle.copyWith(color: Colors.transparent),
-      ));
-    }
-    
-    // Cursor
-    if (_charIndex < widget.text.length && _cursorOpacity > 0) {
-      spans.add(TextSpan(
-        text: '▍',
-        style: baseStyle.copyWith(
-          color: _cursorColor.withOpacity(_cursorOpacity),
-          fontWeight: FontWeight.bold,
-        ),
-      ));
     }
     
     return RichText(
@@ -425,18 +572,28 @@ class _TypewriterWithBlurState extends State<_TypewriterWithBlur>
     );
   }
   
-  /// Build list of blurred widgets for recently completed words
-  List<Widget> _buildBlurredCompletedWords(TextStyle baseStyle, int now) {
+  /// Build blurred completed words
+  List<Widget> _buildBlurredCompletedWords(_PageInfo page, TextStyle baseStyle, int now) {
     final widgets = <Widget>[];
     
     for (final word in _glowingWords) {
       final elapsed = now - word.revealTime;
       if (elapsed < _Config.blurDurationMs) {
         final t = elapsed / _Config.blurDurationMs;
-        final blurIntensity = (1.0 - t) * (1.0 - t) * (1.0 - t); // Cubic ease-in
+        final blurIntensity = (1.0 - t) * (1.0 - t) * (1.0 - t);
         
         if (blurIntensity > 0.05) {
-          widgets.add(_buildBlurredWord(baseStyle, word.startIndex, word.endIndex, blurIntensity));
+          // Convert to page-relative
+          final wordStartRel = (word.startIndex - page.startCharIndex).clamp(0, page.text.length);
+          final wordEndRel = (word.endIndex - page.startCharIndex).clamp(0, page.text.length);
+          
+          if (wordEndRel > wordStartRel) {
+            widgets.add(
+              Positioned.fill(
+                child: _buildBlurredWord(page, baseStyle, wordStartRel, wordEndRel, blurIntensity),
+              ),
+            );
+          }
         }
       }
     }
@@ -444,41 +601,35 @@ class _TypewriterWithBlurState extends State<_TypewriterWithBlur>
     return widgets;
   }
   
-  /// Renders a specific word range with blur effect
-  Widget _buildBlurredWord(TextStyle baseStyle, int startIndex, int endIndex, double blurIntensity) {
+  Widget _buildBlurredWord(_PageInfo page, TextStyle baseStyle, int startIndex, int endIndex, double blurIntensity) {
     final sigma = _Config.maxBlurSigma * blurIntensity;
+    
+    // Render FULL page text with only the word visible (for layout stability)
     final spans = <TextSpan>[];
     
-    // Text before word (transparent - for positioning)
-    if (startIndex > 0) {
-      spans.add(TextSpan(
-        text: widget.text.substring(0, startIndex),
-        style: baseStyle.copyWith(color: Colors.transparent),
-      ));
-    }
-    
-    // The word itself (visible, blurred)
-    final wordEnd = endIndex.clamp(0, widget.text.length);
-    final wordText = widget.text.substring(startIndex, wordEnd);
-    spans.add(TextSpan(
-      text: wordText,
-      style: baseStyle.copyWith(
-        color: _Config.glowColor,
-        shadows: [
-          Shadow(
-            color: _Config.glowColor.withOpacity(0.8),
-            blurRadius: 15.0,
+    for (int i = 0; i < page.text.length; i++) {
+      final char = page.text[i];
+      final isInWord = i >= startIndex && i < endIndex;
+      
+      if (isInWord) {
+        spans.add(TextSpan(
+          text: char,
+          style: baseStyle.copyWith(
+            color: _Config.glowColor,
+            shadows: [
+              Shadow(
+                color: _Config.glowColor.withOpacity(0.8),
+                blurRadius: 15.0,
+              ),
+            ],
           ),
-        ],
-      ),
-    ));
-    
-    // Rest of text (transparent)
-    if (wordEnd < widget.text.length) {
-      spans.add(TextSpan(
-        text: widget.text.substring(wordEnd),
-        style: baseStyle.copyWith(color: Colors.transparent),
-      ));
+        ));
+      } else {
+        spans.add(TextSpan(
+          text: char,
+          style: baseStyle.copyWith(color: Colors.transparent),
+        ));
+      }
     }
     
     return ImageFiltered(
@@ -494,47 +645,42 @@ class _TypewriterWithBlurState extends State<_TypewriterWithBlur>
     );
   }
   
-  /// Renders ONLY the current word with a real blur effect
-  Widget _buildBlurredCurrentWord(TextStyle baseStyle, double blurIntensity) {
-    if (_currentWordStart >= _charIndex) return const SizedBox.shrink();
+  Widget _buildBlurredCurrentWord(_PageInfo page, TextStyle baseStyle, double blurIntensity) {
+    final currentWordStartRel = (_currentWordStart - page.startCharIndex).clamp(0, page.text.length);
+    final currentWordEndRel = (_charIndex - page.startCharIndex).clamp(0, page.text.length);
+    
+    if (currentWordStartRel >= currentWordEndRel) return const SizedBox.shrink();
     
     final sigma = _Config.maxBlurSigma * blurIntensity;
     
-    // Build the text with the current word highlighted
+    // Render FULL page text with only current word visible (for layout stability)
     final spans = <TextSpan>[];
     
-    // Text before current word (transparent - just for positioning)
-    if (_currentWordStart > 0) {
-      spans.add(TextSpan(
-        text: widget.text.substring(0, _currentWordStart),
-        style: baseStyle.copyWith(color: Colors.transparent),
-      ));
-    }
-    
-    // Current word - ALWAYS full glow color (matches Layer 2 when blur ends)
-    final currentWord = widget.text.substring(_currentWordStart, _charIndex);
-    spans.add(TextSpan(
-      text: currentWord,
-      style: baseStyle.copyWith(
-        color: _Config.glowColor, // Full neon blue
-        shadows: [
-          Shadow(
-            color: _Config.glowColor.withOpacity(0.8),
-            blurRadius: 15.0,
+    for (int i = 0; i < page.text.length; i++) {
+      final char = page.text[i];
+      final isInWord = i >= currentWordStartRel && i < currentWordEndRel;
+      
+      if (isInWord) {
+        spans.add(TextSpan(
+          text: char,
+          style: baseStyle.copyWith(
+            color: _Config.glowColor,
+            shadows: [
+              Shadow(
+                color: _Config.glowColor.withOpacity(0.8),
+                blurRadius: 15.0,
+              ),
+            ],
           ),
-        ],
-      ),
-    ));
-    
-    // Rest of text (transparent)
-    if (_charIndex < widget.text.length) {
-      spans.add(TextSpan(
-        text: widget.text.substring(_charIndex),
-        style: baseStyle.copyWith(color: Colors.transparent),
-      ));
+        ));
+      } else {
+        spans.add(TextSpan(
+          text: char,
+          style: baseStyle.copyWith(color: Colors.transparent),
+        ));
+      }
     }
     
-    // Blur decreases, color stays constant
     return ImageFiltered(
       imageFilter: ui.ImageFilter.blur(
         sigmaX: sigma,
