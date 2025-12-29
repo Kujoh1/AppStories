@@ -22,6 +22,7 @@ dependencies:
   
   # Storage
   shared_preferences: ^2.2.2
+  docx_to_text: ^1.0.1
 
 dev_dependencies:
   flutter_test:
@@ -35,10 +36,18 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+  assets:
+    - assets/
+    - assets/fonts/
+    - assets/stories/
+
   # Eigene Schriftarten
   fonts:
     - family: Mynerve
       fonts:
         - asset: assets/fonts/Mynerve-Regular.ttf
+    - family: GrechenFuemen
+      fonts:
+        - asset: assets/fonts/GrechenFuemen-Regular.ttf
 
 

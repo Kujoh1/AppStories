@@ -38,17 +38,30 @@ class _Config {
   static const int newlineDelayMs = 600;
   static const int pageTransitionMs = 3000;
   
+  // Chapter title cinema animation
+  static const int chapterFadeInMs = 1500;
+  static const int chapterHoldMs = 2500;
+  static const int chapterFadeOutMs = 1200;
+  static const int chapterToTextDelayMs = 800;
+  
   static const int glowDurationMs = 1800;
-  static const int blurDurationMs = 1500;
+  // Blur duration varies by sentence length: short=min, long=max
+  static const int blurDurationMinMs = 500;
+  static const int blurDurationMaxMs = 1500;
+  static const int shortSentenceLength = 50;  // chars - gets min blur
+  static const int longSentenceLength = 150;  // chars - gets max blur
   static const double maxBlurSigma = 8.0;
   
   static const double fontSize = 18.0;
+  static const double dialogueFontSize = 20.0; // Slightly larger for dialogue
   static const double lineHeight = 1.9;
   static const double letterSpacing = 2.0;
   static const double horizontalPadding = 16.0;
   static const double verticalPadding = 40.0;
   
-  static const Color glowColor = Color(0xFF30ACFF);
+  static const String dialogueFont = 'GrechenFuemen'; // For text in quotes
+  
+  static const Color glowColor = Color(0xFFFFFFFF);  // White glow
   static const Color darkTextColor = Color(0xFFE8DCC0);
   static const Color lightTextColor = Color(0xFF2C1810);
   
@@ -61,7 +74,8 @@ class _WordInfo {
   final int startIndex;
   final int endIndex;
   final int revealTime;
-  _WordInfo(this.startIndex, this.endIndex, this.revealTime);
+  final int blurDuration; // Calculated based on position on page
+  _WordInfo(this.startIndex, this.endIndex, this.revealTime, this.blurDuration);
 }
 
 /// Page boundary info
@@ -91,13 +105,14 @@ class _PagedTypewriter extends StatefulWidget {
 }
 
 class _PagedTypewriterState extends State<_PagedTypewriter>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   
   int _charIndex = 0;
   
   final List<_WordInfo> _glowingWords = [];
   int _currentWordStart = 0;
   int _currentWordStartTime = 0;
+  int _currentWordBlurDuration = _Config.blurDurationMinMs;
   
   Timer? _typeTimer;
   Ticker? _ticker;
@@ -114,10 +129,154 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
   double _pageOpacity = 1.0;
   Size? _availableSize;
   
+  // Chapter title cinema animation
+  bool _showingChapterTitle = true;
+  String? _chapterTitle;
+  String? _bodyText;
+  late AnimationController _chapterAnimController;
+  late Animation<double> _chapterOpacity;
+  late Animation<double> _chapterScale;
+  late Animation<double> _chapterBlur;
+  late Animation<double> _chapterLetterSpacing;
+  
   @override
   void initState() {
     super.initState();
+    
+    // Extract chapter title from text
+    _extractChapterTitle();
+    
+    // Setup chapter animation
+    _chapterAnimController = AnimationController(
+      vsync: this,
+      duration: Duration(
+        milliseconds: _Config.chapterFadeInMs + _Config.chapterHoldMs + _Config.chapterFadeOutMs,
+      ),
+    );
+    
+    // Complex multi-phase animation
+    final fadeInEnd = _Config.chapterFadeInMs / 
+        (_Config.chapterFadeInMs + _Config.chapterHoldMs + _Config.chapterFadeOutMs);
+    final holdEnd = (_Config.chapterFadeInMs + _Config.chapterHoldMs) / 
+        (_Config.chapterFadeInMs + _Config.chapterHoldMs + _Config.chapterFadeOutMs);
+    
+    _chapterOpacity = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween(begin: 0.0, end: 1.0).chain(CurveTween(curve: Curves.easeOutCubic)),
+        weight: fadeInEnd * 100,
+      ),
+      TweenSequenceItem(
+        tween: ConstantTween(1.0),
+        weight: (holdEnd - fadeInEnd) * 100,
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: 1.0, end: 0.0).chain(CurveTween(curve: Curves.easeInCubic)),
+        weight: (1.0 - holdEnd) * 100,
+      ),
+    ]).animate(_chapterAnimController);
+    
+    _chapterScale = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween(begin: 0.7, end: 1.0).chain(CurveTween(curve: Curves.easeOutBack)),
+        weight: fadeInEnd * 100,
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: 1.0, end: 1.02),
+        weight: (holdEnd - fadeInEnd) * 100,
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: 1.02, end: 1.15).chain(CurveTween(curve: Curves.easeIn)),
+        weight: (1.0 - holdEnd) * 100,
+      ),
+    ]).animate(_chapterAnimController);
+    
+    _chapterBlur = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween(begin: 15.0, end: 0.0).chain(CurveTween(curve: Curves.easeOut)),
+        weight: fadeInEnd * 100,
+      ),
+      TweenSequenceItem(
+        tween: ConstantTween(0.0),
+        weight: (holdEnd - fadeInEnd) * 100,
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: 0.0, end: 10.0).chain(CurveTween(curve: Curves.easeIn)),
+        weight: (1.0 - holdEnd) * 100,
+      ),
+    ]).animate(_chapterAnimController);
+    
+    _chapterLetterSpacing = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween(begin: 20.0, end: 4.0).chain(CurveTween(curve: Curves.easeOutCubic)),
+        weight: fadeInEnd * 100,
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: 4.0, end: 5.0),
+        weight: (holdEnd - fadeInEnd) * 100,
+      ),
+      TweenSequenceItem(
+        tween: Tween(begin: 5.0, end: 15.0).chain(CurveTween(curve: Curves.easeIn)),
+        weight: (1.0 - holdEnd) * 100,
+      ),
+    ]).animate(_chapterAnimController);
+    
+    _chapterAnimController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        Future.delayed(Duration(milliseconds: _Config.chapterToTextDelayMs), () {
+          if (mounted) {
+            setState(() => _showingChapterTitle = false);
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted) _startTypewriter();
+            });
+          }
+        });
+      }
+    });
+    
     _ticker = createTicker(_onTick)..start();
+    
+    // Start chapter animation after a brief delay
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (mounted && _chapterTitle != null) {
+        _chapterAnimController.forward();
+      } else if (mounted) {
+        // No chapter title found, skip to content
+        setState(() => _showingChapterTitle = false);
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) _startTypewriter();
+        });
+      }
+    });
+  }
+  
+  void _extractChapterTitle() {
+    final text = widget.text.trim();
+    final lines = text.split('\n');
+    
+    if (lines.isEmpty) {
+      _bodyText = text;
+      return;
+    }
+    
+    // Check if first line looks like a chapter title
+    final firstLine = lines.first.trim();
+    
+    // Match patterns like "Kapitel 1:", "Kapitel Eins:", "Chapter 1:", etc.
+    final chapterPatterns = [
+      RegExp(r'^Kapitel\s+\d+\s*[:\-–—]?\s*.*', caseSensitive: false),
+      RegExp(r'^Kapitel\s+\w+\s*[:\-–—]?\s*.*', caseSensitive: false),
+      RegExp(r'^Chapter\s+\d+\s*[:\-–—]?\s*.*', caseSensitive: false),
+    ];
+    
+    bool isChapterTitle = chapterPatterns.any((pattern) => pattern.hasMatch(firstLine));
+    
+    if (isChapterTitle) {
+      _chapterTitle = firstLine;
+      // Remove the chapter title from body text
+      _bodyText = lines.skip(1).join('\n').trimLeft();
+    } else {
+      _bodyText = text;
+    }
   }
   
   void _onTick(Duration elapsed) {
@@ -154,12 +313,127 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     }
   }
   
+  /// Calculate blur duration based on sentence length
+  /// Short sentences = short blur, long sentences = long blur
+  int _calculateBlurDuration(int charIndex) {
+    // Find sentence boundaries (. ! ?)
+    final text = _displayText;
+    
+    // Find start of current sentence (last sentence-ending punctuation before charIndex)
+    int sentenceStart = 0;
+    for (int i = charIndex - 1; i >= 0; i--) {
+      final char = text[i];
+      if (char == '.' || char == '!' || char == '?') {
+        sentenceStart = i + 1;
+        // Skip whitespace after punctuation
+        while (sentenceStart < text.length && 
+               (text[sentenceStart] == ' ' || text[sentenceStart] == '\n')) {
+          sentenceStart++;
+        }
+        break;
+      }
+    }
+    
+    // Find end of current sentence (next sentence-ending punctuation after charIndex)
+    int sentenceEnd = text.length;
+    for (int i = charIndex; i < text.length; i++) {
+      final char = text[i];
+      if (char == '.' || char == '!' || char == '?') {
+        sentenceEnd = i + 1;
+        break;
+      }
+    }
+    
+    // Calculate sentence length
+    final sentenceLength = sentenceEnd - sentenceStart;
+    
+    // Interpolate blur duration based on sentence length
+    // Short sentences (<=50 chars) = min blur
+    // Long sentences (>=150 chars) = max blur
+    final minLen = _Config.shortSentenceLength;
+    final maxLen = _Config.longSentenceLength;
+    
+    if (sentenceLength <= minLen) {
+      return _Config.blurDurationMinMs;
+    } else if (sentenceLength >= maxLen) {
+      return _Config.blurDurationMaxMs;
+    } else {
+      // Linear interpolation
+      final t = (sentenceLength - minLen) / (maxLen - minLen);
+      final duration = _Config.blurDurationMinMs + 
+          ((_Config.blurDurationMaxMs - _Config.blurDurationMinMs) * t);
+      return duration.round();
+    }
+  }
+  
+  // Pre-computed dialogue indices (cached for performance)
+  Set<int>? _dialogueIndicesCache;
+  String? _dialogueCacheText;
+  
+  /// Get pre-computed set of character indices that are inside quotes
+  Set<int> _getDialogueIndices() {
+    final text = _displayText;
+    if (_dialogueCacheText == text && _dialogueIndicesCache != null) {
+      return _dialogueIndicesCache!;
+    }
+    
+    // German quotes: „..." (U+201E opens, U+201C closes)
+    // English quotes: "..." (U+201C opens, U+201D closes) 
+    // French quotes: «...» or »...«
+    // Straight quotes: "..." (U+0022)
+    
+    final indices = <int>{};
+    bool inQuote = false;
+    
+    for (int i = 0; i < text.length; i++) {
+      final char = text[i];
+      final code = char.codeUnitAt(0);
+      
+      // Opening quotes: „ (U+201E), « (U+00AB), » as opener (U+00BB)
+      if (code == 0x201E || code == 0x00AB) {
+        inQuote = true;
+        indices.add(i);
+      }
+      // Closing quotes: " (U+201C), " (U+201D), » (U+00BB), « as closer (U+00AB)
+      else if (inQuote && (code == 0x201C || code == 0x201D || code == 0x00BB)) {
+        indices.add(i);
+        inQuote = false;
+      }
+      // Straight quote " (U+0022) - toggles state
+      else if (code == 0x0022) {
+        if (inQuote) {
+          indices.add(i);
+          inQuote = false;
+        } else {
+          inQuote = true;
+          indices.add(i);
+        }
+      }
+      // Inside quotes
+      else if (inQuote) {
+        indices.add(i);
+      }
+    }
+    
+    _dialogueIndicesCache = indices;
+    _dialogueCacheText = text;
+    return indices;
+  }
+  
+  /// O(1) lookup for dialogue check
+  bool _isDialogue(int globalIndex) {
+    return _getDialogueIndices().contains(globalIndex);
+  }
+  
   /// Calculate how many lines fit on a page
   int _calculateLinesPerPage(double availableHeight) {
     final lineHeight = _Config.fontSize * _Config.lineHeight;
     final usableHeight = availableHeight - (_Config.verticalPadding * 2);
     return (usableHeight / lineHeight).floor();
   }
+  
+  /// Get the actual text to display (body text without chapter title)
+  String get _displayText => _bodyText ?? widget.text;
   
   /// Split text into pages based on available size
   void _calculatePages(Size size) {
@@ -178,21 +452,23 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
       fontWeight: FontWeight.w600,
     );
     
+    final textToUse = _displayText;
+    
     _pages = [];
     int charIndex = 0;
     
-    while (charIndex < widget.text.length) {
+    while (charIndex < textToUse.length) {
       // Find how many characters fit on this page
       int pageEndIndex = charIndex;
       int linesUsed = 0;
       
-      while (pageEndIndex < widget.text.length && linesUsed < linesPerPage) {
+      while (pageEndIndex < textToUse.length && linesUsed < linesPerPage) {
         // Find end of current line
         int lineEnd = pageEndIndex;
         double lineWidth = 0;
         
-        while (lineEnd < widget.text.length) {
-          final char = widget.text[lineEnd];
+        while (lineEnd < textToUse.length) {
+          final char = textToUse[lineEnd];
           
           if (char == '\n') {
             lineEnd++;
@@ -208,7 +484,7 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
           if (lineWidth + charPainter.width > textWidth) {
             // Word wrap: find last space
             int wrapPoint = lineEnd;
-            while (wrapPoint > pageEndIndex && widget.text[wrapPoint] != ' ') {
+            while (wrapPoint > pageEndIndex && textToUse[wrapPoint] != ' ') {
               wrapPoint--;
             }
             if (wrapPoint > pageEndIndex) {
@@ -227,11 +503,34 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
         linesUsed++;
       }
       
+      // Ensure page ends with a complete sentence
+      // Find the last sentence-ending punctuation before pageEndIndex
+      if (pageEndIndex < textToUse.length) {
+        int lastSentenceEnd = -1;
+        for (int i = pageEndIndex - 1; i > charIndex; i--) {
+          final char = textToUse[i];
+          if (char == '.' || char == '!' || char == '?') {
+            lastSentenceEnd = i + 1;
+            // Skip trailing whitespace/newlines after punctuation
+            while (lastSentenceEnd < textToUse.length && 
+                   (textToUse[lastSentenceEnd] == ' ' || textToUse[lastSentenceEnd] == '\n')) {
+              lastSentenceEnd++;
+            }
+            break;
+          }
+        }
+        
+        // Only adjust if we found a sentence end (avoid empty pages for very long sentences)
+        if (lastSentenceEnd > charIndex + 20) {
+          pageEndIndex = lastSentenceEnd;
+        }
+      }
+      
       // Create page
       _pages.add(_PageInfo(
         startCharIndex: charIndex,
         endCharIndex: pageEndIndex,
-        text: widget.text.substring(charIndex, pageEndIndex),
+        text: textToUse.substring(charIndex, pageEndIndex),
       ));
       
       charIndex = pageEndIndex;
@@ -250,20 +549,23 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
   void _startTypewriter() {
     _typeTimer?.cancel();
     if (_isPaused || !mounted || _isPageTransitioning) return;
-    if (_charIndex >= widget.text.length) return;
+    final text = _displayText;
+    if (_charIndex >= text.length) return;
     
     final now = DateTime.now().millisecondsSinceEpoch;
-    final char = widget.text[_charIndex];
+    final char = text[_charIndex];
     
-    // Track word start time
+    // Track word start time and calculate blur duration based on position
     if (_charIndex == _currentWordStart && !_isWhitespace(char)) {
       _currentWordStartTime = now;
+      _currentWordBlurDuration = _calculateBlurDuration(_charIndex);
     }
     
     // Word completed
     if (_isWhitespace(char) && _charIndex > _currentWordStart) {
       if (_glowingWords.length >= 8) _glowingWords.removeAt(0);
-      _glowingWords.add(_WordInfo(_currentWordStart, _charIndex, _currentWordStartTime));
+      final blurDuration = _calculateBlurDuration(_currentWordStart);
+      _glowingWords.add(_WordInfo(_currentWordStart, _charIndex, _currentWordStartTime, blurDuration));
       _currentWordStart = _charIndex + 1;
       _currentWordStartTime = 0;
     } else if (_isWhitespace(char)) {
@@ -276,7 +578,7 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     // Check if we need to transition to next page
     _checkPageTransition();
     
-    if (_charIndex < widget.text.length && !_isPageTransitioning) {
+    if (_charIndex < text.length && !_isPageTransitioning) {
       int delay = _Config.charDelayMs;
       if (char == '.' || char == '!' || char == '?') {
         delay = _Config.sentenceDelayMs;
@@ -286,8 +588,9 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
         delay = _Config.newlineDelayMs;
       }
       _typeTimer = Timer(Duration(milliseconds: delay), _startTypewriter);
-    } else if (_charIndex >= widget.text.length && _charIndex > _currentWordStart) {
-      _glowingWords.add(_WordInfo(_currentWordStart, _charIndex, _currentWordStartTime));
+    } else if (_charIndex >= text.length && _charIndex > _currentWordStart) {
+      final blurDuration = _calculateBlurDuration(_currentWordStart);
+      _glowingWords.add(_WordInfo(_currentWordStart, _charIndex, _currentWordStartTime, blurDuration));
     }
   }
   
@@ -320,9 +623,10 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
       if (!mounted) return;
       setState(() {
         _currentPageIndex++;
-        _glowingWords.clear();
+        // Don't clear glowing words - let effects fade out naturally
         _currentWordStart = _pages[_currentPageIndex].startCharIndex;
         _currentWordStartTime = 0;
+        _currentWordBlurDuration = _Config.blurDurationMinMs;
       });
     });
     
@@ -366,6 +670,7 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     _typeTimer?.cancel();
     _pauseTimer?.cancel();
     _ticker?.dispose();
+    _chapterAnimController.dispose();
     super.dispose();
   }
   
@@ -378,9 +683,14 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
   
   @override
   Widget build(BuildContext context) {
+    // Show cinematic chapter title first
+    if (_showingChapterTitle && _chapterTitle != null) {
+      return _buildChapterTitleCinema();
+    }
+    
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Calculate pages based on available space
+        // Calculate pages based on available space (using body text without chapter title)
         final size = Size(constraints.maxWidth, constraints.maxHeight);
         _calculatePages(size);
         
@@ -391,12 +701,12 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
         final currentPage = _pages[_currentPageIndex];
         final now = DateTime.now().millisecondsSinceEpoch;
         
-        // Calculate blur intensity for current word
+        // Calculate blur intensity for current word (using position-based duration)
         double blurIntensity = 0.0;
         if (_currentWordStartTime > 0) {
           final elapsed = now - _currentWordStartTime;
-          if (elapsed < _Config.blurDurationMs) {
-            final t = elapsed / _Config.blurDurationMs;
+          if (elapsed < _currentWordBlurDuration) {
+            final t = elapsed / _currentWordBlurDuration;
             blurIntensity = (1.0 - t) * (1.0 - t) * (1.0 - t);
           }
         }
@@ -429,12 +739,12 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
                     // Layer 0: Invisible layout placeholder (defines exact size)
                     Opacity(
                       opacity: 0.0,
-                      child: Text(currentPage.text, style: baseStyle),
+                      child: _buildLayoutPlaceholder(currentPage, baseStyle),
                     ),
                     
                     // Layer 1: Ghost text (entire page, blurry & dim)
                     Positioned.fill(
-                      child: _buildGhostText(currentPage.text, baseStyle),
+                      child: _buildGhostText(currentPage, baseStyle),
                     ),
                     
                     // Layer 2: Sharp revealed text
@@ -460,8 +770,171 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     );
   }
   
+  /// Cinematic chapter title animation
+  Widget _buildChapterTitleCinema() {
+    return AnimatedBuilder(
+      animation: _chapterAnimController,
+      builder: (context, child) {
+        final blur = _chapterBlur.value;
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        
+        return Container(
+          width: double.infinity,
+          height: double.infinity,
+          color: isDark ? const Color(0xFF0A0806) : const Color(0xFFF8F4EC),
+          child: Center(
+            child: ImageFiltered(
+              imageFilter: ui.ImageFilter.blur(
+                sigmaX: blur,
+                sigmaY: blur,
+                tileMode: TileMode.decal,
+              ),
+              child: Opacity(
+                opacity: _chapterOpacity.value,
+                child: Transform.scale(
+                  scale: _chapterScale.value,
+                  child: _buildChapterTitleWidget(isDark),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+  
+  Widget _buildChapterTitleWidget(bool isDark) {
+    // Split title into parts: "Kapitel X:" and subtitle
+    final title = _chapterTitle ?? '';
+    String mainPart = title;
+    String? subtitlePart;
+    
+    // Find the colon or dash separator
+    final colonIndex = title.indexOf(':');
+    final dashIndex = title.indexOf(RegExp(r'[\-–—]'));
+    
+    int separatorIndex = -1;
+    if (colonIndex > 0) separatorIndex = colonIndex;
+    if (dashIndex > 0 && (separatorIndex < 0 || dashIndex < separatorIndex)) {
+      separatorIndex = dashIndex;
+    }
+    
+    if (separatorIndex > 0) {
+      mainPart = title.substring(0, separatorIndex).trim();
+      subtitlePart = title.substring(separatorIndex + 1).trim();
+    }
+    
+    final baseColor = isDark ? const Color(0xFFE8DCC0) : const Color(0xFF2C1810);
+    final glowColor = isDark ? const Color(0xFFD4AF37) : const Color(0xFF8B4513);
+    
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Main part (e.g., "Kapitel 1")
+        ShaderMask(
+          shaderCallback: (bounds) => LinearGradient(
+            colors: [
+              glowColor.withOpacity(0.8),
+              baseColor,
+              glowColor.withOpacity(0.8),
+            ],
+            stops: const [0.0, 0.5, 1.0],
+          ).createShader(bounds),
+          child: Text(
+            mainPart.toUpperCase(),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Mynerve',
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              letterSpacing: _chapterLetterSpacing.value * 1.5,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        
+        // Decorative line
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: _buildDecorativeLine(glowColor),
+        ),
+        
+        // Subtitle (e.g., "Das Summen")
+        if (subtitlePart != null && subtitlePart.isNotEmpty)
+          Text(
+            subtitlePart,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Mynerve',
+              fontSize: 32,
+              fontWeight: FontWeight.w600,
+              letterSpacing: _chapterLetterSpacing.value,
+              height: 1.3,
+              color: baseColor,
+              shadows: [
+                Shadow(
+                  color: glowColor.withOpacity(0.5 * _chapterOpacity.value),
+                  blurRadius: 30,
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+  
+  Widget _buildDecorativeLine(Color color) {
+    return SizedBox(
+      width: 120,
+      height: 3,
+      child: CustomPaint(
+        painter: _DecorativeLinePainter(
+          color: color,
+          progress: _chapterOpacity.value,
+        ),
+      ),
+    );
+  }
+  
+  /// Build layout placeholder with correct fonts for dialogue
+  Widget _buildLayoutPlaceholder(_PageInfo page, TextStyle baseStyle) {
+    final dialogueStyle = baseStyle.copyWith(
+      fontFamily: _Config.dialogueFont,
+      fontSize: _Config.dialogueFontSize,
+      fontStyle: FontStyle.italic,
+    );
+    
+    final spans = <TextSpan>[];
+    for (int i = 0; i < page.text.length; i++) {
+      final globalIndex = page.startCharIndex + i;
+      final isDialogue = _isDialogue(globalIndex);
+      final charStyle = isDialogue ? dialogueStyle : baseStyle;
+      spans.add(TextSpan(text: page.text[i], style: charStyle));
+    }
+    
+    return RichText(
+      text: TextSpan(children: spans),
+      textAlign: TextAlign.left,
+    );
+  }
+  
   /// Ghost text - full page preview, blurry and dim
-  Widget _buildGhostText(String pageText, TextStyle baseStyle) {
+  Widget _buildGhostText(_PageInfo page, TextStyle baseStyle) {
+    final dialogueStyle = baseStyle.copyWith(
+      fontFamily: _Config.dialogueFont,
+      fontSize: _Config.dialogueFontSize,
+      fontStyle: FontStyle.italic,
+    );
+    
+    // Build spans with correct fonts for dialogue
+    final spans = <TextSpan>[];
+    for (int i = 0; i < page.text.length; i++) {
+      final globalIndex = page.startCharIndex + i;
+      final isDialogue = _isDialogue(globalIndex);
+      final charStyle = isDialogue ? dialogueStyle : baseStyle;
+      spans.add(TextSpan(text: page.text[i], style: charStyle));
+    }
+    
     return ImageFiltered(
       imageFilter: ui.ImageFilter.blur(
         sigmaX: _Config.ghostBlurSigma,
@@ -470,9 +943,9 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
       ),
       child: Opacity(
         opacity: _Config.ghostOpacity,
-        child: Text(
-          pageText,
-          style: baseStyle,
+        child: RichText(
+          text: TextSpan(children: spans),
+          textAlign: TextAlign.left,
         ),
       ),
     );
@@ -481,6 +954,8 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
   /// Build revealed text with glow effects - renders FULL page text for layout stability
   Widget _buildRevealedText(_PageInfo page, TextStyle baseStyle, int now, double blurIntensity) {
     final pageRevealedChars = (_charIndex - page.startCharIndex).clamp(0, page.text.length);
+    
+    // Pre-calculate which chars are in quotes (dialogue) for font switching
     
     // Calculate glow intensities AND track which chars are still blurred
     final Map<int, double> glowMap = {};
@@ -494,8 +969,8 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
       
       final elapsed = now - word.revealTime;
       
-      if (elapsed < _Config.blurDurationMs) {
-        final t = elapsed / _Config.blurDurationMs;
+      if (elapsed < word.blurDuration) {
+        final t = elapsed / word.blurDuration;
         final wordBlurIntensity = (1.0 - t) * (1.0 - t) * (1.0 - t);
         if (wordBlurIntensity > 0.05) {
           for (int i = wordStart.clamp(0, page.text.length); i < wordEnd.clamp(0, pageRevealedChars); i++) {
@@ -530,6 +1005,13 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
       }
     }
     
+    // Dialogue style (GrechenFuemen font for text in quotes)
+    final dialogueStyle = baseStyle.copyWith(
+      fontFamily: _Config.dialogueFont,
+      fontSize: _Config.dialogueFontSize,
+      fontStyle: FontStyle.italic,
+    );
+    
     // Build COMPLETE page text - character by character for stable layout
     final spans = <TextSpan>[];
     
@@ -539,30 +1021,35 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
       final isBlurred = blurredChars.contains(i);
       final glowIntensity = glowMap[i];
       
+      // Check if this char is inside quotes (dialogue)
+      final globalIndex = page.startCharIndex + i;
+      final isDialogue = _isDialogue(globalIndex);
+      final charStyle = isDialogue ? dialogueStyle : baseStyle;
+      
       if (!isRevealed) {
         // Not yet revealed - transparent
-        spans.add(TextSpan(text: char, style: baseStyle.copyWith(color: Colors.transparent)));
+        spans.add(TextSpan(text: char, style: charStyle.copyWith(color: Colors.transparent)));
       } else if (isBlurred) {
         // Blurred (rendered in blur layer) - transparent here
-        spans.add(TextSpan(text: char, style: baseStyle.copyWith(color: Colors.transparent)));
+        spans.add(TextSpan(text: char, style: charStyle.copyWith(color: Colors.transparent)));
       } else if (glowIntensity != null && glowIntensity > 0.1) {
         // Glowing
         final glowColor = Color.lerp(_Config.glowColor, _textColor, 1.0 - glowIntensity)!;
         spans.add(TextSpan(
           text: char,
-          style: baseStyle.copyWith(
+          style: charStyle.copyWith(
             color: glowColor,
             shadows: [
               Shadow(
                 color: _Config.glowColor.withOpacity(0.8 * glowIntensity),
-                blurRadius: 15.0 * glowIntensity,
+                blurRadius: 25.0 * glowIntensity,
               ),
             ],
           ),
         ));
       } else {
-        // Normal revealed text - use exact same style as base
-        spans.add(TextSpan(text: char, style: baseStyle));
+        // Normal revealed text - use character-specific style
+        spans.add(TextSpan(text: char, style: charStyle));
       }
     }
     
@@ -578,8 +1065,8 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     
     for (final word in _glowingWords) {
       final elapsed = now - word.revealTime;
-      if (elapsed < _Config.blurDurationMs) {
-        final t = elapsed / _Config.blurDurationMs;
+      if (elapsed < word.blurDuration) {
+        final t = elapsed / word.blurDuration;
         final blurIntensity = (1.0 - t) * (1.0 - t) * (1.0 - t);
         
         if (blurIntensity > 0.05) {
@@ -604,6 +1091,13 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
   Widget _buildBlurredWord(_PageInfo page, TextStyle baseStyle, int startIndex, int endIndex, double blurIntensity) {
     final sigma = _Config.maxBlurSigma * blurIntensity;
     
+    // Dialogue style
+    final dialogueStyle = baseStyle.copyWith(
+      fontFamily: _Config.dialogueFont,
+      fontSize: _Config.dialogueFontSize,
+      fontStyle: FontStyle.italic,
+    );
+    
     // Render FULL page text with only the word visible (for layout stability)
     final spans = <TextSpan>[];
     
@@ -611,15 +1105,20 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
       final char = page.text[i];
       final isInWord = i >= startIndex && i < endIndex;
       
+      // Check if in dialogue
+      final globalIndex = page.startCharIndex + i;
+      final isDialogue = _isDialogue(globalIndex);
+      final charStyle = isDialogue ? dialogueStyle : baseStyle;
+      
       if (isInWord) {
         spans.add(TextSpan(
           text: char,
-          style: baseStyle.copyWith(
+          style: charStyle.copyWith(
             color: _Config.glowColor,
             shadows: [
               Shadow(
                 color: _Config.glowColor.withOpacity(0.8),
-                blurRadius: 15.0,
+                blurRadius: 25.0,
               ),
             ],
           ),
@@ -627,7 +1126,7 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
       } else {
         spans.add(TextSpan(
           text: char,
-          style: baseStyle.copyWith(color: Colors.transparent),
+          style: charStyle.copyWith(color: Colors.transparent),
         ));
       }
     }
@@ -653,6 +1152,13 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     
     final sigma = _Config.maxBlurSigma * blurIntensity;
     
+    // Dialogue style
+    final dialogueStyle = baseStyle.copyWith(
+      fontFamily: _Config.dialogueFont,
+      fontSize: _Config.dialogueFontSize,
+      fontStyle: FontStyle.italic,
+    );
+    
     // Render FULL page text with only current word visible (for layout stability)
     final spans = <TextSpan>[];
     
@@ -660,15 +1166,20 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
       final char = page.text[i];
       final isInWord = i >= currentWordStartRel && i < currentWordEndRel;
       
+      // Check if in dialogue
+      final globalIndex = page.startCharIndex + i;
+      final isDialogue = _isDialogue(globalIndex);
+      final charStyle = isDialogue ? dialogueStyle : baseStyle;
+      
       if (isInWord) {
         spans.add(TextSpan(
           text: char,
-          style: baseStyle.copyWith(
+          style: charStyle.copyWith(
             color: _Config.glowColor,
             shadows: [
               Shadow(
                 color: _Config.glowColor.withOpacity(0.8),
-                blurRadius: 15.0,
+                blurRadius: 25.0,
               ),
             ],
           ),
@@ -676,7 +1187,7 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
       } else {
         spans.add(TextSpan(
           text: char,
-          style: baseStyle.copyWith(color: Colors.transparent),
+          style: charStyle.copyWith(color: Colors.transparent),
         ));
       }
     }
@@ -693,4 +1204,75 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
       ),
     );
   }
+}
+
+/// Decorative line painter for chapter title
+class _DecorativeLinePainter extends CustomPainter {
+  final Color color;
+  final double progress;
+  
+  _DecorativeLinePainter({
+    required this.color,
+    required this.progress,
+  });
+  
+  @override
+  void paint(Canvas canvas, Size size) {
+    final centerX = size.width / 2;
+    final centerY = size.height / 2;
+    
+    // Draw line from center outward
+    final lineWidth = size.width * progress;
+    final halfWidth = lineWidth / 2;
+    
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.5
+      ..strokeCap = StrokeCap.round;
+    
+    // Main line
+    canvas.drawLine(
+      Offset(centerX - halfWidth, centerY),
+      Offset(centerX + halfWidth, centerY),
+      paint,
+    );
+    
+    // Decorative dots at ends
+    if (progress > 0.5) {
+      final dotPaint = Paint()
+        ..color = color.withOpacity(progress)
+        ..style = PaintingStyle.fill;
+      
+      canvas.drawCircle(
+        Offset(centerX - halfWidth - 6, centerY),
+        2,
+        dotPaint,
+      );
+      canvas.drawCircle(
+        Offset(centerX + halfWidth + 6, centerY),
+        2,
+        dotPaint,
+      );
+    }
+    
+    // Diamond in center
+    if (progress > 0.3) {
+      final diamondPaint = Paint()
+        ..color = color.withOpacity(progress)
+        ..style = PaintingStyle.fill;
+      
+      final diamondPath = Path()
+        ..moveTo(centerX, centerY - 4)
+        ..lineTo(centerX + 4, centerY)
+        ..lineTo(centerX, centerY + 4)
+        ..lineTo(centerX - 4, centerY)
+        ..close();
+      
+      canvas.drawPath(diamondPath, diamondPaint);
+    }
+  }
+  
+  @override
+  bool shouldRepaint(_DecorativeLinePainter oldDelegate) =>
+      oldDelegate.progress != progress || oldDelegate.color != color;
 }

@@ -1,6 +1,7 @@
 import '../../domain/models/book_graph.dart';
 import '../../domain/models/story_page.dart';
 import '../../domain/models/choice.dart';
+import '../../core/services/story_parser.dart';
 
 /// Repository interface for accessing book data
 abstract class BookRepository {
@@ -8,7 +9,52 @@ abstract class BookRepository {
   Future<StoryPage?> getPage(String bookId, String pageId);
 }
 
-/// Mock implementation with hardcoded story data
+/// Repository that loads stories from Word documents
+class DocxBookRepository implements BookRepository {
+  ParsedStory? _cachedStory;
+  
+  @override
+  Future<BookGraph> getBook(String bookId) async {
+    // Load from Word document
+    _cachedStory ??= await StoryParser.loadFromAsset(
+      'assets/stories/Zwischen den Gleisen.docx'
+    );
+    
+    final content = _cachedStory!.displayText;
+    
+    return BookGraph(
+      id: bookId,
+      title: 'Zwischen den Gleisen',
+      author: 'Autor',
+      startPageId: 'page_1',
+      pages: {
+        'page_1': StoryPage(
+          id: 'page_1',
+          title: 'Zwischen den Gleisen',
+          content: content,
+          displayOrder: 1,
+          isPlaceholder: false,
+        ),
+      },
+    );
+  }
+  
+  @override
+  Future<StoryPage?> getPage(String bookId, String pageId) async {
+    final book = await getBook(bookId);
+    return book.getPage(pageId);
+  }
+  
+  /// Get parsed story with all elements (for tag processing)
+  Future<ParsedStory> getParsedStory() async {
+    _cachedStory ??= await StoryParser.loadFromAsset(
+      'assets/stories/Zwischen den Gleisen.docx'
+    );
+    return _cachedStory!;
+  }
+}
+
+/// Mock implementation with hardcoded story data (fallback)
 class MockBookRepository implements BookRepository {
   // Simulating network delay
   static const _delay = Duration(milliseconds: 300);

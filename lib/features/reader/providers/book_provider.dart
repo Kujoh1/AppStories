@@ -4,8 +4,9 @@ import '../../../domain/models/book_graph.dart';
 import '../../../core/constants/app_constants.dart';
 
 /// Provider for the book repository
+/// Using DocxBookRepository to load from Word documents
 final bookRepositoryProvider = Provider<BookRepository>((ref) {
-  return MockBookRepository();
+  return DocxBookRepository();
 });
 
 /// Provider for the current book
