@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'dart:async';
 import 'dart:ui' as ui;
+import 'dart:math' as math;
 
 /// Paged typewriter animation - no scrolling, page by page
 class DecorativeStoryText extends StatelessWidget {
@@ -33,16 +34,30 @@ class DecorativeStoryText extends StatelessWidget {
 /// Configuration
 class _Config {
   static const int charDelayMs = 25;
-  static const int punctuationDelayMs = 300;
-  static const int sentenceDelayMs = 1200;
-  static const int newlineDelayMs = 600;
+  
+  // New timing ranges for natural reading flow
+  static const int commaDelayMinMs = 150;
+  static const int commaDelayMaxMs = 300;
+  
+  static const int sentenceDelayMinMs = 350;
+  static const int sentenceDelayMaxMs = 700;
+  
+  static const int punctuationDelayMinMs = 400;
+  static const int punctuationDelayMaxMs = 800;
+  
+  static const int newlineDelayMinMs = 800;
+  static const int newlineDelayMaxMs = 1500;
+  
+  static const int ellipseDelayMinMs = 600;
+  static const int ellipseDelayMaxMs = 1200;
+
   static const int pageTransitionMs = 3000;
   
-  // Chapter title cinema animation
-  static const int chapterFadeInMs = 1500;
-  static const int chapterHoldMs = 2500;
-  static const int chapterFadeOutMs = 1200;
-  static const int chapterToTextDelayMs = 800;
+  // Chapter title cinema animation (shortened for better UX)
+  static const int chapterFadeInMs = 800;
+  static const int chapterHoldMs = 1200;
+  static const int chapterFadeOutMs = 600;
+  static const int chapterToTextDelayMs = 300;
   
   static const int glowDurationMs = 1800;
   // Blur duration varies by sentence length: short=min, long=max
@@ -52,8 +67,8 @@ class _Config {
   static const int longSentenceLength = 150;  // chars - gets max blur
   static const double maxBlurSigma = 8.0;
   
-  static const double fontSize = 18.0;
-  static const double dialogueFontSize = 20.0; // Slightly larger for dialogue
+  static const double fontSize = 16.0;
+  static const double dialogueFontSize = 17.0; // Slightly larger for dialogue
   static const double lineHeight = 1.9;
   static const double letterSpacing = 2.0;
   static const double horizontalPadding = 16.0;
@@ -61,7 +76,7 @@ class _Config {
   
   static const String dialogueFont = 'GrechenFuemen'; // For text in quotes
   
-  static const Color glowColor = Color(0xFFFFFFFF);  // White glow
+  static const Color glowColor = Color(0xFFFEFFE9);  // Warm glow
   static const Color darkTextColor = Color(0xFFE8DCC0);
   static const Color lightTextColor = Color(0xFF2C1810);
   
@@ -225,9 +240,7 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
         Future.delayed(Duration(milliseconds: _Config.chapterToTextDelayMs), () {
           if (mounted) {
             setState(() => _showingChapterTitle = false);
-            Future.delayed(const Duration(milliseconds: 500), () {
-              if (mounted) _startTypewriter();
-            });
+            // Text starts immediately - pages are calculated in build
           }
         });
       }
@@ -236,13 +249,13 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     _ticker = createTicker(_onTick)..start();
     
     // Start chapter animation after a brief delay
-    Future.delayed(const Duration(milliseconds: 600), () {
+    Future.delayed(const Duration(milliseconds: 200), () {
       if (mounted && _chapterTitle != null) {
         _chapterAnimController.forward();
       } else if (mounted) {
         // No chapter title found, skip to content
         setState(() => _showingChapterTitle = false);
-        Future.delayed(const Duration(milliseconds: 500), () {
+        Future.delayed(const Duration(milliseconds: 200), () {
           if (mounted) _startTypewriter();
         });
       }
@@ -313,6 +326,18 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     }
   }
   
+  bool _isQuote(String char) {
+    const quotes = ['„', '"', '«', '»', '"', '\'', '‘', '’', '“', '”', '\"'];
+    return quotes.contains(char);
+  }
+
+  /// Check if the current position is an ellipse "..." or similar
+  bool _isEllipse(String text, int charIndex) {
+    if (charIndex < 2) return false;
+    // Check for "..." or ".." 
+    return text[charIndex] == '.' && text[charIndex - 1] == '.' && text[charIndex - 2] == '.';
+  }
+
   /// Calculate blur duration based on sentence length
   /// Short sentences = short blur, long sentences = long blur
   int _calculateBlurDuration(int charIndex) {
@@ -325,6 +350,12 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
       final char = text[i];
       if (char == '.' || char == '!' || char == '?') {
         sentenceStart = i + 1;
+        
+        // Skip trailing quotes that belong to the PREVIOUS sentence
+        while (sentenceStart < text.length && _isQuote(text[sentenceStart])) {
+          sentenceStart++;
+        }
+
         // Skip whitespace after punctuation
         while (sentenceStart < text.length && 
                (text[sentenceStart] == ' ' || text[sentenceStart] == '\n')) {
@@ -340,6 +371,11 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
       final char = text[i];
       if (char == '.' || char == '!' || char == '?') {
         sentenceEnd = i + 1;
+        
+        // Include trailing quotes in this sentence
+        while (sentenceEnd < text.length && _isQuote(text[sentenceEnd])) {
+          sentenceEnd++;
+        }
         break;
       }
     }
@@ -443,7 +479,6 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     final linesPerPage = _calculateLinesPerPage(size.height);
     final textWidth = size.width - (_Config.horizontalPadding * 2);
     
-    // Create TextPainter to measure text layout
     final baseStyle = TextStyle(
       fontFamily: 'Mynerve',
       fontSize: _Config.fontSize,
@@ -454,64 +489,61 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     
     final textToUse = _displayText;
     
-    _pages = [];
-    int charIndex = 0;
+    // Use a single TextPainter for efficient measurement
+    final painter = TextPainter(
+      text: TextSpan(text: textToUse, style: baseStyle),
+      textDirection: TextDirection.ltr,
+      maxLines: null,
+    )..layout(maxWidth: textWidth);
     
-    while (charIndex < textToUse.length) {
-      // Find how many characters fit on this page
-      int pageEndIndex = charIndex;
-      int linesUsed = 0;
+    // Get line metrics for the entire text at once
+    final lineMetrics = painter.computeLineMetrics();
+    final totalLines = lineMetrics.length;
+    
+    _pages = [];
+    int lineIndex = 0;
+    
+    while (lineIndex < totalLines) {
+      final startLine = lineIndex;
+      final endLine = (lineIndex + linesPerPage).clamp(0, totalLines);
       
-      while (pageEndIndex < textToUse.length && linesUsed < linesPerPage) {
-        // Find end of current line
-        int lineEnd = pageEndIndex;
-        double lineWidth = 0;
-        
-        while (lineEnd < textToUse.length) {
-          final char = textToUse[lineEnd];
-          
-          if (char == '\n') {
-            lineEnd++;
-            break;
-          }
-          
-          // Measure character width (approximate)
-          final charPainter = TextPainter(
-            text: TextSpan(text: char, style: baseStyle),
-            textDirection: TextDirection.ltr,
-          )..layout();
-          
-          if (lineWidth + charPainter.width > textWidth) {
-            // Word wrap: find last space
-            int wrapPoint = lineEnd;
-            while (wrapPoint > pageEndIndex && textToUse[wrapPoint] != ' ') {
-              wrapPoint--;
-            }
-            if (wrapPoint > pageEndIndex) {
-              lineEnd = wrapPoint + 1;
-            }
-            charPainter.dispose();
-            break;
-          }
-          
-          lineWidth += charPainter.width;
-          charPainter.dispose();
-          lineEnd++;
-        }
-        
-        pageEndIndex = lineEnd;
-        linesUsed++;
+      // Get character positions from line metrics
+      int startCharIndex = 0;
+      int endCharIndex = textToUse.length;
+      
+      if (startLine > 0 && startLine < lineMetrics.length) {
+        // Find character at start of this line
+        final startOffset = painter.getPositionForOffset(
+          Offset(0, lineMetrics[startLine].baseline - lineMetrics[startLine].ascent + 1)
+        );
+        startCharIndex = startOffset.offset;
       }
       
-      // Ensure page ends with a complete sentence
-      // Find the last sentence-ending punctuation before pageEndIndex
-      if (pageEndIndex < textToUse.length) {
+      if (endLine < lineMetrics.length) {
+        // Find character at start of next page (end of this page)
+        final endOffset = painter.getPositionForOffset(
+          Offset(0, lineMetrics[endLine].baseline - lineMetrics[endLine].ascent + 1)
+        );
+        endCharIndex = endOffset.offset;
+      }
+      
+      // Try to end at a sentence boundary
+      if (endCharIndex < textToUse.length) {
         int lastSentenceEnd = -1;
-        for (int i = pageEndIndex - 1; i > charIndex; i--) {
+        final searchEnd = endCharIndex.clamp(0, textToUse.length);
+        final searchStart = (startCharIndex + 20).clamp(0, searchEnd);
+        
+        for (int i = searchEnd - 1; i >= searchStart; i--) {
           final char = textToUse[i];
           if (char == '.' || char == '!' || char == '?') {
             lastSentenceEnd = i + 1;
-            // Skip trailing whitespace/newlines after punctuation
+            
+            // Include trailing quotes
+            while (lastSentenceEnd < textToUse.length && _isQuote(textToUse[lastSentenceEnd])) {
+              lastSentenceEnd++;
+            }
+            
+            // Skip trailing whitespace
             while (lastSentenceEnd < textToUse.length && 
                    (textToUse[lastSentenceEnd] == ' ' || textToUse[lastSentenceEnd] == '\n')) {
               lastSentenceEnd++;
@@ -520,25 +552,37 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
           }
         }
         
-        // Only adjust if we found a sentence end (avoid empty pages for very long sentences)
-        if (lastSentenceEnd > charIndex + 20) {
-          pageEndIndex = lastSentenceEnd;
+        if (lastSentenceEnd > startCharIndex + 20) {
+          endCharIndex = lastSentenceEnd;
         }
       }
       
       // Create page
-      _pages.add(_PageInfo(
-        startCharIndex: charIndex,
-        endCharIndex: pageEndIndex,
-        text: textToUse.substring(charIndex, pageEndIndex),
-      ));
+      if (endCharIndex > startCharIndex) {
+        _pages.add(_PageInfo(
+          startCharIndex: startCharIndex,
+          endCharIndex: endCharIndex,
+          text: textToUse.substring(startCharIndex, endCharIndex),
+        ));
+      }
       
-      charIndex = pageEndIndex;
+      // Move to lines after our end character
+      if (endCharIndex >= textToUse.length) break;
+      
+      // Estimate lines consumed
+      final linesConsumed = ((endCharIndex - startCharIndex) / 
+          (textToUse.length / totalLines)).ceil().clamp(1, linesPerPage);
+      lineIndex = startLine + linesConsumed;
+      
+      // Safety: ensure progress
+      if (lineIndex <= startLine) lineIndex = startLine + 1;
     }
+    
+    painter.dispose();
     
     // Start typewriter after pages are calculated
     if (_charIndex == 0 && _pages.isNotEmpty) {
-      Future.delayed(const Duration(milliseconds: 800), () {
+      Future.delayed(const Duration(milliseconds: 300), () {
         if (mounted) _startTypewriter();
       });
     }
@@ -580,13 +624,36 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     
     if (_charIndex < text.length && !_isPageTransitioning) {
       int delay = _Config.charDelayMs;
-      if (char == '.' || char == '!' || char == '?') {
-        delay = _Config.sentenceDelayMs;
-      } else if (char == ',' || char == ';' || char == ':') {
-        delay = _Config.punctuationDelayMs;
-      } else if (char == '\n') {
-        delay = _Config.newlineDelayMs;
+      final random = math.Random();
+      
+      final bool isSentencePunctuation = char == '.' || char == '!' || char == '?';
+      final bool isComma = char == ',';
+      final bool isSpecialPunctuation = char == ';' || char == ':';
+      final bool isNewline = char == '\n';
+      final bool isEllipse = _isEllipse(text, _charIndex - 1);
+      
+      final bool nextIsQuote = _charIndex < text.length && _isQuote(text[_charIndex]);
+      final bool isQuote = _isQuote(char);
+      final bool prevIsSentencePunctuation = _charIndex > 1 && (text[_charIndex - 2] == '.' || text[_charIndex - 2] == '!' || text[_charIndex - 2] == '?');
+
+      if (isEllipse) {
+        delay = _Config.ellipseDelayMinMs + random.nextInt(_Config.ellipseDelayMaxMs - _Config.ellipseDelayMinMs);
+      } else if (isSentencePunctuation) {
+        if (nextIsQuote) {
+          delay = _Config.charDelayMs; // Delay after the quote, not here
+        } else {
+          delay = _Config.sentenceDelayMinMs + random.nextInt(_Config.sentenceDelayMaxMs - _Config.sentenceDelayMinMs);
+        }
+      } else if (isQuote && prevIsSentencePunctuation) {
+        delay = _Config.sentenceDelayMinMs + random.nextInt(_Config.sentenceDelayMaxMs - _Config.sentenceDelayMinMs);
+      } else if (isComma) {
+        delay = _Config.commaDelayMinMs + random.nextInt(_Config.commaDelayMaxMs - _Config.commaDelayMinMs);
+      } else if (isSpecialPunctuation) {
+        delay = _Config.punctuationDelayMinMs + random.nextInt(_Config.punctuationDelayMaxMs - _Config.punctuationDelayMinMs);
+      } else if (isNewline) {
+        delay = _Config.newlineDelayMinMs + random.nextInt(_Config.newlineDelayMaxMs - _Config.newlineDelayMinMs);
       }
+      
       _typeTimer = Timer(Duration(milliseconds: delay), _startTypewriter);
     } else if (_charIndex >= text.length && _charIndex > _currentWordStart) {
       final blurDuration = _calculateBlurDuration(_currentWordStart);
@@ -782,21 +849,28 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
           width: double.infinity,
           height: double.infinity,
           color: isDark ? const Color(0xFF0A0806) : const Color(0xFFF8F4EC),
-          child: Center(
-            child: ImageFiltered(
-              imageFilter: ui.ImageFilter.blur(
-                sigmaX: blur,
-                sigmaY: blur,
-                tileMode: TileMode.decal,
-              ),
-              child: Opacity(
-                opacity: _chapterOpacity.value,
-                child: Transform.scale(
-                  scale: _chapterScale.value,
-                  child: _buildChapterTitleWidget(isDark),
+          child: Stack(
+            children: [
+              Center(
+                child: SizedBox(
+                  width: double.infinity, // Fixed width to prevent horizontal shifts
+                  child: ImageFiltered(
+                    imageFilter: ui.ImageFilter.blur(
+                      sigmaX: blur,
+                      sigmaY: blur,
+                      tileMode: TileMode.decal,
+                    ),
+                    child: Opacity(
+                      opacity: _chapterOpacity.value,
+                      child: Transform.scale(
+                        scale: _chapterScale.value,
+                        child: _buildChapterTitleWidget(isDark),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         );
       },
@@ -827,59 +901,82 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     final baseColor = isDark ? const Color(0xFFE8DCC0) : const Color(0xFF2C1810);
     final glowColor = isDark ? const Color(0xFFD4AF37) : const Color(0xFF8B4513);
     
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Main part (e.g., "Kapitel 1")
-        ShaderMask(
-          shaderCallback: (bounds) => LinearGradient(
-            colors: [
-              glowColor.withOpacity(0.8),
-              baseColor,
-              glowColor.withOpacity(0.8),
-            ],
-            stops: const [0.0, 0.5, 1.0],
-          ).createShader(bounds),
-          child: Text(
-            mainPart.toUpperCase(),
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: 'Mynerve',
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              letterSpacing: _chapterLetterSpacing.value * 1.5,
-              color: Colors.white,
-            ),
-          ),
-        ),
-        
-        // Decorative line
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: _buildDecorativeLine(glowColor),
-        ),
-        
-        // Subtitle (e.g., "Das Summen")
-        if (subtitlePart != null && subtitlePart.isNotEmpty)
-          Text(
-            subtitlePart,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: 'Mynerve',
-              fontSize: 32,
-              fontWeight: FontWeight.w600,
-              letterSpacing: _chapterLetterSpacing.value,
-              height: 1.3,
-              color: baseColor,
-              shadows: [
-                Shadow(
-                  color: glowColor.withOpacity(0.5 * _chapterOpacity.value),
-                  blurRadius: 30,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 30), // Safety margin
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Main part (e.g., "Kapitel 1")
+          SizedBox(
+            height: 40,
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: ShaderMask(
+                  shaderCallback: (bounds) => LinearGradient(
+                    colors: [
+                      glowColor.withOpacity(0.8),
+                      baseColor,
+                      glowColor.withOpacity(0.8),
+                    ],
+                    stops: const [0.0, 0.5, 1.0],
+                  ).createShader(bounds),
+                  child: Text(
+                    mainPart.toUpperCase(),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: TextStyle(
+                      fontFamily: 'Mynerve',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: _chapterLetterSpacing.value * 1.5,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
-              ],
+              ),
             ),
           ),
-      ],
+          
+          // Decorative line
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: _buildDecorativeLine(glowColor),
+          ),
+          
+          // Subtitle (e.g., "Das Summen")
+          if (subtitlePart != null && subtitlePart.isNotEmpty)
+            SizedBox(
+              height: 60,
+              child: Center(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    subtitlePart,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: TextStyle(
+                      fontFamily: 'Mynerve',
+                      fontSize: 32,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: _chapterLetterSpacing.value,
+                      height: 1.3,
+                      color: baseColor,
+                      shadows: [
+                        Shadow(
+                          color: glowColor.withOpacity(0.5 * _chapterOpacity.value),
+                          blurRadius: 30,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
   

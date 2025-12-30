@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:docx_to_text/docx_to_text.dart';
 import 'package:archive/archive.dart';
+import '../../domain/models/chapter_info.dart';
 
 /// Parsed story element types
 enum StoryElementType {
@@ -234,5 +235,82 @@ class StoryParser {
         return StoryElementType.custom;
     }
   }
+  
+  /// Pattern for detecting chapter headings in text
+  static final RegExp _chapterPattern = RegExp(
+    r'^(Kapitel\s+\d+\s*[:\-–—]?\s*.*)$|^(Kapitel\s+\w+\s*[:\-–—]?\s*.*)$|^(Chapter\s+\d+\s*[:\-–—]?\s*.*)$',
+    multiLine: true,
+    caseSensitive: false,
+  );
+  
+  /// Extract chapter index (structure only) from raw text - FAST
+  /// Returns list of ChapterInfo with positions, without loading content
+  static List<ChapterInfo> extractChapterIndex(String rawText) {
+    final chapters = <ChapterInfo>[];
+    
+    final matches = _chapterPattern.allMatches(rawText).toList();
+    
+    if (matches.isEmpty) {
+      // No chapter markers found - treat entire text as one chapter
+      chapters.add(ChapterInfo(
+        index: 0,
+        title: 'Kapitel 1',
+        startCharIndex: 0,
+        endCharIndex: rawText.length,
+      ));
+      return chapters;
+    }
+    
+    for (int i = 0; i < matches.length; i++) {
+      final match = matches[i];
+      final title = match.group(0)?.trim() ?? 'Kapitel ${i + 1}';
+      final startIndex = match.start;
+      
+      // End is either start of next chapter or end of text
+      final endIndex = (i + 1 < matches.length) 
+          ? matches[i + 1].start 
+          : rawText.length;
+      
+      chapters.add(ChapterInfo(
+        index: i,
+        title: title,
+        startCharIndex: startIndex,
+        endCharIndex: endIndex,
+      ));
+    }
+    
+    return chapters;
+  }
+  
+  /// Extract a single chapter's content by index
+  static ChapterContent? extractChapter(String rawText, int chapterIndex, List<ChapterInfo> chapters) {
+    if (chapterIndex < 0 || chapterIndex >= chapters.length) return null;
+    
+    final chapter = chapters[chapterIndex];
+    final content = rawText.substring(chapter.startCharIndex, chapter.endCharIndex);
+    
+    return ChapterContent(
+      chapterIndex: chapterIndex,
+      title: chapter.title,
+      content: content,
+    );
+  }
+  
+  /// Quick load - only get raw text without full parsing
+  static Future<String> loadRawTextFromAsset(String assetPath) async {
+    try {
+      final ByteData data = await rootBundle.load(assetPath);
+      final bytes = data.buffer.asUint8List();
+      
+      String rawText = docxToText(bytes);
+      
+      if (rawText.contains('<?xml') || rawText.contains('<w:document')) {
+        rawText = _extractTextFromDocx(bytes);
+      }
+      
+      return rawText;
+    } catch (e) {
+      throw Exception('Failed to load from $assetPath: $e');
+    }
+  }
 }
-

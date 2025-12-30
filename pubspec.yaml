@@ -23,6 +23,7 @@ dependencies:
   # Storage
   shared_preferences: ^2.2.2
   docx_to_text: ^1.0.1
+  archive: ^3.4.10
 
 dev_dependencies:
   flutter_test:
