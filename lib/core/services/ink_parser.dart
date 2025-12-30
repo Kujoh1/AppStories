@@ -94,6 +94,7 @@ class InkRuntime {
   final InkStory story;
   final Map<String, int> variables;
   String currentKnotName;
+  final List<String> history = []; // Stores previous knot names
   
   InkRuntime(this.story) 
       : variables = Map.from(story.variables),
@@ -101,6 +102,16 @@ class InkRuntime {
   
   InkKnot? get currentKnot => story.getKnot(currentKnotName);
   
+  /// Check if we can go back to a previous scene
+  bool get canGoBack => history.isNotEmpty;
+
+  /// Go back to the previous scene
+  void goBack() {
+    if (canGoBack) {
+      currentKnotName = history.removeLast();
+    }
+  }
+
   /// Get current content with variable substitution
   String get currentContent {
     final knot = currentKnot;
@@ -166,6 +177,7 @@ class InkRuntime {
   void continueStory() {
     final divert = currentKnot?.divert;
     if (divert != null) {
+      history.add(currentKnotName); // Save current to history
       currentKnotName = divert;
     }
   }
@@ -173,6 +185,7 @@ class InkRuntime {
   /// Make a choice and go to target knot
   void makeChoice(int choiceIndex) {
     if (choiceIndex >= 0 && choiceIndex < currentChoices.length) {
+      history.add(currentKnotName); // Save current to history
       currentKnotName = currentChoices[choiceIndex].targetKnot;
     }
   }
@@ -182,6 +195,7 @@ class InkRuntime {
     currentKnotName = story.startKnot;
     variables.clear();
     variables.addAll(story.variables);
+    history.clear();
   }
   
   String _substituteVariables(String text) {

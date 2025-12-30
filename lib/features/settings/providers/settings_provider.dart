@@ -63,9 +63,14 @@ class AppSettings {
 
 /// Settings notifier for managing app settings
 class SettingsNotifier extends StateNotifier<AppSettings> {
+  late final Future<void> _initialized;
+  
   SettingsNotifier() : super(const AppSettings()) {
-    _loadSettings();
+    _initialized = _loadSettings();
   }
+  
+  /// Wait for settings to be loaded from SharedPreferences
+  Future<void> get initialized => _initialized;
   
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();

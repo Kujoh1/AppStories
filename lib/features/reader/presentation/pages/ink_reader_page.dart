@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/services/ink_parser.dart';
+import '../../../../core/widgets/smart_image.dart';
 import '../../providers/book_provider.dart';
-import '../widgets/animated_story_text.dart';
+import '../widgets/scene_container.dart';
 import '../../../settings/presentation/settings_dialog.dart';
 
 /// Reader page for Ink format stories with choices
@@ -15,112 +16,33 @@ class InkReaderPage extends ConsumerStatefulWidget {
   ConsumerState<InkReaderPage> createState() => _InkReaderPageState();
 }
 
-class _InkReaderPageState extends ConsumerState<InkReaderPage> 
+class _InkReaderPageState extends ConsumerState<InkReaderPage>
     with TickerProviderStateMixin {
   
-  // Animation phases
-  bool _textComplete = false;
-  bool _imageVisible = false;
-  bool _showChoices = false;
+  // Background animation
+  late AnimationController _bgController;
+  late Animation<double> _bgOpacity;
   
-  String? _currentKnotKey;
   String? _currentBackground;
-  String? _currentImage;
-  
-  // Animation controllers
-  late AnimationController _bgFadeController;
-  late AnimationController _imageFadeController;
-  late AnimationController _choicesFadeController;
-  
-  // Layout constants
-  static const double _imageHeight = 220.0; // Reserved height for image
-  static const double _choicesHeight = 200.0; // Reserved height for choices
-  static const double _appBarHeight = 56.0;
-  static const double _bottomPadding = 20.0;
-  
-  // Timing
-  static const int _imageDelayAfterTextMs = 600;
-  static const int _choicesDelayAfterImageMs = 800;
-  
+  String? _previousBackground;
+
   @override
   void initState() {
     super.initState();
-    _bgFadeController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+    _bgController = AnimationController(
       vsync: this,
-    );
-    _imageFadeController = AnimationController(
       duration: const Duration(milliseconds: 1200),
-      vsync: this,
     );
-    _choicesFadeController = AnimationController(
-      duration: const Duration(milliseconds: 500),
-      vsync: this,
+    _bgOpacity = CurvedAnimation(
+      parent: _bgController,
+      curve: Curves.easeInOut,
     );
   }
-  
+
   @override
   void dispose() {
-    _bgFadeController.dispose();
-    _imageFadeController.dispose();
-    _choicesFadeController.dispose();
+    _bgController.dispose();
     super.dispose();
-  }
-  
-  /// Calculate available height for text based on what else needs to be shown
-  double _calculateTextAreaHeight(BuildContext context, bool hasImage, bool hasChoices) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final safeAreaTop = MediaQuery.of(context).padding.top;
-    final safeAreaBottom = MediaQuery.of(context).padding.bottom;
-    
-    double usableHeight = screenHeight - safeAreaTop - safeAreaBottom - _appBarHeight;
-    
-    // Reserve space for image if present
-    if (hasImage) {
-      usableHeight -= _imageHeight;
-    }
-    
-    // Reserve space for choices/continue button
-    if (hasChoices) {
-      usableHeight -= _choicesHeight;
-    }
-    
-    // Bottom padding
-    usableHeight -= _bottomPadding;
-    
-    return usableHeight.clamp(200.0, double.infinity);
-  }
-  
-  void _onTextAnimationComplete() {
-    if (!mounted || _textComplete) return;
-    
-    setState(() => _textComplete = true);
-    
-    // Phase 2: Fade in image (if any)
-    if (_currentImage != null) {
-      Future.delayed(const Duration(milliseconds: _imageDelayAfterTextMs), () {
-        if (mounted && _textComplete) {
-          setState(() => _imageVisible = true);
-          _imageFadeController.forward(from: 0);
-          
-          // Phase 3: Show choices after image
-          Future.delayed(const Duration(milliseconds: _choicesDelayAfterImageMs), () {
-            if (mounted && _imageVisible) {
-              setState(() => _showChoices = true);
-              _choicesFadeController.forward(from: 0);
-            }
-          });
-        }
-      });
-    } else {
-      // No image - show choices directly
-      Future.delayed(const Duration(milliseconds: _imageDelayAfterTextMs), () {
-        if (mounted && _textComplete) {
-          setState(() => _showChoices = true);
-          _choicesFadeController.forward(from: 0);
-        }
-      });
-    }
   }
 
   @override
@@ -130,385 +52,356 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
     return Scaffold(
       backgroundColor: const Color(0xFF0A0806),
       body: inkStoryAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => _buildLoadingScreen(),
         error: (error, stack) => _buildErrorScreen(error),
-        data: (story) => _buildStoryContent(story),
-      ),
-    );
-  }
-  
-  Widget _buildErrorScreen(Object error) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 64, color: Colors.red),
-          const SizedBox(height: 16),
-          Text('Fehler: $error', style: const TextStyle(color: Colors.white)),
-          const SizedBox(height: 16),
-          FilledButton(
-            onPressed: () => ref.invalidate(inkStoryProvider),
-            child: const Text('Erneut versuchen'),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildStoryContent(InkStory story) {
-    final runtime = ref.watch(inkRuntimeProvider);
-    
-    // Initialize runtime if needed
-    if (runtime == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(inkRuntimeProvider.notifier).initialize(story);
-      });
-      return const Center(child: CircularProgressIndicator());
-    }
-    
-    final currentKnot = runtime.currentKnot;
-    if (currentKnot == null) {
-      return _buildEndScreen(context);
-    }
-    
-    // Update when knot changes
-    if (_currentKnotKey != runtime.currentKnotName) {
-      _currentKnotKey = runtime.currentKnotName;
-      
-      // Reset animation states
-      _textComplete = false;
-      _imageVisible = false;
-      _showChoices = false;
-      _imageFadeController.reset();
-      _choicesFadeController.reset();
-      
-      // Update background
-      final newBg = runtime.currentBackground;
-      if (newBg != _currentBackground) {
-        _currentBackground = newBg;
-        if (newBg != null) {
-          _bgFadeController.forward(from: 0);
-        }
-      }
-      
-      // Update image
-      _currentImage = runtime.currentImage;
-    }
-    
-    final hasImage = _currentImage != null;
-    final hasChoices = runtime.hasChoices || runtime.canContinue;
-
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        // Background layer
-        _buildBackground(),
-        
-        // Main content layout
-        SafeArea(
-          child: Column(
-            children: [
-              // App bar
-              _buildAppBar(context, runtime),
-              
-              // Text area - sized based on available space
-              SizedBox(
-                height: _calculateTextAreaHeight(context, hasImage, hasChoices),
-                child: DecorativeStoryText(
-                  key: ValueKey(_currentKnotKey),
-                  text: currentKnot.content,
-                  onPageComplete: _onTextAnimationComplete,
-                ),
-              ),
-              
-              // Image section (fixed height, appears after text)
-              if (hasImage)
-                _buildImageSection(),
-              
-              // Choices/Continue section (fixed height)
-              if (hasChoices)
-                _buildInteractionSection(runtime),
-            ],
-          ),
-        ),
-        
-        // Tap hint overlay
-        if (_textComplete && !_showChoices)
-          _buildTapHint(),
-      ],
-    );
-  }
-  
-  Widget _buildImageSection() {
-    return AnimatedOpacity(
-      opacity: _imageVisible ? 1.0 : 0.0,
-      duration: const Duration(milliseconds: 800),
-      child: SizedBox(
-        height: _imageHeight,
-        child: _currentImage != null
-            ? Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppConstants.paddingLarge,
-                  vertical: AppConstants.paddingSmall,
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.5),
-                          blurRadius: 20,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: Image.asset(
-                      _currentImage!,
-                      fit: BoxFit.contain,
-                      width: double.infinity,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const SizedBox.shrink();
-                      },
-                    ),
-                  ),
-                ),
-              )
-            : const SizedBox.shrink(),
-      ),
-    );
-  }
-  
-  Widget _buildInteractionSection(InkRuntime runtime) {
-    return AnimatedOpacity(
-      opacity: _showChoices ? 1.0 : 0.0,
-      duration: const Duration(milliseconds: 500),
-      child: Container(
-        height: _choicesHeight,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppConstants.paddingLarge,
-          vertical: AppConstants.paddingSmall,
-        ),
-        child: runtime.hasChoices
-            ? _buildChoicesList(runtime)
-            : _buildContinueButtonInline(runtime),
-      ),
-    );
-  }
-  
-  Widget _buildChoicesList(InkRuntime runtime) {
-    final theme = Theme.of(context);
-    
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          'Was tust du?',
-          style: TextStyle(
-            color: theme.colorScheme.primary.withOpacity(0.7),
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 3,
-            fontFamily: 'Mynerve',
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 12),
-        Expanded(
-          child: ListView.builder(
-            itemCount: runtime.currentChoices.length,
-            padding: EdgeInsets.zero,
-            itemBuilder: (context, index) {
-              final choice = runtime.currentChoices[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: OutlinedButton(
-                  onPressed: _showChoices ? () => _makeChoice(index) : null,
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    side: BorderSide(
-                      color: theme.colorScheme.primary.withOpacity(0.3),
-                    ),
-                    backgroundColor: Colors.white.withOpacity(0.02),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text(
-                    choice.text,
-                    style: const TextStyle(
-                      color: Color(0xFFE8DCC0),
-                      fontSize: 14,
-                      height: 1.4,
-                      fontFamily: 'Mynerve',
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-  
-  Widget _buildContinueButtonInline(InkRuntime runtime) {
-    if (!runtime.canContinue) return const SizedBox.shrink();
-    
-    return Center(
-      child: FilledButton.icon(
-        onPressed: _showChoices ? _continueStory : null,
-        icon: const Icon(Icons.arrow_forward, size: 18),
-        label: const Text('Weiter'),
-        style: FilledButton.styleFrom(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 32,
-            vertical: 16,
-          ),
-        ),
+        data: (story) => _buildStoryReader(story),
       ),
     );
   }
 
-  Widget _buildBackground() {
-    if (_currentBackground == null) {
-      return Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0A0806),
-              Color(0xFF12100C),
-              Color(0xFF0A0806),
-            ],
-          ),
-        ),
-      );
-    }
-    
-    return FadeTransition(
-      opacity: _bgFadeController,
-      child: Image.asset(
-        _currentBackground!,
-        fit: BoxFit.cover,
-        width: double.infinity,
-        height: double.infinity,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(color: const Color(0xFF0A0806));
-        },
-      ),
-    );
-  }
-  
-  Widget _buildTapHint() {
-    return Positioned(
-      left: 0,
-      right: 0,
-      bottom: 30,
-      child: Center(
-        child: GestureDetector(
-          onTap: () {
-            final runtime = ref.read(inkRuntimeProvider);
-            if (runtime != null) {
-              setState(() => _showChoices = true);
-              _choicesFadeController.forward(from: 0);
-            }
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
-            ),
-            child: const Text(
-              'Tippe um fortzufahren',
-              style: TextStyle(
-                color: Colors.white38,
-                fontSize: 12,
-                letterSpacing: 1.5,
-                fontFamily: 'Mynerve',
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-  
-  Widget _buildEndScreen(BuildContext context) {
-    final theme = Theme.of(context);
-    
+  Widget _buildLoadingScreen() {
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF0A0806), Color(0xFF12100C)],
+      decoration: _buildDefaultGradient(),
+      child: const Center(
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: Color(0xFFE8DCC0),
         ),
       ),
+    );
+  }
+
+  Widget _buildErrorScreen(Object error) {
+    return Container(
+      decoration: _buildDefaultGradient(),
       child: Center(
         child: Padding(
           padding: const EdgeInsets.all(AppConstants.paddingLarge),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.auto_stories,
-                size: 80,
-                color: theme.colorScheme.primary.withOpacity(0.5),
+              const Icon(
+                Icons.error_outline_rounded,
+                size: 64,
+                color: Color(0xFFE8DCC0),
               ),
               const SizedBox(height: 24),
+              Text(
+                'Fehler beim Laden',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: const Color(0xFFE8DCC0),
+                  fontFamily: 'Mynerve',
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '$error',
+                style: const TextStyle(color: Colors.white54, fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              FilledButton.icon(
+                onPressed: () => ref.invalidate(inkStoryProvider),
+                icon: const Icon(Icons.refresh, size: 18),
+                label: const Text('Erneut versuchen'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStoryReader(InkStory story) {
+    final runtime = ref.watch(inkRuntimeProvider);
+
+    // Initialize runtime if needed
+    if (runtime == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(inkRuntimeProvider.notifier).initialize(story);
+      });
+      return _buildLoadingScreen();
+    }
+
+    // Check for story end
+    final currentKnot = runtime.currentKnot;
+    if (currentKnot == null) {
+      return _buildEndScreen();
+    }
+
+    // Update background if changed
+    _updateBackground(runtime.currentBackground);
+
+    // Build scene data
+    final sceneData = _buildSceneData(runtime);
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // Background layer with crossfade
+        _buildBackgroundLayer(),
+
+        // Dark overlay for readability
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.black.withOpacity(0.3),
+                Colors.black.withOpacity(0.6),
+                Colors.black.withOpacity(0.8),
+              ],
+            ),
+          ),
+        ),
+
+        // Main content
+        SafeArea(
+          child: Column(
+            children: [
+              // App bar
+              _buildAppBar(runtime),
+
+              // Scene container
+              Expanded(
+                child: SceneContainer(
+                  key: ValueKey(sceneData.id),
+                  scene: sceneData,
+                  onContinue: () => _continueStory(),
+                  onBack: runtime.canGoBack ? () => _goBack() : null,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  SceneData _buildSceneData(InkRuntime runtime) {
+    final knot = runtime.currentKnot!;
+    
+    return SceneData(
+      id: runtime.currentKnotName,
+      text: knot.content,
+      backgroundPath: runtime.currentBackground,
+      imagePath: runtime.currentImage,
+      choices: runtime.currentChoices.asMap().entries.map((entry) {
+        return SceneChoice(
+          text: entry.value.text,
+          onSelected: () => _makeChoice(entry.key),
+        );
+      }).toList(),
+      canContinue: runtime.canContinue,
+    );
+  }
+
+  void _updateBackground(String? newBackground) {
+    if (newBackground != _currentBackground) {
+      _previousBackground = _currentBackground;
+      _currentBackground = newBackground;
+      
+      if (newBackground != null) {
+        _bgController.forward(from: 0);
+      }
+    }
+  }
+
+  Widget _buildBackgroundLayer() {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // Base gradient (always visible)
+        Container(decoration: _buildDefaultGradient()),
+
+        // Previous background (fading out)
+        if (_previousBackground != null)
+          SmartImage(
+            key: ValueKey('bg_prev_$_previousBackground'),
+            assetPath: _previousBackground!,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            fallback: const SizedBox.shrink(),
+          ),
+
+        // Current background (fading in)
+        if (_currentBackground != null)
+          FadeTransition(
+            opacity: _bgOpacity,
+            child: SmartImage(
+              key: ValueKey('bg_curr_$_currentBackground'),
+              assetPath: _currentBackground!,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+              fallback: const SizedBox.shrink(),
+            ),
+          ),
+      ],
+    );
+  }
+
+  BoxDecoration _buildDefaultGradient() {
+    return const BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Color(0xFF0A0806),
+          Color(0xFF12100C),
+          Color(0xFF0A0806),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAppBar(InkRuntime runtime) {
+    return Container(
+      height: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Row(
+        children: [
+          // Back button
+          IconButton(
+            icon: Icon(
+              runtime.canGoBack ? Icons.arrow_back_rounded : Icons.close_rounded,
+              color: Colors.white38,
+              size: 22,
+            ),
+            onPressed: () {
+              if (runtime.canGoBack) {
+                _goBack();
+              } else {
+                context.go('/');
+              }
+            },
+            tooltip: runtime.canGoBack ? 'Eine Szene zurück' : 'Schließen',
+          ),
+
+          // Scene indicator
+          Expanded(
+            child: Text(
+              _formatKnotName(runtime.currentKnotName),
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: Colors.white24,
+                letterSpacing: 1.5,
+                fontFamily: 'Mynerve',
+              ),
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+
+          // Settings
+          IconButton(
+            icon: const Icon(Icons.tune_rounded, color: Colors.white38, size: 20),
+            onPressed: () => SettingsDialog.show(context),
+            tooltip: 'Einstellungen',
+          ),
+
+          // Restart
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded, color: Colors.white38, size: 20),
+            onPressed: _resetStory,
+            tooltip: 'Neu starten',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEndScreen() {
+    final theme = Theme.of(context);
+
+    return Container(
+      decoration: _buildDefaultGradient(),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppConstants.paddingLarge),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Icon
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: theme.colorScheme.primary.withOpacity(0.1),
+                  border: Border.all(
+                    color: theme.colorScheme.primary.withOpacity(0.2),
+                    width: 2,
+                  ),
+                ),
+                child: Icon(
+                  Icons.auto_stories_rounded,
+                  size: 56,
+                  color: theme.colorScheme.primary.withOpacity(0.7),
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // Title
               Text(
                 'Ende der Geschichte',
                 style: TextStyle(
                   color: const Color(0xFFE8DCC0),
-                  fontSize: 24,
+                  fontSize: 26,
                   fontFamily: 'Mynerve',
-                  letterSpacing: 2,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 1,
                   shadows: [
                     Shadow(
                       color: theme.colorScheme.primary.withOpacity(0.3),
-                      blurRadius: 20,
+                      blurRadius: 24,
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
+
+              // Subtitle
               const Text(
                 'Du hast deine eigene Version geschrieben.',
-                style: TextStyle(color: Colors.white54, fontSize: 14),
+                style: TextStyle(
+                  color: Colors.white54,
+                  fontSize: 14,
+                  fontFamily: 'Mynerve',
+                ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 48),
+
+              // Actions
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   OutlinedButton.icon(
                     onPressed: _resetStory,
-                    icon: const Icon(Icons.refresh, size: 18),
-                    label: const Text('Nochmal'),
+                    icon: const Icon(Icons.refresh_rounded, size: 18),
+                    label: const Text('Nochmal spielen'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white60,
                       side: const BorderSide(color: Colors.white24),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 14,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
                   FilledButton.icon(
                     onPressed: () => context.go('/'),
-                    icon: const Icon(Icons.home, size: 18),
-                    label: const Text('Zurück'),
+                    icon: const Icon(Icons.library_books_rounded, size: 18),
+                    label: const Text('Bibliothek'),
                     style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 14,
+                      ),
                     ),
                   ),
                 ],
@@ -520,86 +413,31 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
     );
   }
 
-  Widget _buildAppBar(BuildContext context, InkRuntime runtime) {
-    return SizedBox(
-      height: _appBarHeight,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingSmall),
-        child: Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white38, size: 20),
-              onPressed: () => context.go('/'),
-              tooltip: 'Zurück zur Bibliothek',
-            ),
-            Expanded(
-              child: Text(
-                _formatKnotName(runtime.currentKnotName),
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.white24,
-                  letterSpacing: 1.5,
-                  fontFamily: 'Mynerve',
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.settings, color: Colors.white38, size: 20),
-              onPressed: () => SettingsDialog.show(context),
-              tooltip: 'Einstellungen',
-            ),
-            IconButton(
-              icon: const Icon(Icons.refresh, color: Colors.white38, size: 20),
-              onPressed: _resetStory,
-              tooltip: 'Neu starten',
-            ),
-          ],
-        ),
-      ),
-    );
+  // --- Actions ---
+
+  void _makeChoice(int index) {
+    ref.read(inkRuntimeProvider.notifier).makeChoice(index);
   }
-  
+
+  void _continueStory() {
+    ref.read(inkRuntimeProvider.notifier).continueStory();
+  }
+
+  void _goBack() {
+    ref.read(inkRuntimeProvider.notifier).goBack();
+  }
+
   void _resetStory() {
+    _currentBackground = null;
+    _previousBackground = null;
     ref.read(inkRuntimeProvider.notifier).reset();
-    setState(() {
-      _textComplete = false;
-      _imageVisible = false;
-      _showChoices = false;
-      _currentKnotKey = null;
-      _currentBackground = null;
-      _currentImage = null;
-    });
   }
-  
+
   String _formatKnotName(String name) {
     return name
         .replaceAll('_', ' ')
         .split(' ')
-        .map((word) => word.isNotEmpty 
-            ? '${word[0].toUpperCase()}${word.substring(1)}' 
-            : '')
+        .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
         .join(' ');
-  }
-  
-  void _continueStory() {
-    ref.read(inkRuntimeProvider.notifier).continueStory();
-    setState(() {
-      _textComplete = false;
-      _imageVisible = false;
-      _showChoices = false;
-      _currentKnotKey = null;
-    });
-  }
-
-  void _makeChoice(int index) {
-    ref.read(inkRuntimeProvider.notifier).makeChoice(index);
-    setState(() {
-      _textComplete = false;
-      _imageVisible = false;
-      _showChoices = false;
-      _currentKnotKey = null;
-    });
   }
 }

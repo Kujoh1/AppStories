@@ -23,19 +23,12 @@ class DecorativeStoryText extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
     
-    return Container(
-      width: double.infinity,
-      constraints: const BoxConstraints(
-        minWidth: 320,
-        maxWidth: 415,
-      ),
-      child: _PagedTypewriter(
-        text: text,
-        onPauseChanged: onPauseChanged,
-        onPageComplete: onPageComplete,
-        speedMultiplier: settings.speedMultiplier,
-        skipAnimation: settings.skipAnimation,
-      ),
+    return _PagedTypewriter(
+      text: text,
+      onPauseChanged: onPauseChanged,
+      onPageComplete: onPageComplete,
+      speedMultiplier: settings.speedMultiplier,
+      skipAnimation: settings.skipAnimation,
     );
   }
 }
@@ -107,11 +100,13 @@ class _PageInfo {
   final int startCharIndex;
   final int endCharIndex;
   final String text;
+  final double height; // Actual height of this page's text
   
   _PageInfo({
     required this.startCharIndex,
     required this.endCharIndex,
     required this.text,
+    required this.height,
   });
 }
 
@@ -574,10 +569,15 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
       
       // Create page
       if (endCharIndex > startCharIndex) {
+        // Calculate height for this page
+        final pageLines = (endLine - startLine).clamp(1, linesPerPage);
+        final pageHeight = pageLines * _Config.fontSize * _Config.lineHeight;
+        
         _pages.add(_PageInfo(
           startCharIndex: startCharIndex,
           endCharIndex: endCharIndex,
           text: textToUse.substring(startCharIndex, endCharIndex),
+          height: pageHeight,
         ));
       }
       
@@ -829,39 +829,48 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
             opacity: _pageOpacity,
             duration: Duration(milliseconds: _Config.pageTransitionMs ~/ 2),
             curve: Curves.easeInOut,
-            child: Padding(
+            child: Container(
+              width: double.infinity,
+              alignment: Alignment.topCenter,
+              constraints: const BoxConstraints(
+                minWidth: 320,
+                maxWidth: 415,
+              ),
               padding: EdgeInsets.symmetric(
                 horizontal: _Config.horizontalPadding,
                 vertical: _Config.verticalPadding,
               ),
-              child: RepaintBoundary(
-                child: Stack(
-                  children: [
-                    // Layer 0: Invisible layout placeholder (defines exact size)
-                    Opacity(
-                      opacity: 0.0,
-                      child: _buildLayoutPlaceholder(currentPage, baseStyle),
-                    ),
-                    
-                    // Layer 1: Ghost text (entire page, blurry & dim)
-                    Positioned.fill(
-                      child: _buildGhostText(currentPage, baseStyle),
-                    ),
-                    
-                    // Layer 2: Sharp revealed text
-                    Positioned.fill(
-                      child: _buildRevealedText(currentPage, baseStyle, now, blurIntensity),
-                    ),
-                    
-                    // Layer 3: Blurred overlay for current word
-                    if (blurIntensity > 0.05 && _currentWordStart < _charIndex)
-                      Positioned.fill(
-                        child: _buildBlurredCurrentWord(currentPage, baseStyle, blurIntensity),
+              child: SizedBox(
+                height: currentPage.height, // Set height to actual content height
+                child: RepaintBoundary(
+                  child: Stack(
+                    children: [
+                      // Layer 0: Invisible layout placeholder (defines exact size)
+                      Opacity(
+                        opacity: 0.0,
+                        child: _buildLayoutPlaceholder(currentPage, baseStyle),
                       ),
-                    
-                    // Layer 4: Blurred recently completed words
-                    ..._buildBlurredCompletedWords(currentPage, baseStyle, now),
-                  ],
+                      
+                      // Layer 1: Ghost text (entire page, blurry & dim)
+                      Positioned.fill(
+                        child: _buildGhostText(currentPage, baseStyle),
+                      ),
+                      
+                      // Layer 2: Sharp revealed text
+                      Positioned.fill(
+                        child: _buildRevealedText(currentPage, baseStyle, now, blurIntensity),
+                      ),
+                      
+                      // Layer 3: Blurred overlay for current word
+                      if (blurIntensity > 0.05 && _currentWordStart < _charIndex)
+                        Positioned.fill(
+                          child: _buildBlurredCurrentWord(currentPage, baseStyle, blurIntensity),
+                        ),
+                      
+                      // Layer 4: Blurred recently completed words
+                      ..._buildBlurredCompletedWords(currentPage, baseStyle, now),
+                    ],
+                  ),
                 ),
               ),
             ),

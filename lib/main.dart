@@ -8,6 +8,7 @@ import 'core/widgets/debug_overlay.dart';
 import 'core/widgets/preloader.dart';
 import 'core/utils/custom_scroll_behavior.dart';
 import 'features/reader/providers/book_provider.dart';
+import 'features/settings/providers/settings_provider.dart';
 
 void main() {
   runApp(
@@ -38,6 +39,15 @@ class _AppStoriesAppState extends ConsumerState<AppStoriesApp> {
   Future<void> _preloadContent() async {
     // Small delay for UI to settle
     await Future.delayed(const Duration(milliseconds: 300));
+    
+    if (!mounted) return;
+    setState(() {
+      _loadingMessage = 'Lade Einstellungen...';
+      _loadingProgress = 0.1;
+    });
+
+    // Preload settings first and wait for SharedPreferences to load
+    await ref.read(settingsProvider.notifier).initialized;
     
     if (!mounted) return;
     setState(() {

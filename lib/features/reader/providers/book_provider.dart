@@ -55,6 +55,16 @@ class InkRuntimeNotifier extends StateNotifier<InkRuntime?> {
       state = current;
     }
   }
+
+  void goBack() {
+    if (state != null && state!.canGoBack) {
+      state!.goBack();
+      // Trigger rebuild
+      final current = state!;
+      state = null;
+      state = current;
+    }
+  }
   
   void reset() {
     if (state != null) {
