@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/reader/presentation/pages/reader_page.dart';
+import '../../features/reader/presentation/pages/ink_reader_page.dart';
 import '../../features/reader/presentation/pages/home_page.dart';
 
 /// Central router configuration using go_router
@@ -12,6 +13,7 @@ class AppRouter {
   // Route paths
   static const String home = '/';
   static const String reader = '/reader';
+  static const String inkReader = '/ink-reader';
 
   /// Creates the router configuration
   static GoRouter createRouter() {
@@ -32,6 +34,11 @@ class AppRouter {
             final pageId = state.uri.queryParameters['pageId'] ?? 'page_1';
             return ReaderPage(initialPageId: pageId);
           },
+        ),
+        GoRoute(
+          path: inkReader,
+          name: 'inkReader',
+          builder: (context, state) => const InkReaderPage(),
         ),
       ],
       errorBuilder: (context, state) => Scaffold(
@@ -70,10 +77,13 @@ extension GoRouterExtension on BuildContext {
     go('${AppRouter.reader}?pageId=$pageId');
   }
 
+  /// Navigate to Ink reader
+  void goToInkReader() {
+    go(AppRouter.inkReader);
+  }
+
   /// Navigate to home
   void goToHome() {
     go(AppRouter.home);
   }
 }
-
-

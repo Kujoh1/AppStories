@@ -1,0 +1,353 @@
+import 'dart:convert';
+import 'package:flutter/services.dart';
+
+/// Asset configuration for a story (backgrounds, images, sounds)
+class StoryAssets {
+  final Map<String, String> backgrounds;
+  final Map<String, String> images;
+  final Map<String, String> sounds;
+  final Map<String, String> moods;
+  
+  const StoryAssets({
+    this.backgrounds = const {},
+    this.images = const {},
+    this.sounds = const {},
+    this.moods = const {},
+  });
+  
+  String? getBackground(String key) => backgrounds[key];
+  String? getImage(String key) => images[key];
+  String? getSound(String key) => sounds[key];
+  String? getMood(String key) => moods[key];
+  
+  static Future<StoryAssets> loadFromAsset(String path) async {
+    try {
+      final content = await rootBundle.loadString(path);
+      final json = jsonDecode(content) as Map<String, dynamic>;
+      
+      return StoryAssets(
+        backgrounds: Map<String, String>.from(json['BG'] ?? {}),
+        images: Map<String, String>.from(json['IMG'] ?? {}),
+        sounds: Map<String, String>.from(json['SFX'] ?? {}),
+        moods: Map<String, String>.from(json['MOOD'] ?? {}),
+      );
+    } catch (e) {
+      // Return empty assets if file doesn't exist
+      return const StoryAssets();
+    }
+  }
+}
+
+/// Represents a single choice in the story
+class InkChoice {
+  final String text;
+  final String targetKnot;
+  
+  const InkChoice({
+    required this.text,
+    required this.targetKnot,
+  });
+}
+
+/// Represents a knot (section) in the story
+class InkKnot {
+  final String name;
+  final List<String> tags;
+  final String content;
+  final List<InkChoice> choices;
+  final String? divert; // Auto-divert to next knot
+  
+  const InkKnot({
+    required this.name,
+    this.tags = const [],
+    required this.content,
+    this.choices = const [],
+    this.divert,
+  });
+}
+
+/// Parsed Ink story structure
+class InkStory {
+  final String title;
+  final String author;
+  final Map<String, int> variables;
+  final Map<String, InkKnot> knots;
+  final String startKnot;
+  final StoryAssets assets;
+  
+  const InkStory({
+    required this.title,
+    this.author = 'Unbekannt',
+    this.variables = const {},
+    required this.knots,
+    required this.startKnot,
+    this.assets = const StoryAssets(),
+  });
+  
+  int get knotCount => knots.length;
+  
+  InkKnot? getKnot(String name) => knots[name];
+}
+
+/// Runtime state for playing an Ink story
+class InkRuntime {
+  final InkStory story;
+  final Map<String, int> variables;
+  String currentKnotName;
+  
+  InkRuntime(this.story) 
+      : variables = Map.from(story.variables),
+        currentKnotName = story.startKnot;
+  
+  InkKnot? get currentKnot => story.getKnot(currentKnotName);
+  
+  /// Get current content with variable substitution
+  String get currentContent {
+    final knot = currentKnot;
+    if (knot == null) return '';
+    return _substituteVariables(knot.content);
+  }
+  
+  /// Get current choices
+  List<InkChoice> get currentChoices => currentKnot?.choices ?? [];
+  
+  /// Get current tags
+  List<String> get currentTags => currentKnot?.tags ?? [];
+  
+  /// Get current background image path (from #BG: tag)
+  String? get currentBackground {
+    for (final tag in currentTags) {
+      if (tag.startsWith('BG:')) {
+        final key = tag.substring(3);
+        return story.assets.getBackground(key);
+      }
+    }
+    return null;
+  }
+  
+  /// Get current overlay image path (from #IMG: tag)
+  String? get currentImage {
+    for (final tag in currentTags) {
+      if (tag.startsWith('IMG:')) {
+        final key = tag.substring(4);
+        return story.assets.getImage(key);
+      }
+    }
+    return null;
+  }
+  
+  /// Get current mood tags (from #MOOD: tag)
+  List<String> get currentMoods {
+    for (final tag in currentTags) {
+      if (tag.startsWith('MOOD:')) {
+        return tag.substring(5).split(',').map((s) => s.trim()).toList();
+      }
+    }
+    return [];
+  }
+  
+  /// Get current sound effects (from #SFX: tag)
+  List<String> get currentSfx {
+    for (final tag in currentTags) {
+      if (tag.startsWith('SFX:')) {
+        return tag.substring(4).split(',').map((s) => s.trim()).toList();
+      }
+    }
+    return [];
+  }
+  
+  /// Check if story can continue (has divert or choices)
+  bool get canContinue => currentKnot?.divert != null;
+  
+  /// Check if story has choices
+  bool get hasChoices => currentChoices.isNotEmpty;
+  
+  /// Continue to next knot (follow divert)
+  void continueStory() {
+    final divert = currentKnot?.divert;
+    if (divert != null) {
+      currentKnotName = divert;
+    }
+  }
+  
+  /// Make a choice and go to target knot
+  void makeChoice(int choiceIndex) {
+    if (choiceIndex >= 0 && choiceIndex < currentChoices.length) {
+      currentKnotName = currentChoices[choiceIndex].targetKnot;
+    }
+  }
+  
+  /// Reset to beginning
+  void reset() {
+    currentKnotName = story.startKnot;
+    variables.clear();
+    variables.addAll(story.variables);
+  }
+  
+  String _substituteVariables(String text) {
+    var result = text;
+    for (final entry in variables.entries) {
+      result = result.replaceAll('{${entry.key}}', entry.value.toString());
+    }
+    return result;
+  }
+}
+
+/// Parser for Ink story format
+class InkParser {
+  // Patterns for parsing
+  static final _knotPattern = RegExp(r'^===\s*(\w+)\s*===$', multiLine: true);
+  static final _choicePattern = RegExp(r'^\*\s*\[([^\]]+)\]\s*->\s*(\w+)\s*$', multiLine: true);
+  static final _divertPattern = RegExp(r'^->\s*(\w+)\s*$', multiLine: true);
+  static final _tagPattern = RegExp(r'^#(\w+):(.+)$', multiLine: true);
+  static final _variablePattern = RegExp(r'^VAR\s+(\w+)\s*=\s*(\d+|true|false|"[^"]*")');
+  
+  /// Load and parse an Ink story from assets
+  static Future<InkStory> loadFromAsset(String assetPath) async {
+    final content = await rootBundle.loadString(assetPath);
+    
+    // Try to load associated assets config
+    final assetsPath = assetPath.replaceAll('.md', '_assets.json').replaceAll('.ink', '_assets.json');
+    final assets = await StoryAssets.loadFromAsset(assetsPath);
+    
+    return parse(content, assetPath, assets: assets);
+  }
+  
+  /// Parse Ink content
+  static InkStory parse(String content, String sourcePath, {StoryAssets assets = const StoryAssets()}) {
+    final variables = <String, int>{};
+    final knots = <String, InkKnot>{};
+    String? startKnot;
+    String title = 'Unbekannte Geschichte';
+    String author = 'Unbekannt';
+    
+    // Extract title from first comment
+    final titleMatch = RegExp(r'//.*?—\s*(.+?)\s*\(').firstMatch(content);
+    if (titleMatch != null) {
+      title = titleMatch.group(1)?.trim() ?? title;
+    }
+    
+    // Parse global variables
+    for (final match in _variablePattern.allMatches(content)) {
+      final name = match.group(1)!;
+      final valueStr = match.group(2)!;
+      if (valueStr == 'true') {
+        variables[name] = 1;
+      } else if (valueStr == 'false') {
+        variables[name] = 0;
+      } else if (valueStr.startsWith('"')) {
+        // String variable - skip for now
+      } else {
+        variables[name] = int.tryParse(valueStr) ?? 0;
+      }
+    }
+    
+    // Find starting divert
+    final startMatch = RegExp(r'^->\s*(\w+)', multiLine: true).firstMatch(content);
+    if (startMatch != null) {
+      startKnot = startMatch.group(1);
+    }
+    
+    // Find all knots
+    final knotMatches = _knotPattern.allMatches(content).toList();
+    
+    for (int i = 0; i < knotMatches.length; i++) {
+      final knotMatch = knotMatches[i];
+      final knotName = knotMatch.group(1)!;
+      
+      // Get content until next knot or end
+      final startIndex = knotMatch.end;
+      final endIndex = (i + 1 < knotMatches.length) 
+          ? knotMatches[i + 1].start 
+          : content.length;
+      
+      final knotContent = content.substring(startIndex, endIndex).trim();
+      
+      // Parse this knot
+      final knot = _parseKnot(knotName, knotContent);
+      knots[knotName] = knot;
+      
+      // Set first knot as start if not already set
+      startKnot ??= knotName;
+    }
+    
+    return InkStory(
+      title: title,
+      author: author,
+      variables: variables,
+      knots: knots,
+      startKnot: startKnot ?? 'start',
+      assets: assets,
+    );
+  }
+  
+  static InkKnot _parseKnot(String name, String content) {
+    final tags = <String>[];
+    final choices = <InkChoice>[];
+    String? divert;
+    final textLines = <String>[];
+    
+    final lines = content.split('\n');
+    
+    for (final line in lines) {
+      final trimmed = line.trim();
+      
+      // Skip empty lines and comments
+      if (trimmed.isEmpty) continue;
+      if (trimmed.startsWith('//')) continue;
+      
+      // Parse tags
+      final tagMatch = _tagPattern.firstMatch(trimmed);
+      if (tagMatch != null) {
+        tags.add('${tagMatch.group(1)}:${tagMatch.group(2)}');
+        continue;
+      }
+      
+      // Parse choices
+      final choiceMatch = _choicePattern.firstMatch(trimmed);
+      if (choiceMatch != null) {
+        choices.add(InkChoice(
+          text: choiceMatch.group(1)!,
+          targetKnot: choiceMatch.group(2)!,
+        ));
+        continue;
+      }
+      
+      // Parse divert
+      final divertMatch = _divertPattern.firstMatch(trimmed);
+      if (divertMatch != null) {
+        divert = divertMatch.group(1);
+        continue;
+      }
+      
+      // Skip variable changes for now (handled in runtime)
+      if (trimmed.startsWith('~')) continue;
+      
+      // Regular text
+      textLines.add(trimmed);
+    }
+    
+    return InkKnot(
+      name: name,
+      tags: tags,
+      content: textLines.join('\n'),
+      choices: choices,
+      divert: divert,
+    );
+  }
+  
+  /// Quick scan to get story metadata without full parse
+  static Future<({String title, String author, int knotCount})> getMetadata(String assetPath) async {
+    final content = await rootBundle.loadString(assetPath);
+    
+    // Extract title
+    final titleMatch = RegExp(r'//.*?—\s*(.+?)\s*\(').firstMatch(content);
+    final title = titleMatch?.group(1)?.trim() ?? 'Unbekannte Geschichte';
+    
+    // Count knots
+    final knotCount = _knotPattern.allMatches(content).length;
+    
+    return (title: title, author: 'Unbekannt', knotCount: knotCount);
+  }
+}
+

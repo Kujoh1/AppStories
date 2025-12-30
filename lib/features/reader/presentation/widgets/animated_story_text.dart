@@ -1,22 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'dart:math' as math;
+import '../../../settings/providers/settings_provider.dart';
 
 /// Paged typewriter animation - no scrolling, page by page
-class DecorativeStoryText extends StatelessWidget {
+class DecorativeStoryText extends ConsumerWidget {
   final String text;
   final ValueChanged<bool>? onPauseChanged;
+  final VoidCallback? onPageComplete; // Called when current page animation finishes
 
   const DecorativeStoryText({
     super.key,
     required this.text,
     this.onPauseChanged,
+    this.onPageComplete,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsProvider);
+    
     return Container(
       width: double.infinity,
       constraints: const BoxConstraints(
@@ -26,6 +32,9 @@ class DecorativeStoryText extends StatelessWidget {
       child: _PagedTypewriter(
         text: text,
         onPauseChanged: onPauseChanged,
+        onPageComplete: onPageComplete,
+        speedMultiplier: settings.speedMultiplier,
+        skipAnimation: settings.skipAnimation,
       ),
     );
   }
@@ -33,23 +42,23 @@ class DecorativeStoryText extends StatelessWidget {
 
 /// Configuration
 class _Config {
-  static const int charDelayMs = 25;
+  static const int charDelayMs = 12; // Was 25
   
-  // New timing ranges for natural reading flow
-  static const int commaDelayMinMs = 150;
-  static const int commaDelayMaxMs = 300;
+  // New timing ranges for natural reading flow (halved for 2x speed)
+  static const int commaDelayMinMs = 75;
+  static const int commaDelayMaxMs = 150;
   
-  static const int sentenceDelayMinMs = 350;
-  static const int sentenceDelayMaxMs = 700;
+  static const int sentenceDelayMinMs = 175;
+  static const int sentenceDelayMaxMs = 350;
   
-  static const int punctuationDelayMinMs = 400;
-  static const int punctuationDelayMaxMs = 800;
+  static const int punctuationDelayMinMs = 200;
+  static const int punctuationDelayMaxMs = 400;
   
-  static const int newlineDelayMinMs = 800;
-  static const int newlineDelayMaxMs = 1500;
+  static const int newlineDelayMinMs = 400;
+  static const int newlineDelayMaxMs = 750;
   
-  static const int ellipseDelayMinMs = 600;
-  static const int ellipseDelayMaxMs = 1200;
+  static const int ellipseDelayMinMs = 300;
+  static const int ellipseDelayMaxMs = 600;
 
   static const int pageTransitionMs = 3000;
   
@@ -109,10 +118,16 @@ class _PageInfo {
 class _PagedTypewriter extends StatefulWidget {
   final String text;
   final ValueChanged<bool>? onPauseChanged;
+  final VoidCallback? onPageComplete;
+  final double speedMultiplier;
+  final bool skipAnimation;
 
   const _PagedTypewriter({
     required this.text,
     this.onPauseChanged,
+    this.onPageComplete,
+    this.speedMultiplier = 1.0,
+    this.skipAnimation = false,
   });
 
   @override
@@ -582,9 +597,21 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     
     // Start typewriter after pages are calculated
     if (_charIndex == 0 && _pages.isNotEmpty) {
-      Future.delayed(const Duration(milliseconds: 300), () {
-        if (mounted) _startTypewriter();
-      });
+      if (widget.skipAnimation) {
+        // Instant mode - show all text immediately
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted) {
+            setState(() {
+              _charIndex = _displayText.length;
+            });
+            widget.onPageComplete?.call();
+          }
+        });
+      } else {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted) _startTypewriter();
+        });
+      }
     }
   }
   
@@ -623,7 +650,7 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     _checkPageTransition();
     
     if (_charIndex < text.length && !_isPageTransitioning) {
-      int delay = _Config.charDelayMs;
+      int delay = (_Config.charDelayMs * widget.speedMultiplier).round();
       final random = math.Random();
       
       final bool isSentencePunctuation = char == '.' || char == '!' || char == '?';
@@ -637,27 +664,29 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
       final bool prevIsSentencePunctuation = _charIndex > 1 && (text[_charIndex - 2] == '.' || text[_charIndex - 2] == '!' || text[_charIndex - 2] == '?');
 
       if (isEllipse) {
-        delay = _Config.ellipseDelayMinMs + random.nextInt(_Config.ellipseDelayMaxMs - _Config.ellipseDelayMinMs);
+        delay = ((_Config.ellipseDelayMinMs + random.nextInt(_Config.ellipseDelayMaxMs - _Config.ellipseDelayMinMs)) * widget.speedMultiplier).round();
       } else if (isSentencePunctuation) {
         if (nextIsQuote) {
-          delay = _Config.charDelayMs; // Delay after the quote, not here
+          delay = (_Config.charDelayMs * widget.speedMultiplier).round();
         } else {
-          delay = _Config.sentenceDelayMinMs + random.nextInt(_Config.sentenceDelayMaxMs - _Config.sentenceDelayMinMs);
+          delay = ((_Config.sentenceDelayMinMs + random.nextInt(_Config.sentenceDelayMaxMs - _Config.sentenceDelayMinMs)) * widget.speedMultiplier).round();
         }
       } else if (isQuote && prevIsSentencePunctuation) {
-        delay = _Config.sentenceDelayMinMs + random.nextInt(_Config.sentenceDelayMaxMs - _Config.sentenceDelayMinMs);
+        delay = ((_Config.sentenceDelayMinMs + random.nextInt(_Config.sentenceDelayMaxMs - _Config.sentenceDelayMinMs)) * widget.speedMultiplier).round();
       } else if (isComma) {
-        delay = _Config.commaDelayMinMs + random.nextInt(_Config.commaDelayMaxMs - _Config.commaDelayMinMs);
+        delay = ((_Config.commaDelayMinMs + random.nextInt(_Config.commaDelayMaxMs - _Config.commaDelayMinMs)) * widget.speedMultiplier).round();
       } else if (isSpecialPunctuation) {
-        delay = _Config.punctuationDelayMinMs + random.nextInt(_Config.punctuationDelayMaxMs - _Config.punctuationDelayMinMs);
+        delay = ((_Config.punctuationDelayMinMs + random.nextInt(_Config.punctuationDelayMaxMs - _Config.punctuationDelayMinMs)) * widget.speedMultiplier).round();
       } else if (isNewline) {
-        delay = _Config.newlineDelayMinMs + random.nextInt(_Config.newlineDelayMaxMs - _Config.newlineDelayMinMs);
+        delay = ((_Config.newlineDelayMinMs + random.nextInt(_Config.newlineDelayMaxMs - _Config.newlineDelayMinMs)) * widget.speedMultiplier).round();
       }
       
       _typeTimer = Timer(Duration(milliseconds: delay), _startTypewriter);
     } else if (_charIndex >= text.length && _charIndex > _currentWordStart) {
       final blurDuration = _calculateBlurDuration(_currentWordStart);
       _glowingWords.add(_WordInfo(_currentWordStart, _charIndex, _currentWordStartTime, blurDuration));
+      // Animation complete - notify parent
+      widget.onPageComplete?.call();
     }
   }
   
@@ -667,8 +696,13 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     final currentPage = _pages[_currentPageIndex];
     
     // If we've reached the end of this page
-    if (_charIndex >= currentPage.endCharIndex && _currentPageIndex < _pages.length - 1) {
-      _performPageTransition();
+    if (_charIndex >= currentPage.endCharIndex) {
+      if (_currentPageIndex < _pages.length - 1) {
+        _performPageTransition();
+      } else {
+        // Last page completed
+        widget.onPageComplete?.call();
+      }
     }
   }
   

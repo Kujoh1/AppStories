@@ -41,6 +41,10 @@ flutter:
     - assets/
     - assets/fonts/
     - assets/stories/
+    - assets/stories/ink/
+    - assets/bg/
+    - assets/img/
+    - assets/sfx/
 
   # Eigene Schriftarten
   fonts:

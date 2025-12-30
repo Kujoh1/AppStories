@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../data/repositories/book_repository.dart';
 import '../../providers/book_provider.dart';
 import '../../providers/chapter_provider.dart';
 
@@ -20,44 +21,66 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   Future<void> _startBook() async {
     final selectedBookId = ref.read(selectedBookIdProvider);
+    final repository = ref.read(bookRepositoryProvider);
+    final format = repository.getStoryFormat(selectedBookId);
     
     setState(() {
       _isLoading = true;
-      _loadingMessage = 'Lade Buchstruktur...';
+      _loadingMessage = 'Lade Geschichte...';
       _loadingProgress = 0.2;
     });
 
     try {
-      // STAGE 1: Load book index (structure only) - FAST
-      final bookIndex = await ref.read(bookIndexProvider(selectedBookId).future);
-      
-      if (!mounted) return;
-      
-      setState(() {
-        _loadingMessage = 'Lade Kapitel 1 von ${bookIndex.chapterCount}...';
-        _loadingProgress = 0.5;
-      });
-      
-      // Reset to first chapter
-      ref.read(currentChapterIndexProvider.notifier).state = 0;
-      
-      // STAGE 2: Load first chapter content - ON DEMAND
-      await ref.read(currentChapterProvider.future);
-      
-      if (!mounted) return;
-      
-      setState(() {
-        _loadingMessage = 'Bereit!';
-        _loadingProgress = 1.0;
-      });
-      
-      // Small delay for visual feedback
-      await Future.delayed(const Duration(milliseconds: 150));
-      
-      if (!mounted) return;
-      
-      // Navigate to reader
-      context.goToReader();
+      if (format == StoryFormat.ink) {
+        // Load Ink story
+        setState(() {
+          _loadingMessage = 'Lade interaktive Geschichte...';
+          _loadingProgress = 0.5;
+        });
+        
+        await ref.read(inkStoryProvider.future);
+        
+        if (!mounted) return;
+        
+        setState(() {
+          _loadingMessage = 'Bereit!';
+          _loadingProgress = 1.0;
+        });
+        
+        await Future.delayed(const Duration(milliseconds: 150));
+        
+        if (!mounted) return;
+        
+        // Navigate to Ink reader
+        context.goToInkReader();
+      } else {
+        // Load regular story (DOCX)
+        final bookIndex = await ref.read(bookIndexProvider(selectedBookId).future);
+        
+        if (!mounted) return;
+        
+        setState(() {
+          _loadingMessage = 'Lade Kapitel 1 von ${bookIndex.chapterCount}...';
+          _loadingProgress = 0.5;
+        });
+        
+        ref.read(currentChapterIndexProvider.notifier).state = 0;
+        await ref.read(currentChapterProvider.future);
+        
+        if (!mounted) return;
+        
+        setState(() {
+          _loadingMessage = 'Bereit!';
+          _loadingProgress = 1.0;
+        });
+        
+        await Future.delayed(const Duration(milliseconds: 150));
+        
+        if (!mounted) return;
+        
+        // Navigate to regular reader
+        context.goToReader();
+      }
     } catch (e) {
       if (!mounted) return;
       
@@ -78,6 +101,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget build(BuildContext context) {
     final booksAsync = ref.watch(booksProvider);
     final selectedBookId = ref.watch(selectedBookIdProvider);
+    final repository = ref.watch(bookRepositoryProvider);
     final theme = Theme.of(context);
     
     // Watch book index for selected book to show chapter count
@@ -156,6 +180,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                             itemBuilder: (context, index) {
                               final book = books[index];
                               final isSelected = selectedBookId == book.id;
+                              final format = repository.getStoryFormat(book.id);
+                              final isInk = format == StoryFormat.ink;
                               
                               // Get chapter count for this book
                               final chapterCount = isSelected 
@@ -180,11 +206,35 @@ class _HomePageState extends ConsumerState<HomePage> {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          book.title,
-                                          style: theme.textTheme.titleLarge?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                book.title,
+                                                style: theme.textTheme.titleLarge?.copyWith(
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                            if (isInk)
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(
+                                                  horizontal: 8,
+                                                  vertical: 4,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: theme.colorScheme.primaryContainer,
+                                                  borderRadius: BorderRadius.circular(8),
+                                                ),
+                                                child: Text(
+                                                  'Interaktiv',
+                                                  style: theme.textTheme.labelSmall?.copyWith(
+                                                    color: theme.colorScheme.onPrimaryContainer,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
@@ -197,15 +247,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                                         Row(
                                           children: [
                                             Icon(
-                                              Icons.menu_book,
+                                              isInk ? Icons.gamepad : Icons.menu_book,
                                               size: 16,
                                               color: theme.colorScheme.primary,
                                             ),
                                             const SizedBox(width: 8),
                                             Text(
                                               isSelected && chapterCount > 0
-                                                  ? '$chapterCount Kapitel'
-                                                  : 'Kapitel werden geladen...',
+                                                  ? (isInk ? '$chapterCount Szenen' : '$chapterCount Kapitel')
+                                                  : (isInk ? 'Interaktive Geschichte' : 'Kapitel werden geladen...'),
                                               style: theme.textTheme.bodySmall,
                                             ),
                                             const Spacer(),
