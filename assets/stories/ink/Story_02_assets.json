@@ -1,0 +1,103 @@
+{
+  "BG": {},
+  "IMG": {
+    "hk_s01_01": "assets/img/hk2045_s01_01.png",
+    "hk_s01_02": "assets/img/hk2045_s01_02.png",
+    "hk_s01_03": "assets/img/hk2045_s01_03.png",
+
+    "hk_s02_01": "assets/img/hk2045_s02_01.png",
+    "hk_s02_02": "assets/img/hk2045_s02_02.png",
+    "hk_s02_03": "assets/img/hk2045_s02_03.png",
+
+    "hk_s03_01": "assets/img/hk2045_s03_01.png",
+    "hk_s03_02": "assets/img/hk2045_s03_02.png",
+    "hk_s03_03": "assets/img/hk2045_s03_03.png",
+
+    "hk_s04_01": "assets/img/hk2045_s04_01.png",
+    "hk_s04_02": "assets/img/hk2045_s04_02.png",
+    "hk_s04_03": "assets/img/hk2045_s04_03.png",
+
+    "hk_s05_01": "assets/img/hk2045_s05_01.png",
+    "hk_s05_02": "assets/img/hk2045_s05_02.png",
+    "hk_s05_03": "assets/img/hk2045_s05_03.png",
+
+    "hk_s06_01": "assets/img/hk2045_s06_01.png",
+    "hk_s06_02": "assets/img/hk2045_s06_02.png",
+    "hk_s06_03": "assets/img/hk2045_s06_03.png",
+
+    "hk_s07_01": "assets/img/hk2045_s07_01.png",
+    "hk_s07_02": "assets/img/hk2045_s07_02.png",
+    "hk_s07_03": "assets/img/hk2045_s07_03.png",
+
+    "hk_s08_01": "assets/img/hk2045_s08_01.png",
+    "hk_s08_02": "assets/img/hk2045_s08_02.png",
+    "hk_s08_03": "assets/img/hk2045_s08_03.png",
+
+    "hk_s09_01": "assets/img/hk2045_s09_01.png",
+    "hk_s09_02": "assets/img/hk2045_s09_02.png",
+    "hk_s09_03": "assets/img/hk2045_s09_03.png",
+
+    "hk_s10_01": "assets/img/hk2045_s10_01.png",
+    "hk_s10_02": "assets/img/hk2045_s10_02.png",
+    "hk_s10_03": "assets/img/hk2045_s10_03.png",
+
+    "hk_s11_01": "assets/img/hk2045_s11_01.png",
+    "hk_s11_02": "assets/img/hk2045_s11_02.png",
+    "hk_s11_03": "assets/img/hk2045_s11_03.png",
+
+    "hk_s12_01": "assets/img/hk2045_s12_01.png",
+    "hk_s12_02": "assets/img/hk2045_s12_02.png",
+    "hk_s12_03": "assets/img/hk2045_s12_03.png",
+
+    "hk_s13_01": "assets/img/hk2045_s13_01.png",
+    "hk_s13_02": "assets/img/hk2045_s13_02.png",
+    "hk_s13_03": "assets/img/hk2045_s13_03.png",
+
+    "hk_s14_01": "assets/img/hk2045_s14_01.png",
+    "hk_s14_02": "assets/img/hk2045_s14_02.png",
+    "hk_s14_03": "assets/img/hk2045_s14_03.png",
+
+    "hk_s15_01": "assets/img/hk2045_s15_01.png",
+    "hk_s15_02": "assets/img/hk2045_s15_02.png",
+    "hk_s15_03": "assets/img/hk2045_s15_03.png",
+
+    "hk_s16_01": "assets/img/hk2045_s16_01.png",
+    "hk_s16_02": "assets/img/hk2045_s16_02.png",
+    "hk_s16_03": "assets/img/hk2045_s16_03.png",
+
+    "hk_s17_01": "assets/img/hk2045_s17_01.png",
+    "hk_s17_02": "assets/img/hk2045_s17_02.png",
+    "hk_s17_03": "assets/img/hk2045_s17_03.png",
+
+    "hk_s18_01": "assets/img/hk2045_s18_01.png",
+    "hk_s18_02": "assets/img/hk2045_s18_02.png",
+    "hk_s18_03": "assets/img/hk2045_s18_03.png",
+
+    "hk_s19_01": "assets/img/hk2045_s19_01.png",
+    "hk_s19_02": "assets/img/hk2045_s19_02.png",
+    "hk_s19_03": "assets/img/hk2045_s19_03.png",
+
+    "hk_s20_01": "assets/img/hk2045_s20_01.png",
+    "hk_s20_02": "assets/img/hk2045_s20_02.png",
+    "hk_s20_03": "assets/img/hk2045_s20_03.png",
+
+    "hk_s21_01": "assets/img/hk2045_s21_01.png",
+    "hk_s21_02": "assets/img/hk2045_s21_02.png",
+    "hk_s21_03": "assets/img/hk2045_s21_03.png",
+
+    "hk_s22_01": "assets/img/hk2045_s22_01.png",
+    "hk_s22_02": "assets/img/hk2045_s22_02.png",
+    "hk_s22_03": "assets/img/hk2045_s22_03.png"
+  },
+  "MOOD": {
+    "still": "Ruhige, beklemmende Atmosphäre",
+    "noir": "Noir, kalt, hartes Licht",
+    "paranoia": "Paranoia, Überwachung, Druck",
+    "clarity": "Klarheit, Erkenntnis, Atemholen",
+    "dread": "Vorahnung, Todesnähe",
+    "resolve": "Entschlossenheit, Würde"
+  },
+  "SFX": {}
+}
+
+

@@ -22,6 +22,7 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
   // Background animation
   late AnimationController _bgController;
   late Animation<double> _bgOpacity;
+  static const double _backgroundMaxOpacity = 0.03;
   
   String? _currentBackground;
   String? _previousBackground;
@@ -217,19 +218,24 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
 
         // Previous background (fading out)
         if (_previousBackground != null)
-          SmartImage(
-            key: ValueKey('bg_prev_$_previousBackground'),
-            assetPath: _previousBackground!,
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: double.infinity,
-            fallback: const SizedBox.shrink(),
+          Opacity(
+            opacity: _backgroundMaxOpacity,
+            child: SmartImage(
+              key: ValueKey('bg_prev_$_previousBackground'),
+              assetPath: _previousBackground!,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+              fallback: const SizedBox.shrink(),
+            ),
           ),
 
         // Current background (fading in)
         if (_currentBackground != null)
           FadeTransition(
-            opacity: _bgOpacity,
+            opacity: _bgOpacity.drive(
+              Tween<double>(begin: 0.0, end: _backgroundMaxOpacity),
+            ),
             child: SmartImage(
               key: ValueKey('bg_curr_$_currentBackground'),
               assetPath: _currentBackground!,

@@ -48,4 +48,9 @@ app.*.map.json
 *.freezed.dart
 *.gr.dart
 
+# Secrets / local config (do not commit)
+.env
+.env.*
+secrets/*.local.json
+
 

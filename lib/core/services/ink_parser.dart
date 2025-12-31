@@ -211,8 +211,8 @@ class InkRuntime {
 class InkParser {
   // Patterns for parsing
   static final _knotPattern = RegExp(r'^===\s*(\w+)\s*===$', multiLine: true);
-  static final _choicePattern = RegExp(r'^\*\s*\[([^\]]+)\]\s*->\s*(\w+)\s*$', multiLine: true);
-  static final _divertPattern = RegExp(r'^->\s*(\w+)\s*$', multiLine: true);
+  static final _choicePattern = RegExp(r'^\s*\*\s*\[([^\]]+)\]\s*->\s*(\w+)\s*$', multiLine: true);
+  static final _divertPattern = RegExp(r'^\s*->\s*(\w+)\s*$', multiLine: true);
   static final _tagPattern = RegExp(r'^#(\w+):(.+)$', multiLine: true);
   static final _variablePattern = RegExp(r'^VAR\s+(\w+)\s*=\s*(\d+|true|false|"[^"]*")');
   
@@ -278,7 +278,22 @@ class InkParser {
       final knotContent = content.substring(startIndex, endIndex).trim();
       
       // Parse this knot
-      final knot = _parseKnot(knotName, knotContent);
+      var knot = _parseKnot(knotName, knotContent);
+
+      // UX guarantee:
+      // If a knot has no choices and no explicit divert, auto-divert to the next knot in file order.
+      // This ensures "Weiter" exists on non-choice pages (unless this is the last knot).
+      if (knot.choices.isEmpty && knot.divert == null && i + 1 < knotMatches.length) {
+        final nextKnotName = knotMatches[i + 1].group(1)!;
+        knot = InkKnot(
+          name: knot.name,
+          tags: knot.tags,
+          content: knot.content,
+          choices: knot.choices,
+          divert: nextKnotName,
+        );
+      }
+
       knots[knotName] = knot;
       
       // Set first knot as start if not already set

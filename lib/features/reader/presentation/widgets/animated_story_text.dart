@@ -11,12 +11,14 @@ class DecorativeStoryText extends ConsumerWidget {
   final String text;
   final ValueChanged<bool>? onPauseChanged;
   final VoidCallback? onPageComplete; // Called when current page animation finishes
+  final double? maxHeight; // Maximum height for text area (for pagination calculation)
 
   const DecorativeStoryText({
     super.key,
     required this.text,
     this.onPauseChanged,
     this.onPageComplete,
+    this.maxHeight,
   });
 
   @override
@@ -29,6 +31,7 @@ class DecorativeStoryText extends ConsumerWidget {
       onPageComplete: onPageComplete,
       speedMultiplier: settings.speedMultiplier,
       skipAnimation: settings.skipAnimation,
+      maxHeight: maxHeight,
     );
   }
 }
@@ -76,6 +79,9 @@ class _Config {
   static const double horizontalPadding = 16.0;
   static const double verticalPadding = 40.0;
   
+  // Swipe hint dimensions: 20px top padding + 22px icon + 2px spacing + 16px text + extra margin
+  static const double swipeHintHeight = 80.0;
+  
   static const String dialogueFont = 'GrechenFuemen'; // For text in quotes
   
   static const Color glowColor = Color(0xFFFEFFE9);  // Warm glow
@@ -116,6 +122,7 @@ class _PagedTypewriter extends StatefulWidget {
   final VoidCallback? onPageComplete;
   final double speedMultiplier;
   final bool skipAnimation;
+  final double? maxHeight; // Maximum height for pagination
 
   const _PagedTypewriter({
     required this.text,
@@ -123,6 +130,7 @@ class _PagedTypewriter extends StatefulWidget {
     this.onPageComplete,
     this.speedMultiplier = 1.0,
     this.skipAnimation = false,
+    this.maxHeight,
   });
 
   @override
@@ -153,6 +161,14 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
   bool _isPageTransitioning = false;
   double _pageOpacity = 1.0;
   Size? _availableSize;
+  bool _awaitingNextPageSwipe = false;
+  double _swipeDx = 0.0; // negative = swipe left (to advance)
+  late final AnimationController _swipeController;
+  Animation<double>? _swipeAnim;
+
+  static const double _swipeThresholdPx = 120.0;
+  static const int _swipeCommitMs = 190;
+  static const int _swipeSnapBackMs = 160;
   
   // Chapter title cinema animation
   bool _showingChapterTitle = true;
@@ -257,6 +273,7 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     });
     
     _ticker = createTicker(_onTick)..start();
+    _swipeController = AnimationController(vsync: this);
     
     // Start chapter animation after a brief delay
     Future.delayed(const Duration(milliseconds: 200), () {
@@ -346,6 +363,103 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     if (charIndex < 2) return false;
     // Check for "..." or ".." 
     return text[charIndex] == '.' && text[charIndex - 1] == '.' && text[charIndex - 2] == '.';
+  }
+  
+  /// Find the last complete sentence end within the given range
+  /// Returns the position AFTER the sentence end (including trailing quotes and whitespace)
+  int _findSentenceEnd(String text, int startIndex, int maxIndex) {
+    int lastSentenceEnd = -1;
+    
+    // Search backwards from maxIndex to find the last sentence ending
+    // Don't skip first 10 chars - we need to find any sentence end
+    final searchStart = startIndex;
+    
+    for (int i = maxIndex - 1; i >= searchStart; i--) {
+      if (_isSentenceEndingPunctuation(text, i)) {
+        lastSentenceEnd = i + 1;
+        
+        // Include trailing closing quotes (German: „..." ends with " which is U+201C)
+        while (lastSentenceEnd < text.length && _isClosingQuote(text[lastSentenceEnd])) {
+          lastSentenceEnd++;
+        }
+        
+        // Skip trailing whitespace
+        while (lastSentenceEnd < text.length && 
+               (text[lastSentenceEnd] == ' ' || text[lastSentenceEnd] == '\n')) {
+          lastSentenceEnd++;
+        }
+        
+        break;
+      }
+    }
+    
+    return lastSentenceEnd;
+  }
+  
+  /// Find the next sentence end starting from the given position
+  int _findNextSentenceEnd(String text, int startIndex) {
+    for (int i = startIndex; i < text.length; i++) {
+      if (_isSentenceEndingPunctuation(text, i)) {
+        int sentenceEnd = i + 1;
+        
+        // Include trailing closing quotes
+        while (sentenceEnd < text.length && _isClosingQuote(text[sentenceEnd])) {
+          sentenceEnd++;
+        }
+        
+        // Skip trailing whitespace
+        while (sentenceEnd < text.length && 
+               (text[sentenceEnd] == ' ' || text[sentenceEnd] == '\n')) {
+          sentenceEnd++;
+        }
+        
+        return sentenceEnd;
+      }
+    }
+    
+    // No sentence end found - return end of text
+    return text.length;
+  }
+  
+  /// Check if character at position is sentence-ending punctuation
+  bool _isSentenceEndingPunctuation(String text, int index) {
+    if (index < 0 || index >= text.length) return false;
+    
+    final char = text[index];
+    
+    // Basic sentence enders
+    if (char == '.' || char == '!' || char == '?') {
+      // Don't break on ellipsis in the middle of text
+      if (char == '.' && _isEllipse(text, index)) {
+        // Only consider ellipsis as sentence end if followed by capital letter or quote
+        final nextNonSpace = _findNextNonWhitespace(text, index + 1);
+        if (nextNonSpace == -1) return true; // End of text
+        final nextChar = text[nextNonSpace];
+        return _isClosingQuote(nextChar) || 
+               nextChar.toUpperCase() == nextChar && nextChar.toLowerCase() != nextChar;
+      }
+      return true;
+    }
+    
+    return false;
+  }
+  
+  /// Check if character is a closing quotation mark
+  bool _isClosingQuote(String char) {
+    // Closing quotes including German quotes:
+    // " (ASCII), " (U+201C - German closing), " (U+201D), » (U+00BB), ' (U+2019), ' (ASCII)
+    const closingQuoteChars = '"\u201C\u201D\u00BB\u2019\'';
+    return closingQuoteChars.contains(char);
+  }
+  
+  /// Find next non-whitespace character
+  int _findNextNonWhitespace(String text, int startIndex) {
+    for (int i = startIndex; i < text.length; i++) {
+      if (text[i] != ' ' && text[i] != '\n' && text[i] != '\t') {
+        return i;
+      }
+    }
+    return -1;
   }
 
   /// Calculate blur duration based on sentence length
@@ -472,10 +586,12 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
   }
   
   /// Calculate how many lines fit on a page
+  /// Reserves space for swipe hint (shown when multiple pages exist)
   int _calculateLinesPerPage(double availableHeight) {
     final lineHeight = _Config.fontSize * _Config.lineHeight;
-    final usableHeight = availableHeight - (_Config.verticalPadding * 2);
-    return (usableHeight / lineHeight).floor();
+    // Reserve space for swipe hint + vertical padding
+    final usableHeight = availableHeight - (_Config.verticalPadding * 2) - _Config.swipeHintHeight;
+    return (usableHeight / lineHeight).floor().clamp(1, 100);
   }
   
   /// Get the actual text to display (body text without chapter title)
@@ -512,79 +628,76 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     
     _pages = [];
     int lineIndex = 0;
+    int nextStartCharIndex = 0; // Track where next page should start
     
-    while (lineIndex < totalLines) {
+    while (lineIndex < totalLines && nextStartCharIndex < textToUse.length) {
       final startLine = lineIndex;
       final endLine = (lineIndex + linesPerPage).clamp(0, totalLines);
       
-      // Get character positions from line metrics
-      int startCharIndex = 0;
+      // Use tracked start position (ensures no gaps between pages)
+      int startCharIndex = nextStartCharIndex;
       int endCharIndex = textToUse.length;
-      
-      if (startLine > 0 && startLine < lineMetrics.length) {
-        // Find character at start of this line
-        final startOffset = painter.getPositionForOffset(
-          Offset(0, lineMetrics[startLine].baseline - lineMetrics[startLine].ascent + 1)
-        );
-        startCharIndex = startOffset.offset;
-      }
       
       if (endLine < lineMetrics.length) {
         // Find character at start of next page (end of this page)
         final endOffset = painter.getPositionForOffset(
           Offset(0, lineMetrics[endLine].baseline - lineMetrics[endLine].ascent + 1)
         );
-        endCharIndex = endOffset.offset;
+        // Only use this if it's ahead of our start
+        if (endOffset.offset > startCharIndex) {
+          endCharIndex = endOffset.offset;
+        }
       }
       
-      // Try to end at a sentence boundary
+      // ALWAYS end at a sentence boundary - never split sentences across pages
       if (endCharIndex < textToUse.length) {
-        int lastSentenceEnd = -1;
-        final searchEnd = endCharIndex.clamp(0, textToUse.length);
-        final searchStart = (startCharIndex + 20).clamp(0, searchEnd);
+        int sentenceEnd = _findSentenceEnd(textToUse, startCharIndex, endCharIndex);
         
-        for (int i = searchEnd - 1; i >= searchStart; i--) {
-          final char = textToUse[i];
-          if (char == '.' || char == '!' || char == '?') {
-            lastSentenceEnd = i + 1;
-            
-            // Include trailing quotes
-            while (lastSentenceEnd < textToUse.length && _isQuote(textToUse[lastSentenceEnd])) {
-              lastSentenceEnd++;
-            }
-            
-            // Skip trailing whitespace
-            while (lastSentenceEnd < textToUse.length && 
-                   (textToUse[lastSentenceEnd] == ' ' || textToUse[lastSentenceEnd] == '\n')) {
-              lastSentenceEnd++;
-            }
-            break;
+        if (sentenceEnd > startCharIndex) {
+          // Found a sentence boundary within the page
+          endCharIndex = sentenceEnd;
+        } else {
+          // No sentence end found within page - search forward to find one
+          sentenceEnd = _findNextSentenceEnd(textToUse, endCharIndex);
+          if (sentenceEnd > endCharIndex) {
+            endCharIndex = sentenceEnd;
           }
         }
-        
-        if (lastSentenceEnd > startCharIndex + 20) {
-          endCharIndex = lastSentenceEnd;
-        }
+      }
+      
+      // Safety: ensure we make progress - find next sentence if stuck
+      if (endCharIndex <= startCharIndex) {
+        final nextEnd = _findNextSentenceEnd(textToUse, startCharIndex);
+        endCharIndex = nextEnd > startCharIndex ? nextEnd : textToUse.length;
       }
       
       // Create page
       if (endCharIndex > startCharIndex) {
-        // Calculate height for this page
-        final pageLines = (endLine - startLine).clamp(1, linesPerPage);
-        final pageHeight = pageLines * _Config.fontSize * _Config.lineHeight;
+        // Calculate height for this page based on actual content
+        final pageText = textToUse.substring(startCharIndex, endCharIndex);
+        final pagePainter = TextPainter(
+          text: TextSpan(text: pageText, style: baseStyle),
+          textDirection: TextDirection.ltr,
+        )..layout(maxWidth: textWidth);
+        final pageLineCount = pagePainter.computeLineMetrics().length;
+        final pageHeight = pageLineCount * _Config.fontSize * _Config.lineHeight;
+        pagePainter.dispose();
         
         _pages.add(_PageInfo(
           startCharIndex: startCharIndex,
           endCharIndex: endCharIndex,
-          text: textToUse.substring(startCharIndex, endCharIndex),
+          text: pageText,
           height: pageHeight,
         ));
+        
+        // Next page starts exactly where this one ended
+        nextStartCharIndex = endCharIndex;
       }
       
-      // Move to lines after our end character
+      // Move to next visual line block
       if (endCharIndex >= textToUse.length) break;
       
-      // Estimate lines consumed
+      // Estimate lines consumed for visual positioning
       final linesConsumed = ((endCharIndex - startCharIndex) / 
           (textToUse.length / totalLines)).ceil().clamp(1, linesPerPage);
       lineIndex = startLine + linesConsumed;
@@ -619,7 +732,7 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
   
   void _startTypewriter() {
     _typeTimer?.cancel();
-    if (_isPaused || !mounted || _isPageTransitioning) return;
+    if (_isPaused || !mounted || _isPageTransitioning || _awaitingNextPageSwipe) return;
     final text = _displayText;
     if (_charIndex >= text.length) return;
     
@@ -698,7 +811,14 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     // If we've reached the end of this page
     if (_charIndex >= currentPage.endCharIndex) {
       if (_currentPageIndex < _pages.length - 1) {
-        _performPageTransition();
+        // Do NOT auto-advance between pages. Wait for a swipe-release gesture.
+        if (!_awaitingNextPageSwipe) {
+          _typeTimer?.cancel();
+          setState(() {
+            _awaitingNextPageSwipe = true;
+            _swipeDx = 0.0;
+          });
+        }
       } else {
         // Last page completed
         widget.onPageComplete?.call();
@@ -747,6 +867,7 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
   }
   
   void _onPressStart() {
+    if (_awaitingNextPageSwipe) return;
     _pauseTimer?.cancel();
     _pauseTimer = Timer(const Duration(milliseconds: 40), () {
       if (mounted && !_isPaused) {
@@ -758,12 +879,65 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
   }
   
   void _onPressEnd() {
+    if (_awaitingNextPageSwipe) return;
     _pauseTimer?.cancel();
     if (_isPaused) {
       _isPaused = false;
       widget.onPauseChanged?.call(false);
       _startTypewriter();
     }
+  }
+
+  bool get _hasNextPage => _pages.isNotEmpty && _currentPageIndex < _pages.length - 1;
+
+  void _snapBack() {
+    _swipeController.stop();
+    _swipeController.duration = const Duration(milliseconds: _swipeSnapBackMs);
+    _swipeAnim = Tween<double>(begin: _swipeDx, end: 0.0).animate(
+      CurvedAnimation(parent: _swipeController, curve: Curves.easeOutCubic),
+    );
+    _swipeController
+      ..value = 0
+      ..forward();
+    _swipeController.addListener(() {
+      if (!mounted) return;
+      setState(() => _swipeDx = _swipeAnim?.value ?? 0.0);
+    });
+  }
+
+  Future<void> _commitToNextPage(double offscreenDx) async {
+    if (!_hasNextPage) return;
+    if (_isPageTransitioning) return;
+
+    setState(() => _isPageTransitioning = true);
+    _swipeController.stop();
+    _swipeController.duration = const Duration(milliseconds: _swipeCommitMs);
+    _swipeAnim = Tween<double>(begin: _swipeDx, end: -offscreenDx).animate(
+      CurvedAnimation(parent: _swipeController, curve: Curves.easeInCubic),
+    );
+    _swipeController
+      ..value = 0
+      ..forward();
+    _swipeController.addListener(() {
+      if (!mounted) return;
+      setState(() => _swipeDx = _swipeAnim?.value ?? _swipeDx);
+    });
+
+    await _swipeController.forward(from: 0.0);
+    if (!mounted) return;
+
+    setState(() {
+      _currentPageIndex++;
+      _awaitingNextPageSwipe = false;
+      _swipeDx = 0.0;
+      _currentWordStart = _pages[_currentPageIndex].startCharIndex;
+      _currentWordStartTime = 0;
+      _currentWordBlurDuration = _Config.blurDurationMinMs;
+      _isPageTransitioning = false;
+    });
+
+    // Start the next page only after release (we call this from drag end/tap).
+    _startTypewriter();
   }
   
   @override
@@ -772,6 +946,7 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     _pauseTimer?.cancel();
     _ticker?.dispose();
     _chapterAnimController.dispose();
+    _swipeController.dispose();
     super.dispose();
   }
   
@@ -791,8 +966,11 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     
     return LayoutBuilder(
       builder: (context, constraints) {
+        // Use provided maxHeight or fall back to constraints
+        final effectiveHeight = widget.maxHeight ?? constraints.maxHeight;
+        
         // Calculate pages based on available space (using body text without chapter title)
-        final size = Size(constraints.maxWidth, constraints.maxHeight);
+        final size = Size(constraints.maxWidth, effectiveHeight);
         _calculatePages(size);
         
         if (_pages.isEmpty) {
@@ -800,6 +978,7 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
         }
         
         final currentPage = _pages[_currentPageIndex];
+        final nextPage = _hasNextPage ? _pages[_currentPageIndex + 1] : null;
         final now = DateTime.now().millisecondsSinceEpoch;
         
         // Calculate blur intensity for current word (using position-based duration)
@@ -821,56 +1000,126 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
           color: _textColor,
         );
         
-        return Listener(
-          onPointerDown: (_) => _onPressStart(),
-          onPointerUp: (_) => _onPressEnd(),
-          onPointerCancel: (_) => _onPressEnd(),
-          child: AnimatedOpacity(
-            opacity: _pageOpacity,
-            duration: Duration(milliseconds: _Config.pageTransitionMs ~/ 2),
-            curve: Curves.easeInOut,
-            child: Container(
-              width: double.infinity,
-              alignment: Alignment.topCenter,
-              constraints: const BoxConstraints(
-                minWidth: 320,
-                maxWidth: 415,
-              ),
-              padding: EdgeInsets.symmetric(
-                horizontal: _Config.horizontalPadding,
-                vertical: _Config.verticalPadding,
-              ),
-              child: SizedBox(
-                height: currentPage.height, // Set height to actual content height
-                child: RepaintBoundary(
-                  child: Stack(
-                    children: [
-                      // Layer 0: Invisible layout placeholder (defines exact size)
-                      Opacity(
-                        opacity: 0.0,
-                        child: _buildLayoutPlaceholder(currentPage, baseStyle),
-                      ),
-                      
-                      // Layer 1: Ghost text (entire page, blurry & dim)
-                      Positioned.fill(
-                        child: _buildGhostText(currentPage, baseStyle),
-                      ),
-                      
-                      // Layer 2: Sharp revealed text
-                      Positioned.fill(
-                        child: _buildRevealedText(currentPage, baseStyle, now, blurIntensity),
-                      ),
-                      
-                      // Layer 3: Blurred overlay for current word
-                      if (blurIntensity > 0.05 && _currentWordStart < _charIndex)
-                        Positioned.fill(
-                          child: _buildBlurredCurrentWord(currentPage, baseStyle, blurIntensity),
+        final canSwipeAdvance = _awaitingNextPageSwipe && nextPage != null;
+
+        // Fill available space - text at top, hint at bottom of viewport
+        return SizedBox(
+          width: constraints.maxWidth,
+          height: constraints.maxHeight,
+          child: Listener(
+            onPointerDown: (_) => _onPressStart(),
+            onPointerUp: (_) => _onPressEnd(),
+            onPointerCancel: (_) => _onPressEnd(),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onHorizontalDragStart: canSwipeAdvance ? (_) => _swipeController.stop() : null,
+              onHorizontalDragUpdate: canSwipeAdvance
+                  ? (d) {
+                      // Swipe left (negative dx) to advance
+                      final next = (_swipeDx + d.delta.dx).clamp(-_swipeThresholdPx * 1.6, 0.0);
+                      setState(() => _swipeDx = next);
+                    }
+                  : null,
+              onHorizontalDragEnd: canSwipeAdvance
+                  ? (_) async {
+                      if ((-_swipeDx) >= _swipeThresholdPx) {
+                        await _commitToNextPage(constraints.maxWidth);
+                      } else {
+                        _snapBack();
+                      }
+                    }
+                  : null,
+              onTap: canSwipeAdvance ? () => _commitToNextPage(constraints.maxWidth) : null,
+              child: AnimatedOpacity(
+                opacity: _pageOpacity,
+                duration: Duration(milliseconds: _Config.pageTransitionMs ~/ 2),
+                curve: Curves.easeInOut,
+                child: Stack(
+                  children: [
+                    // TEXT CONTENT - aligned to top
+                    Align(
+                      alignment: Alignment.topCenter,
+                      child: Container(
+                        constraints: const BoxConstraints(
+                          minWidth: 320,
+                          maxWidth: 415,
                         ),
-                      
-                      // Layer 4: Blurred recently completed words
-                      ..._buildBlurredCompletedWords(currentPage, baseStyle, now),
-                    ],
-                  ),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: _Config.horizontalPadding,
+                          vertical: _Config.verticalPadding,
+                        ),
+                        child: SizedBox(
+                          height: currentPage.height,
+                          child: RepaintBoundary(
+                            child: Stack(
+                              children: [
+                                // NEXT PAGE PREVIEW (behind) while waiting
+                                if (canSwipeAdvance)
+                                  Opacity(
+                                    opacity: 0.12,
+                                    child: _buildGhostText(nextPage, baseStyle),
+                                  ),
+
+                                // CURRENT PAGE (front), moved by swipe
+                                Transform.translate(
+                                  offset: Offset(_swipeDx, 0),
+                                  child: Stack(
+                                    children: [
+                                      Opacity(
+                                        opacity: 0.0,
+                                        child: _buildLayoutPlaceholder(currentPage, baseStyle),
+                                      ),
+                                      Positioned.fill(
+                                        child: _buildGhostText(currentPage, baseStyle),
+                                      ),
+                                      Positioned.fill(
+                                        child: _buildRevealedText(currentPage, baseStyle, now, blurIntensity),
+                                      ),
+                                      if (blurIntensity > 0.05 && _currentWordStart < _charIndex)
+                                        Positioned.fill(
+                                          child: _buildBlurredCurrentWord(currentPage, baseStyle, blurIntensity),
+                                        ),
+                                      ..._buildBlurredCompletedWords(currentPage, baseStyle, now),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // SWIPE HINT - always at bottom of viewport
+                    if (canSwipeAdvance)
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 24,
+                        child: IgnorePointer(
+                          child: Opacity(
+                            opacity: 0.55,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Text(
+                                  'Wischen für nächste Seite',
+                                  style: TextStyle(
+                                    color: Color(0xFFE8DCC0),
+                                    fontSize: 12,
+                                    fontFamily: 'Mynerve',
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                                SizedBox(width: 4),
+                                Icon(Icons.keyboard_arrow_right_rounded, color: Color(0xFFE8DCC0), size: 22),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),

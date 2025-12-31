@@ -61,6 +61,12 @@ class DocxBookRepository implements BookRepository {
       'path': 'assets/stories/ink/Story_01.md',
       'format': StoryFormat.ink,
     },
+    'hk2045_death_row': {
+      'title': 'Hongkong 2045 — Der Korridor der Wahrheit',
+      'author': 'AppStories Studio',
+      'path': 'assets/stories/ink/Story_02.md',
+      'format': StoryFormat.ink,
+    },
   };
 
   @override
