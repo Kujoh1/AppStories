@@ -75,8 +75,8 @@ class _Config {
   static const double fontSize = 16.0;
   static const double dialogueFontSize = 17.0; // Slightly larger for dialogue
   static const double lineHeight = 1.9;
-  static const double letterSpacing = 2.0;
-  static const double horizontalPadding = 16.0; // For text width calculation
+  static const double letterSpacing = 0.5;
+  static const double horizontalPadding = 24.0; // For text width calculation (16 margin + 8 container padding)
   
   static const String dialogueFont = 'GrechenFuemen'; // For text in quotes
   
@@ -654,7 +654,7 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
       fontSize: _Config.fontSize,
       height: _Config.lineHeight,
       letterSpacing: _Config.letterSpacing,
-      fontWeight: FontWeight.w600,
+      fontWeight: FontWeight.w400,
     );
     
     final textToUse = _displayText;
@@ -1066,7 +1066,7 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
           fontSize: _Config.fontSize,
           height: _Config.lineHeight,
           letterSpacing: _Config.letterSpacing,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w400,
           color: _textColor,
         );
         

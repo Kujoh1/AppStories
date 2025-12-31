@@ -47,7 +47,8 @@ class SceneLayoutCalculator {
     fixedHeight += bottomPadding;
     
     // Text gets remaining space - subtract extra buffer to be safe
-    final textAreaHeight = (availableHeight - fixedHeight - 20).clamp(100.0, double.infinity);
+    // Buffer includes: 2px for border + extra safety margin
+    final textAreaHeight = (availableHeight - fixedHeight - 24).clamp(100.0, double.infinity);
     
     return SceneLayout(
       totalHeight: availableHeight,
@@ -140,12 +141,17 @@ class SceneLayoutWidget extends StatelessWidget {
             children: [
               // TEXT AREA - uses full allocated height for pagination
               // Horizontal padding applied here, not inside the text widget
-              SizedBox(
+              Container(
                 height: layout.textAreaHeight,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: textWidget,
+                margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.3),
+                    width: 1.0,
+                  ),
                 ),
+                child: textWidget,
               ),
               
               // IMAGE - 24px below text
