@@ -68,7 +68,8 @@ class SettingsDialog extends ConsumerWidget {
             
             // Speed options
             Wrap(
-              spacing: 8,
+              spacing: 10,
+              runSpacing: 10,
               children: TextAnimationSpeed.values.map((speed) {
                 final isSelected = settings.textSpeed == speed;
                 return ChoiceChip(
@@ -101,17 +102,7 @@ class SettingsDialog extends ConsumerWidget {
                 fontStyle: FontStyle.italic,
               ),
             ),
-            const SizedBox(height: 32),
-            
-            // Close button
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Fertig'),
-              ),
-            ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -126,9 +117,12 @@ class SettingsDialog extends ConsumerWidget {
         return 'Atmosphärische Typewriter-Animation';
       case TextAnimationSpeed.fast:
         return 'Schnelle Animation für erfahrene Leser';
+      case TextAnimationSpeed.faster:
+        return 'Sehr schnelle Animation für Eilige';
       case TextAnimationSpeed.instant:
         return 'Text wird sofort vollständig angezeigt';
     }
   }
 }
+
 

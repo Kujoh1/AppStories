@@ -3,10 +3,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Text animation speed options
 enum TextAnimationSpeed {
-  slow,    // 0.5x speed
-  normal,  // 1x speed (current)
-  fast,    // 2x speed
-  instant, // No animation
+  slow,    // Langsam
+  normal,  // Normal
+  fast,    // Schnell
+  faster,  // Schneller (2x schneller als fast)
+  instant, // Sofort (keine Animation)
 }
 
 /// Settings state
@@ -33,11 +34,13 @@ class AppSettings {
   double get speedMultiplier {
     switch (textSpeed) {
       case TextAnimationSpeed.slow:
-        return 2.0;
-      case TextAnimationSpeed.normal:
         return 1.0;
-      case TextAnimationSpeed.fast:
+      case TextAnimationSpeed.normal:
         return 0.5;
+      case TextAnimationSpeed.fast:
+        return 0.25;
+      case TextAnimationSpeed.faster:
+        return 0.125;  // 2x schneller als fast
       case TextAnimationSpeed.instant:
         return 0.0;
     }
@@ -55,6 +58,8 @@ class AppSettings {
         return 'Normal';
       case TextAnimationSpeed.fast:
         return 'Schnell';
+      case TextAnimationSpeed.faster:
+        return 'Schneller';
       case TextAnimationSpeed.instant:
         return 'Sofort';
     }
@@ -78,7 +83,7 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     final soundEnabled = prefs.getBool('soundEnabled') ?? true;
     
     state = AppSettings(
-      textSpeed: TextAnimationSpeed.values[speedIndex.clamp(0, 3)],
+      textSpeed: TextAnimationSpeed.values[speedIndex.clamp(0, 4)],
       soundEnabled: soundEnabled,
     );
   }

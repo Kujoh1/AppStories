@@ -76,11 +76,7 @@ class _Config {
   static const double dialogueFontSize = 17.0; // Slightly larger for dialogue
   static const double lineHeight = 1.9;
   static const double letterSpacing = 2.0;
-  static const double horizontalPadding = 16.0;
-  static const double verticalPadding = 40.0;
-  
-  // Swipe hint dimensions: 20px top padding + 22px icon + 2px spacing + 16px text + extra margin
-  static const double swipeHintHeight = 80.0;
+  static const double horizontalPadding = 16.0; // For text width calculation
   
   static const String dialogueFont = 'GrechenFuemen'; // For text in quotes
   
@@ -169,6 +165,10 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
   static const double _swipeThresholdPx = 120.0;
   static const int _swipeCommitMs = 190;
   static const int _swipeSnapBackMs = 160;
+  
+  // Swipe hint - only show after 5 seconds of inactivity
+  Timer? _swipeHintTimer;
+  bool _showSwipeHint = false;
   
   // Chapter title cinema animation
   bool _showingChapterTitle = true;
@@ -370,26 +370,42 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
   int _findSentenceEnd(String text, int startIndex, int maxIndex) {
     int lastSentenceEnd = -1;
     
-    // Search backwards from maxIndex to find the last sentence ending
-    // Don't skip first 10 chars - we need to find any sentence end
-    final searchStart = startIndex;
-    
-    for (int i = maxIndex - 1; i >= searchStart; i--) {
-      if (_isSentenceEndingPunctuation(text, i)) {
-        lastSentenceEnd = i + 1;
-        
-        // Include trailing closing quotes (German: „..." ends with " which is U+201C)
-        while (lastSentenceEnd < text.length && _isClosingQuote(text[lastSentenceEnd])) {
-          lastSentenceEnd++;
+    // Simple approach: scan through the range and find sentence-ending punctuation
+    for (int i = startIndex; i < maxIndex; i++) {
+      final char = text[i];
+      
+      // Check for sentence-ending punctuation
+      if (char == '.' || char == '!' || char == '?') {
+        // Skip ellipsis (...)
+        if (char == '.' && i >= 2 && text[i-1] == '.' && text[i-2] == '.') {
+          continue;
         }
         
-        // Skip trailing whitespace
-        while (lastSentenceEnd < text.length && 
-               (text[lastSentenceEnd] == ' ' || text[lastSentenceEnd] == '\n')) {
-          lastSentenceEnd++;
+        int endPos = i + 1;
+        
+        // Include any closing quotes after the punctuation
+        while (endPos < text.length) {
+          final nextChar = text[endPos];
+          final codeUnit = nextChar.codeUnitAt(0);
+          // German and English closing quotes: " (34), " (8220), " (8221), » (187), ' (39), ' (8217)
+          if (codeUnit == 34 || codeUnit == 8220 || codeUnit == 8221 || 
+              codeUnit == 187 || codeUnit == 39 || codeUnit == 8217) {
+            endPos++;
+          } else {
+            break;
+          }
         }
         
-        break;
+        // Skip whitespace after quotes
+        while (endPos < text.length && 
+               (text[endPos] == ' ' || text[endPos] == '\n' || text[endPos] == '\t')) {
+          endPos++;
+        }
+        
+        // Only accept if within our search range
+        if (endPos <= maxIndex || endPos <= maxIndex + 5) {
+          lastSentenceEnd = endPos;
+        }
       }
     }
     
@@ -586,23 +602,51 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
   }
   
   /// Calculate how many lines fit on a page
-  /// Reserves space for swipe hint (shown when multiple pages exist)
+  /// Calculate how many lines fit in the given height (with safety margin)
   int _calculateLinesPerPage(double availableHeight) {
     final lineHeight = _Config.fontSize * _Config.lineHeight;
-    // Reserve space for swipe hint + vertical padding
-    final usableHeight = availableHeight - (_Config.verticalPadding * 2) - _Config.swipeHintHeight;
-    return (usableHeight / lineHeight).floor().clamp(1, 100);
+    // Subtract 1 line as safety margin to prevent any clipping
+    return ((availableHeight / lineHeight).floor() - 1).clamp(1, 100);
+  }
+  
+  /// Find how much text fits in the available height using binary search
+  int _findTextThatFits(String text, int startIndex, double width, double maxHeight, TextStyle style) {
+    if (startIndex >= text.length) return text.length;
+    
+    final maxLines = _calculateLinesPerPage(maxHeight);
+    int low = startIndex + 1;
+    int high = text.length;
+    
+    // Binary search to find max characters that fit
+    while (low < high) {
+      final mid = (low + high + 1) ~/ 2;
+      final testText = text.substring(startIndex, mid);
+      final painter = TextPainter(
+        text: TextSpan(text: testText, style: style),
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: width);
+      final lines = painter.computeLineMetrics().length;
+      painter.dispose();
+      
+      if (lines <= maxLines) {
+        low = mid;
+      } else {
+        high = mid - 1;
+      }
+    }
+    
+    return low;
   }
   
   /// Get the actual text to display (body text without chapter title)
   String get _displayText => _bodyText ?? widget.text;
   
-  /// Split text into pages based on available size
+  /// Split text into pages based on available size - SIMPLE AND RELIABLE
   void _calculatePages(Size size) {
     if (_availableSize == size && _pages.isNotEmpty) return;
     _availableSize = size;
     
-    final linesPerPage = _calculateLinesPerPage(size.height);
+    final maxPageHeight = size.height;
     final textWidth = size.width - (_Config.horizontalPadding * 2);
     
     final baseStyle = TextStyle(
@@ -614,99 +658,69 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     );
     
     final textToUse = _displayText;
-    
-    // Use a single TextPainter for efficient measurement
-    final painter = TextPainter(
-      text: TextSpan(text: textToUse, style: baseStyle),
-      textDirection: TextDirection.ltr,
-      maxLines: null,
-    )..layout(maxWidth: textWidth);
-    
-    // Get line metrics for the entire text at once
-    final lineMetrics = painter.computeLineMetrics();
-    final totalLines = lineMetrics.length;
-    
     _pages = [];
-    int lineIndex = 0;
-    int nextStartCharIndex = 0; // Track where next page should start
+    int startCharIndex = 0;
     
-    while (lineIndex < totalLines && nextStartCharIndex < textToUse.length) {
-      final startLine = lineIndex;
-      final endLine = (lineIndex + linesPerPage).clamp(0, totalLines);
+    while (startCharIndex < textToUse.length) {
+      // Step 1: Find how much text fits in the available height
+      int endCharIndex = _findTextThatFits(
+        textToUse, startCharIndex, textWidth, maxPageHeight, baseStyle);
       
-      // Use tracked start position (ensures no gaps between pages)
-      int startCharIndex = nextStartCharIndex;
-      int endCharIndex = textToUse.length;
-      
-      if (endLine < lineMetrics.length) {
-        // Find character at start of next page (end of this page)
-        final endOffset = painter.getPositionForOffset(
-          Offset(0, lineMetrics[endLine].baseline - lineMetrics[endLine].ascent + 1)
-        );
-        // Only use this if it's ahead of our start
-        if (endOffset.offset > startCharIndex) {
-          endCharIndex = endOffset.offset;
-        }
-      }
-      
-      // ALWAYS end at a sentence boundary - never split sentences across pages
+      // Step 2: Find the last sentence boundary within this range
       if (endCharIndex < textToUse.length) {
-        int sentenceEnd = _findSentenceEnd(textToUse, startCharIndex, endCharIndex);
-        
+        final sentenceEnd = _findSentenceEnd(textToUse, startCharIndex, endCharIndex);
         if (sentenceEnd > startCharIndex) {
-          // Found a sentence boundary within the page
+          // Use sentence boundary
           endCharIndex = sentenceEnd;
         } else {
-          // No sentence end found within page - search forward to find one
-          sentenceEnd = _findNextSentenceEnd(textToUse, endCharIndex);
-          if (sentenceEnd > endCharIndex) {
-            endCharIndex = sentenceEnd;
+          // No sentence end found - try to break at word boundary
+          int wordEnd = endCharIndex;
+          while (wordEnd > startCharIndex && 
+                 textToUse[wordEnd - 1] != ' ' && 
+                 textToUse[wordEnd - 1] != '\n') {
+            wordEnd--;
           }
+          if (wordEnd > startCharIndex) {
+            endCharIndex = wordEnd;
+          }
+          // If still no good break, just use the calculated end
         }
       }
       
-      // Safety: ensure we make progress - find next sentence if stuck
+      // Safety: ensure we make progress
       if (endCharIndex <= startCharIndex) {
-        final nextEnd = _findNextSentenceEnd(textToUse, startCharIndex);
-        endCharIndex = nextEnd > startCharIndex ? nextEnd : textToUse.length;
+        endCharIndex = (startCharIndex + 50).clamp(0, textToUse.length);
       }
       
-      // Create page
-      if (endCharIndex > startCharIndex) {
-        // Calculate height for this page based on actual content
-        final pageText = textToUse.substring(startCharIndex, endCharIndex);
-        final pagePainter = TextPainter(
-          text: TextSpan(text: pageText, style: baseStyle),
-          textDirection: TextDirection.ltr,
-        )..layout(maxWidth: textWidth);
-        final pageLineCount = pagePainter.computeLineMetrics().length;
-        final pageHeight = pageLineCount * _Config.fontSize * _Config.lineHeight;
-        pagePainter.dispose();
-        
-        _pages.add(_PageInfo(
-          startCharIndex: startCharIndex,
-          endCharIndex: endCharIndex,
-          text: pageText,
-          height: pageHeight,
-        ));
-        
-        // Next page starts exactly where this one ended
-        nextStartCharIndex = endCharIndex;
-      }
+      // Create the page
+      final pageText = textToUse.substring(startCharIndex, endCharIndex);
+      final pagePainter = TextPainter(
+        text: TextSpan(text: pageText, style: baseStyle),
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: textWidth);
+      final pageHeight = pagePainter.computeLineMetrics().length * 
+                         _Config.fontSize * _Config.lineHeight;
+      pagePainter.dispose();
       
-      // Move to next visual line block
-      if (endCharIndex >= textToUse.length) break;
+      _pages.add(_PageInfo(
+        startCharIndex: startCharIndex,
+        endCharIndex: endCharIndex,
+        text: pageText,
+        height: pageHeight.clamp(0.0, maxPageHeight),
+      ));
       
-      // Estimate lines consumed for visual positioning
-      final linesConsumed = ((endCharIndex - startCharIndex) / 
-          (textToUse.length / totalLines)).ceil().clamp(1, linesPerPage);
-      lineIndex = startLine + linesConsumed;
-      
-      // Safety: ensure progress
-      if (lineIndex <= startLine) lineIndex = startLine + 1;
+      startCharIndex = endCharIndex;
     }
     
-    painter.dispose();
+    // Fallback: ensure at least one page exists
+    if (_pages.isEmpty && textToUse.isNotEmpty) {
+      _pages.add(_PageInfo(
+        startCharIndex: 0,
+        endCharIndex: textToUse.length,
+        text: textToUse,
+        height: maxPageHeight,
+      ));
+    }
     
     // Start typewriter after pages are calculated
     if (_charIndex == 0 && _pages.isNotEmpty) {
@@ -818,6 +832,8 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
             _awaitingNextPageSwipe = true;
             _swipeDx = 0.0;
           });
+          // Start 5-second timer to show swipe hint
+          _startSwipeHintTimer();
         }
       } else {
         // Last page completed
@@ -944,10 +960,64 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
   void dispose() {
     _typeTimer?.cancel();
     _pauseTimer?.cancel();
+    _swipeHintTimer?.cancel();
     _ticker?.dispose();
     _chapterAnimController.dispose();
     _swipeController.dispose();
     super.dispose();
+  }
+  
+  /// Start timer to show swipe hint after 5 seconds of inactivity
+  void _startSwipeHintTimer() {
+    _swipeHintTimer?.cancel();
+    _showSwipeHint = false;
+    _swipeHintTimer = Timer(const Duration(seconds: 5), () {
+      if (mounted && _awaitingNextPageSwipe) {
+        setState(() {
+          _showSwipeHint = true;
+        });
+      }
+    });
+  }
+  
+  /// Hide swipe hint and reset timer on any user interaction
+  void _hideSwipeHint() {
+    _swipeHintTimer?.cancel();
+    if (_showSwipeHint) {
+      setState(() {
+        _showSwipeHint = false;
+      });
+    }
+  }
+  
+  @override
+  void didUpdateWidget(_PagedTypewriter oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    
+    // If speed changed, restart the timer immediately with new speed
+    if (oldWidget.speedMultiplier != widget.speedMultiplier) {
+      _typeTimer?.cancel();
+      if (!_isPaused && !_isPageTransitioning && !_awaitingNextPageSwipe && 
+          _charIndex < _displayText.length) {
+        // Restart typewriter with new speed after frame completes
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _startTypewriter();
+        });
+      }
+    }
+    
+    // If skipAnimation changed to true, show all text immediately
+    if (!oldWidget.skipAnimation && widget.skipAnimation) {
+      _typeTimer?.cancel();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _charIndex = _displayText.length;
+          });
+          widget.onPageComplete?.call();
+        }
+      });
+    }
   }
   
   @override
@@ -1012,7 +1082,10 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
             onPointerCancel: (_) => _onPressEnd(),
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onHorizontalDragStart: canSwipeAdvance ? (_) => _swipeController.stop() : null,
+              onHorizontalDragStart: canSwipeAdvance ? (_) {
+                _swipeController.stop();
+                _hideSwipeHint(); // Hide hint on interaction
+              } : null,
               onHorizontalDragUpdate: canSwipeAdvance
                   ? (d) {
                       // Swipe left (negative dx) to advance
@@ -1029,14 +1102,18 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
                       }
                     }
                   : null,
-              onTap: canSwipeAdvance ? () => _commitToNextPage(constraints.maxWidth) : null,
+              onTap: canSwipeAdvance ? () {
+                _hideSwipeHint();
+                _commitToNextPage(constraints.maxWidth);
+              } : null,
               child: AnimatedOpacity(
                 opacity: _pageOpacity,
                 duration: Duration(milliseconds: _Config.pageTransitionMs ~/ 2),
                 curve: Curves.easeInOut,
                 child: Stack(
+                  clipBehavior: Clip.none, // Don't clip content
                   children: [
-                    // TEXT CONTENT - aligned to top
+                    // TEXT CONTENT - aligned to top, NO PADDING (layout handles spacing)
                     Align(
                       alignment: Alignment.topCenter,
                       child: Container(
@@ -1044,14 +1121,12 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
                           minWidth: 320,
                           maxWidth: 415,
                         ),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: _Config.horizontalPadding,
-                          vertical: _Config.verticalPadding,
-                        ),
+                        // NO padding - the available height IS the text height
                         child: SizedBox(
                           height: currentPage.height,
                           child: RepaintBoundary(
                             child: Stack(
+                              clipBehavior: Clip.none, // Don't clip content
                               children: [
                                 // NEXT PAGE PREVIEW (behind) while waiting
                                 if (canSwipeAdvance)
@@ -1064,6 +1139,7 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
                                 Transform.translate(
                                   offset: Offset(_swipeDx, 0),
                                   child: Stack(
+                                    clipBehavior: Clip.none, // Don't clip content
                                     children: [
                                       Opacity(
                                         opacity: 0.0,
@@ -1090,31 +1166,39 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
                       ),
                     ),
 
-                    // SWIPE HINT - always at bottom of viewport
-                    if (canSwipeAdvance)
+                    // SWIPE HINT - only shown after 5 seconds of inactivity (as overlay)
+                    if (_showSwipeHint && canSwipeAdvance)
                       Positioned(
                         left: 0,
                         right: 0,
-                        bottom: 24,
+                        bottom: 60,
                         child: IgnorePointer(
-                          child: Opacity(
-                            opacity: 0.55,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
-                                Text(
-                                  'Wischen für nächste Seite',
-                                  style: TextStyle(
-                                    color: Color(0xFFE8DCC0),
-                                    fontSize: 12,
-                                    fontFamily: 'Mynerve',
-                                    letterSpacing: 1.2,
+                          child: AnimatedOpacity(
+                            opacity: 0.7,
+                            duration: const Duration(milliseconds: 400),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.6),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Text(
+                                    'Wischen für nächste Seite',
+                                    style: TextStyle(
+                                      color: Color(0xFFE8DCC0),
+                                      fontSize: 14,
+                                      fontFamily: 'Mynerve',
+                                      letterSpacing: 1.2,
+                                    ),
                                   ),
-                                ),
-                                SizedBox(width: 4),
-                                Icon(Icons.keyboard_arrow_right_rounded, color: Color(0xFFE8DCC0), size: 22),
-                              ],
+                                  SizedBox(width: 8),
+                                  Icon(Icons.keyboard_arrow_right_rounded, color: Color(0xFFE8DCC0), size: 24),
+                                ],
+                              ),
                             ),
                           ),
                         ),

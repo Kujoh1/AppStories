@@ -12,6 +12,7 @@ class SceneLayoutCalculator {
   static const double choiceSpacing = 8.0;
   static const double continueButtonHeight = 52.0;
   static const double bottomPadding = 16.0;
+  static const double topPadding = 40.0; // Space at top for text area
   
   /// Calculate the layout for a scene
   static SceneLayout calculate({
@@ -22,14 +23,14 @@ class SceneLayoutCalculator {
     required bool hasContinueButton,
     required int choiceCount,
   }) {
-    // Calculate fixed heights
-    double fixedHeight = 0;
+    // Calculate fixed heights - be generous to prevent any clipping
+    double fixedHeight = topPadding; // Start with top padding
     
-    // Image section (if present)
+    // Image section (if present) - image is BELOW text
     double imageSectionHeight = 0;
     if (hasImage) {
       imageSectionHeight = imageHeight;
-      fixedHeight += imageSectionHeight + contentSpacing; // image + spacing to text
+      fixedHeight += imageSectionHeight + contentSpacing; // image + spacing
     }
     
     // Interaction section (choices or continue button)
@@ -45,8 +46,8 @@ class SceneLayoutCalculator {
     // Bottom padding
     fixedHeight += bottomPadding;
     
-    // Text gets remaining space
-    final textAreaHeight = (availableHeight - fixedHeight).clamp(100.0, availableHeight * 0.65);
+    // Text gets remaining space - subtract extra buffer to be safe
+    final textAreaHeight = (availableHeight - fixedHeight - 20).clamp(100.0, double.infinity);
     
     return SceneLayout(
       totalHeight: availableHeight,
@@ -129,17 +130,22 @@ class SceneLayoutWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // TOP PADDING
+          const SizedBox(height: 40.0),
+          
           // UPPER CONTENT GROUP: Text + Image (stick together, valign top)
           Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // TEXT AREA - constrained max height for pagination, but shrinks to content
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: layout.textAreaHeight,
+              // TEXT AREA - uses full allocated height for pagination
+              // Horizontal padding applied here, not inside the text widget
+              SizedBox(
+                height: layout.textAreaHeight,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: textWidget,
                 ),
-                child: textWidget,
               ),
               
               // IMAGE - 24px below text
