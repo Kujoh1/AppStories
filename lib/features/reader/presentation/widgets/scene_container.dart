@@ -73,6 +73,10 @@ class _SceneContainerState extends ConsumerState<SceneContainer>
 
   // State
   ScenePhase _phase = ScenePhase.entering;
+  
+  // Text pagination "Weiter" button state
+  bool _showTextNextPageButton = false;
+  final ValueNotifier<int> _textNextPageTrigger = ValueNotifier<int>(0);
 
   // Timing
   static const Duration _sceneFadeDuration = Duration(milliseconds: 400);
@@ -214,6 +218,7 @@ class _SceneContainerState extends ConsumerState<SceneContainer>
             interactionWidget: widget.scene.hasInteraction ? _buildInteraction() : null,
             imageVisible: _imageController.value > 0 || _phase == ScenePhase.complete,
             interactionVisible: _interactionController.value > 0 || _phase == ScenePhase.complete,
+            textNextPageButton: _showTextNextPageButton ? _buildTextNextPageButton() : null,
           ),
         );
       },
@@ -226,6 +231,56 @@ class _SceneContainerState extends ConsumerState<SceneContainer>
       text: widget.scene.text,
       onPageComplete: _onTextComplete,
       maxHeight: height,
+      onNextPageButtonVisibility: (visible) {
+        if (mounted) {
+          setState(() => _showTextNextPageButton = visible);
+        }
+      },
+      nextPageTrigger: _textNextPageTrigger,
+    );
+  }
+  
+  void _onTextNextPageButtonPressed() {
+    _textNextPageTrigger.value++;
+  }
+  
+  Widget _buildTextNextPageButton() {
+    return Center(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _onTextNextPageButtonPressed,
+          borderRadius: BorderRadius.circular(30),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.4),
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(
+                color: const Color(0xFFE8DCC0).withOpacity(0.5),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Icon(Icons.arrow_forward_rounded, color: Color(0xFFE8DCC0), size: 18),
+                SizedBox(width: 10),
+                Text(
+                  'Weiter',
+                  style: TextStyle(
+                    color: Color(0xFFE8DCC0),
+                    fontSize: 16,
+                    fontFamily: 'Mynerve',
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 

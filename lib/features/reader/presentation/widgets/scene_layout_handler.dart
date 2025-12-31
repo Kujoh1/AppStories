@@ -113,6 +113,7 @@ class SceneLayoutWidget extends StatelessWidget {
   final Widget? interactionWidget;
   final bool imageVisible;
   final bool interactionVisible;
+  final Widget? textNextPageButton; // "Weiter" button for text pagination
   
   const SceneLayoutWidget({
     super.key,
@@ -122,6 +123,7 @@ class SceneLayoutWidget extends StatelessWidget {
     this.interactionWidget,
     this.imageVisible = true,
     this.interactionVisible = true,
+    this.textNextPageButton,
   });
   
   @override
@@ -141,17 +143,12 @@ class SceneLayoutWidget extends StatelessWidget {
             children: [
               // TEXT AREA - uses full allocated height for pagination
               // Horizontal padding applied here, not inside the text widget
-              Container(
+              SizedBox(
                 height: layout.textAreaHeight,
-                margin: const EdgeInsets.symmetric(horizontal: 16.0),
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.3),
-                    width: 1.0,
-                  ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: textWidget,
                 ),
-                child: textWidget,
               ),
               
               // IMAGE - 24px below text
@@ -168,8 +165,13 @@ class SceneLayoutWidget extends StatelessWidget {
           // FLEXIBLE SPACE - pushes interaction to bottom
           const Spacer(),
           
-          // INTERACTION AREA - valign bottom
-          if (layout.hasInteraction && interactionWidget != null) ...[
+          // TEXT PAGINATION "WEITER" BUTTON - shown when text needs to advance to next page
+          if (textNextPageButton != null) ...[
+            textNextPageButton!,
+            SizedBox(height: layout.bottomPadding),
+          ]
+          // INTERACTION AREA - valign bottom (scene choices/continue)
+          else if (layout.hasInteraction && interactionWidget != null) ...[
             if (interactionVisible) interactionWidget!,
             SizedBox(height: layout.bottomPadding),
           ],

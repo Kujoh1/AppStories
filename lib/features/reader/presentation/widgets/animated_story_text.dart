@@ -12,6 +12,8 @@ class DecorativeStoryText extends ConsumerWidget {
   final ValueChanged<bool>? onPauseChanged;
   final VoidCallback? onPageComplete; // Called when current page animation finishes
   final double? maxHeight; // Maximum height for text area (for pagination calculation)
+  final ValueChanged<bool>? onNextPageButtonVisibility; // Called when next page button should show/hide
+  final ValueNotifier<int>? nextPageTrigger; // Increment to trigger next page
 
   const DecorativeStoryText({
     super.key,
@@ -19,6 +21,8 @@ class DecorativeStoryText extends ConsumerWidget {
     this.onPauseChanged,
     this.onPageComplete,
     this.maxHeight,
+    this.onNextPageButtonVisibility,
+    this.nextPageTrigger,
   });
 
   @override
@@ -32,6 +36,8 @@ class DecorativeStoryText extends ConsumerWidget {
       speedMultiplier: settings.speedMultiplier,
       skipAnimation: settings.skipAnimation,
       maxHeight: maxHeight,
+      onNextPageButtonVisibility: onNextPageButtonVisibility,
+      nextPageTrigger: nextPageTrigger,
     );
   }
 }
@@ -76,7 +82,7 @@ class _Config {
   static const double dialogueFontSize = 17.0; // Slightly larger for dialogue
   static const double lineHeight = 1.9;
   static const double letterSpacing = 0.5;
-  static const double horizontalPadding = 24.0; // For text width calculation (16 margin + 8 container padding)
+  static const double horizontalPadding = 16.0; // For text width calculation
   
   static const String dialogueFont = 'GrechenFuemen'; // For text in quotes
   
@@ -119,6 +125,8 @@ class _PagedTypewriter extends StatefulWidget {
   final double speedMultiplier;
   final bool skipAnimation;
   final double? maxHeight; // Maximum height for pagination
+  final ValueChanged<bool>? onNextPageButtonVisibility; // Called when next page button should show/hide
+  final ValueNotifier<int>? nextPageTrigger; // Increment to trigger next page
 
   const _PagedTypewriter({
     required this.text,
@@ -127,6 +135,8 @@ class _PagedTypewriter extends StatefulWidget {
     this.speedMultiplier = 1.0,
     this.skipAnimation = false,
     this.maxHeight,
+    this.onNextPageButtonVisibility,
+    this.nextPageTrigger,
   });
 
   @override
@@ -287,6 +297,19 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
         });
       }
     });
+    
+    // Listen for external next page trigger
+    widget.nextPageTrigger?.addListener(_onExternalNextPageTrigger);
+  }
+  
+  int _lastTriggerValue = 0;
+  
+  void _onExternalNextPageTrigger() {
+    final currentValue = widget.nextPageTrigger?.value ?? 0;
+    if (currentValue != _lastTriggerValue && _awaitingNextPageSwipe && _availableSize != null) {
+      _lastTriggerValue = currentValue;
+      _commitToNextPage(_availableSize!.width);
+    }
   }
   
   void _extractChapterTitle() {
@@ -825,15 +848,15 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     // If we've reached the end of this page
     if (_charIndex >= currentPage.endCharIndex) {
       if (_currentPageIndex < _pages.length - 1) {
-        // Do NOT auto-advance between pages. Wait for a swipe-release gesture.
+        // Do NOT auto-advance between pages. Wait for button press or swipe gesture.
         if (!_awaitingNextPageSwipe) {
           _typeTimer?.cancel();
           setState(() {
             _awaitingNextPageSwipe = true;
             _swipeDx = 0.0;
           });
-          // Start 5-second timer to show swipe hint
-          _startSwipeHintTimer();
+          // Notify parent that "Weiter" button should be shown
+          widget.onNextPageButtonVisibility?.call(true);
         }
       } else {
         // Last page completed
@@ -942,6 +965,9 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     await _swipeController.forward(from: 0.0);
     if (!mounted) return;
 
+    // Notify parent to hide "Weiter" button
+    widget.onNextPageButtonVisibility?.call(false);
+    
     setState(() {
       _currentPageIndex++;
       _awaitingNextPageSwipe = false;
@@ -964,6 +990,7 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     _ticker?.dispose();
     _chapterAnimController.dispose();
     _swipeController.dispose();
+    widget.nextPageTrigger?.removeListener(_onExternalNextPageTrigger);
     super.dispose();
   }
   
@@ -1166,43 +1193,8 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
                       ),
                     ),
 
-                    // SWIPE HINT - only shown after 5 seconds of inactivity (as overlay)
-                    if (_showSwipeHint && canSwipeAdvance)
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 60,
-                        child: IgnorePointer(
-                          child: AnimatedOpacity(
-                            opacity: 0.7,
-                            duration: const Duration(milliseconds: 400),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.6),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
-                                  Text(
-                                    'Wischen für nächste Seite',
-                                    style: TextStyle(
-                                      color: Color(0xFFE8DCC0),
-                                      fontSize: 14,
-                                      fontFamily: 'Mynerve',
-                                      letterSpacing: 1.2,
-                                    ),
-                                  ),
-                                  SizedBox(width: 8),
-                                  Icon(Icons.keyboard_arrow_right_rounded, color: Color(0xFFE8DCC0), size: 24),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                    // NOTE: "Weiter" button is now rendered by parent (scene_container)
+                    // Parent listens to onNextPageButtonVisibility callback
                   ],
                 ),
               ),
