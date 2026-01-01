@@ -38,7 +38,7 @@ class PageLayoutConfig {
     this.choiceButtonHeight = 56.0, // Match PageViewWidget
     this.choiceSpacing = 8.0,
     this.choiceHeaderHeight = 40.0, // Match PageViewWidget
-    this.topPadding = 40.0,
+    this.topPadding = 16.0,
     this.bottomPadding = 16.0,
     this.safetyBuffer = 48.0, // Increased for safety
   });

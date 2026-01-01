@@ -236,7 +236,7 @@ class _PageViewWidgetState extends State<PageViewWidget>
               child: SingleChildScrollView(
                 physics: const ClampingScrollPhysics(),
                 padding: const EdgeInsets.only(
-                  top: 40,
+                  top: 16,
                   left: 16,
                   right: 16,
                   bottom: 80, // Extra space for page indicator
