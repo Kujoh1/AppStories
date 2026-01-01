@@ -217,7 +217,6 @@ class ContinueReadingSheet extends StatelessWidget {
                   
                   // Continue button
                   Expanded(
-                    flex: 2,
                     child: FilledButton.icon(
                       onPressed: onContinue,
                       icon: const Icon(Icons.play_arrow_rounded, size: 20),

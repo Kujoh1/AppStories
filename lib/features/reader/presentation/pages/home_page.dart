@@ -204,7 +204,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                       const SizedBox(height: AppConstants.paddingXLarge),
 
                       Text(
-                        'Verfügbare Bücher',
+                        booksAsync.when(
+                          data: (books) => 'Verfügbare Bücher (${books.length})',
+                          loading: () => 'Verfügbare Bücher',
+                          error: (_, __) => 'Verfügbare Bücher',
+                        ),
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
