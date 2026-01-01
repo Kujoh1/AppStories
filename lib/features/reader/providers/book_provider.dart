@@ -5,6 +5,7 @@ import '../../../core/services/ink_parser.dart';
 
 /// Provider for the book repository
 /// Using DocxBookRepository to load from Word documents
+/// This is a singleton to ensure caching works properly
 final bookRepositoryProvider = Provider<BookRepository>((ref) {
   return DocxBookRepository();
 });

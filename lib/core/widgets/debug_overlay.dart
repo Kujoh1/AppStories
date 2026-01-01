@@ -158,7 +158,7 @@ class _DebugOverlayState extends State<DebugOverlay>
           children: [
             widget.child,
             if (_isVisible) _buildDebugPanel(),
-            _buildToggleButton(),
+            if (_isVisible) _buildToggleButton(),
           ],
         ),
       ),

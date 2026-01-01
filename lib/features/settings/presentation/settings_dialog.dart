@@ -72,108 +72,8 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
             
             const SizedBox(height: 32),
             
-            // Text Animation Speed
-            Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.1),
-                  width: 1,
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.speed,
-                          color: Theme.of(context).colorScheme.primary,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Text-Animation',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white.withOpacity(0.87),
-                            fontFamily: 'Mynerve',
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Speed Selection
-                    Text(
-                      'Geschwindigkeit: ${AppSettings.getSpeedName(settings.textSpeed)}',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.white.withOpacity(0.7),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Slider(
-                      value: settings.textSpeed.index.toDouble(),
-                      min: 0,
-                      max: 4,
-                      divisions: 4,
-                      onChanged: (value) {
-                        final speed = TextAnimationSpeed.values[value.round()];
-                        ref.read(settingsProvider.notifier).setTextSpeed(speed);
-                      },
-                      activeColor: Theme.of(context).colorScheme.primary,
-                    ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Skip Animation Toggle
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Sofort-Modus',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white.withOpacity(0.87),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Text sofort anzeigen',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.white54,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Switch.adaptive(
-                          value: settings.skipAnimation,
-                          onChanged: (value) {
-                            final speed = value ? TextAnimationSpeed.instant : TextAnimationSpeed.normal;
-                            ref.read(settingsProvider.notifier).setTextSpeed(speed);
-                          },
-                          activeColor: Theme.of(context).colorScheme.primary,
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            // Text Animation Speed - Card Selection
+            _buildTextSpeedSection(context, ref, settings),
             
             // Image Animation Settings
             Container(
@@ -284,6 +184,107 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
             ),
             
             const SizedBox(height: 100), // Extra bottom padding for scrolling
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Build the text animation speed selection section with simple cards
+  Widget _buildTextSpeedSection(BuildContext context, WidgetRef ref, AppSettings settings) {
+    final speedOptions = [
+      (speed: TextAnimationSpeed.slow, label: 'Langsam'),
+      (speed: TextAnimationSpeed.normal, label: 'Normal'),
+      (speed: TextAnimationSpeed.fast, label: 'Schnell'),
+      (speed: TextAnimationSpeed.instant, label: 'Sofort'),
+    ];
+
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Section header
+            Row(
+              children: [
+                Icon(
+                  Icons.text_fields_rounded,
+                  color: primaryColor,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Text-Animation',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white.withOpacity(0.87),
+                    fontFamily: 'Mynerve',
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            
+            // Speed cards in a row
+            Row(
+              children: speedOptions.map((option) {
+                final isSelected = settings.textSpeed == option.speed;
+                
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      right: option.speed != TextAnimationSpeed.instant ? 8 : 0,
+                    ),
+                    child: GestureDetector(
+                      onTap: () {
+                        ref.read(settingsProvider.notifier).setTextSpeed(option.speed);
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isSelected 
+                              ? primaryColor.withOpacity(0.2)
+                              : Colors.white.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isSelected 
+                                ? primaryColor
+                                : Colors.white.withOpacity(0.1),
+                            width: isSelected ? 1.5 : 1,
+                          ),
+                        ),
+                        child: Text(
+                          option.label,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                            color: isSelected 
+                                ? primaryColor
+                                : Colors.white.withOpacity(0.7),
+                            fontFamily: 'Mynerve',
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
           ],
         ),
       ),

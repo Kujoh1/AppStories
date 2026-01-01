@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/services/ink_parser.dart';
 import '../../../../core/widgets/smart_image.dart';
+import '../../../../domain/models/story_page.dart';
 import '../../providers/book_provider.dart';
-import '../../providers/chapter_provider.dart';
-import '../widgets/scene_container.dart';
+import '../../providers/page_state_provider.dart';
+import '../widgets/page_view_widget.dart';
 import '../widgets/chapter_overview_dialog.dart';
 import '../../../settings/presentation/settings_dialog.dart';
+import '../../../settings/providers/settings_provider.dart';
 
 /// Reader page for Ink format stories with choices
+/// Uses the new unified page model for consistent navigation
 class InkReaderPage extends ConsumerStatefulWidget {
   const InkReaderPage({super.key});
 
@@ -28,6 +30,9 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
   
   String? _currentBackground;
   String? _previousBackground;
+  
+  // Viewport size for page calculation
+  Size? _viewportSize;
 
   @override
   void initState() {
@@ -40,6 +45,11 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
       parent: _bgController,
       curve: Curves.easeInOut,
     );
+    
+    // Reset page index on enter
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(currentPageIndexProvider.notifier).state = 0;
+    });
   }
 
   @override
@@ -50,31 +60,180 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
 
   @override
   Widget build(BuildContext context) {
-    final inkStoryAsync = ref.watch(inkStoryProvider);
-
     return Scaffold(
       backgroundColor: const Color(0xFF0A0806),
-      body: inkStoryAsync.when(
-        loading: () => _buildLoadingScreen(),
-        error: (error, stack) => _buildErrorScreen(error),
-        data: (story) => _buildStoryReader(story),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          // Store viewport size for page calculation
+          _viewportSize = Size(constraints.maxWidth, constraints.maxHeight);
+          
+          return _buildContent(constraints);
+        },
       ),
     );
+  }
+
+  Widget _buildContent(BoxConstraints constraints) {
+    final bookId = ref.watch(selectedBookIdProvider);
+    
+    if (_viewportSize == null) {
+      return _buildLoadingScreen();
+    }
+    
+    final params = PageAnalysisParams(
+      bookId: bookId,
+      viewportWidth: _viewportSize!.width,
+      viewportHeight: _viewportSize!.height - 56 - MediaQuery.of(context).padding.top, // Subtract app bar
+    );
+    
+    final pagedBookAsync = ref.watch(pagedBookProvider(params));
+    
+    return pagedBookAsync.when(
+      loading: () => _buildLoadingScreen(),
+      error: (error, stack) => _buildErrorScreen(error),
+      data: (pagedBook) => _buildReader(pagedBook, params),
+    );
+  }
+
+  Widget _buildReader(PagedBook pagedBook, PageAnalysisParams params) {
+    final pageIndex = ref.watch(currentPageIndexProvider);
+    final settings = ref.watch(settingsProvider);
+    
+    // Safety check
+    if (pagedBook.pages.isEmpty) {
+      return _buildEndScreen();
+    }
+    
+    // Clamp page index
+    final safePageIndex = pageIndex.clamp(0, pagedBook.pages.length - 1);
+    if (safePageIndex != pageIndex) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(currentPageIndexProvider.notifier).state = safePageIndex;
+      });
+    }
+    
+    final currentPage = pagedBook.pages[safePageIndex];
+    
+    // Check for story end
+    if (safePageIndex >= pagedBook.pages.length) {
+      return _buildEndScreen();
+    }
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // Background layer
+        _buildBackgroundLayer(),
+
+        // Dark overlay for readability
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.black.withOpacity(0.3),
+                Colors.black.withOpacity(0.6),
+                Colors.black.withOpacity(0.8),
+              ],
+            ),
+          ),
+        ),
+
+        // Main content
+        SafeArea(
+          child: Column(
+            children: [
+              // App bar
+              _buildAppBar(currentPage, pagedBook),
+
+              // Page view widget
+              Expanded(
+                child: PageViewWidget(
+                  key: ValueKey(currentPage.id),
+                  page: currentPage,
+                  totalPages: pagedBook.totalPages,
+                  skipAnimation: settings.skipAnimation,
+                  speedMultiplier: settings.speedMultiplier,
+                  onNext: () => _goToNextPage(pagedBook),
+                  onPrevious: () => _goToPreviousPage(),
+                  onChoiceSelected: (choice) => _handleChoice(choice, pagedBook, params),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _goToNextPage(PagedBook pagedBook) {
+    final currentIndex = ref.read(currentPageIndexProvider);
+    if (currentIndex < pagedBook.pages.length - 1) {
+      ref.read(currentPageIndexProvider.notifier).state = currentIndex + 1;
+    } else {
+      // End of book
+      _showEndScreen();
+    }
+  }
+
+  void _goToPreviousPage() {
+    final currentIndex = ref.read(currentPageIndexProvider);
+    if (currentIndex > 0) {
+      ref.read(currentPageIndexProvider.notifier).state = currentIndex - 1;
+    }
+  }
+
+  void _handleChoice(PageChoice choice, PagedBook pagedBook, PageAnalysisParams params) {
+    // Record the choice
+    final currentPage = pagedBook.pages[ref.read(currentPageIndexProvider)];
+    ref.read(readingStateProvider.notifier).recordChoice(
+      currentPage.sceneId,
+      choice.targetSceneId,
+      choice.text,
+    );
+    
+    // Navigate to the target scene
+    final targetPageIndex = pagedBook.getPageIndexForScene(choice.targetSceneId);
+    if (targetPageIndex != null) {
+      ref.read(currentPageIndexProvider.notifier).state = targetPageIndex;
+    }
+  }
+
+  void _showEndScreen() {
+    // Navigate to end screen or show completion dialog
+    setState(() {});
   }
 
   Widget _buildLoadingScreen() {
     return Container(
       decoration: _buildDefaultGradient(),
       child: const Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          color: Color(0xFFE8DCC0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Color(0xFFE8DCC0),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Seiten werden berechnet...',
+              style: TextStyle(
+                color: Colors.white54,
+                fontSize: 14,
+                fontFamily: 'Mynerve',
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
   Widget _buildErrorScreen(Object error) {
+    final bookId = ref.watch(selectedBookIdProvider);
+    
     return Container(
       decoration: _buildDefaultGradient(),
       child: Center(
@@ -104,7 +263,15 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
               ),
               const SizedBox(height: 32),
               FilledButton.icon(
-                onPressed: () => ref.invalidate(inkStoryProvider),
+                onPressed: () {
+                  if (_viewportSize != null) {
+                    ref.invalidate(pagedBookProvider(PageAnalysisParams(
+                      bookId: bookId,
+                      viewportWidth: _viewportSize!.width,
+                      viewportHeight: _viewportSize!.height - 56,
+                    )));
+                  }
+                },
                 icon: const Icon(Icons.refresh, size: 18),
                 label: const Text('Erneut versuchen'),
               ),
@@ -113,108 +280,6 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
         ),
       ),
     );
-  }
-
-  Widget _buildStoryReader(InkStory story) {
-    final runtime = ref.watch(inkRuntimeProvider);
-
-    // Initialize runtime if needed
-    if (runtime == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(inkRuntimeProvider.notifier).initialize(story);
-      });
-      return _buildLoadingScreen();
-    }
-
-    // Check for story end
-    final currentKnot = runtime.currentKnot;
-    if (currentKnot == null) {
-      return _buildEndScreen();
-    }
-
-    // Update background if changed
-    _updateBackground(runtime.currentBackground);
-
-    // Build scene data
-    final sceneData = _buildSceneData(runtime);
-
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        // Background layer with crossfade
-        _buildBackgroundLayer(),
-
-        // Dark overlay for readability
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.black.withOpacity(0.3),
-                Colors.black.withOpacity(0.6),
-                Colors.black.withOpacity(0.8),
-              ],
-            ),
-          ),
-        ),
-
-        // Main content
-        SafeArea(
-          child: Column(
-            children: [
-              // App bar
-              _buildAppBar(runtime),
-
-              // Scene container
-              Expanded(
-                child: SceneContainer(
-                  key: ValueKey(sceneData.id),
-                  scene: sceneData,
-                  onContinue: () => _continueStory(),
-                  onBack: runtime.canGoBack ? () => _goBack() : null,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  SceneData _buildSceneData(InkRuntime runtime) {
-    final knot = runtime.currentKnot!;
-    
-    // DEBUG: Print image debugging info
-    print('DEBUG: Building scene for knot: ${runtime.currentKnotName}');
-    print('DEBUG: Current tags: ${runtime.currentTags}');
-    print('DEBUG: Current image path: ${runtime.currentImage}');
-    print('DEBUG: Has image: ${runtime.currentImage != null}');
-    
-    return SceneData(
-      id: runtime.currentKnotName,
-      text: knot.content,
-      backgroundPath: runtime.currentBackground,
-      imagePath: runtime.currentImage,
-      choices: runtime.currentChoices.asMap().entries.map((entry) {
-        return SceneChoice(
-          text: entry.value.text,
-          onSelected: () => _makeChoice(entry.key),
-        );
-      }).toList(),
-      canContinue: runtime.canContinue,
-    );
-  }
-
-  void _updateBackground(String? newBackground) {
-    if (newBackground != _currentBackground) {
-      _previousBackground = _currentBackground;
-      _currentBackground = newBackground;
-      
-      if (newBackground != null) {
-        _bgController.forward(from: 0);
-      }
-    }
   }
 
   Widget _buildBackgroundLayer() {
@@ -271,7 +336,9 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
     );
   }
 
-  Widget _buildAppBar(InkRuntime runtime) {
+  Widget _buildAppBar(StoryPage currentPage, PagedBook pagedBook) {
+    final canGoBack = ref.watch(currentPageIndexProvider) > 0;
+    
     return Container(
       height: 56,
       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -280,31 +347,31 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
           // Back button
           IconButton(
             icon: Icon(
-              runtime.canGoBack ? Icons.arrow_back_rounded : Icons.close_rounded,
+              canGoBack ? Icons.arrow_back_rounded : Icons.close_rounded,
               color: Colors.white38,
               size: 22,
             ),
             onPressed: () {
-              if (runtime.canGoBack) {
-                _goBack();
+              if (canGoBack) {
+                _goToPreviousPage();
               } else {
                 context.go('/');
               }
             },
-            tooltip: runtime.canGoBack ? 'Eine Szene zurück' : 'Schließen',
+            tooltip: canGoBack ? 'Zurück' : 'Schließen',
           ),
 
           // Scene overview button
           IconButton(
             icon: const Icon(Icons.account_tree, color: Colors.white38, size: 20),
-            onPressed: () => _showSceneOverview(runtime),
+            onPressed: () => _showSceneOverview(pagedBook),
             tooltip: 'Szenen-Übersicht',
           ),
 
-          // Scene indicator
+          // Page indicator
           Expanded(
             child: Text(
-              _formatKnotName(runtime.currentKnotName),
+              '${currentPage.id} / ${pagedBook.totalPages}',
               style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
@@ -434,50 +501,22 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
     );
   }
 
-  // --- Actions ---
-
-  void _makeChoice(int index) {
-    ref.read(inkRuntimeProvider.notifier).makeChoice(index);
-  }
-
-  void _continueStory() {
-    ref.read(inkRuntimeProvider.notifier).continueStory();
-  }
-
-  void _goBack() {
-    ref.read(inkRuntimeProvider.notifier).goBack();
-  }
-
   void _resetStory() {
     _currentBackground = null;
     _previousBackground = null;
-    ref.read(inkRuntimeProvider.notifier).reset();
+    ref.read(currentPageIndexProvider.notifier).state = 0;
+    ref.read(readingStateProvider.notifier).reset();
   }
 
-  void _showSceneOverview(InkRuntime runtime) {
-    final bookId = ref.read(selectedBookIdProvider);
-    final bookIndexAsync = ref.read(bookIndexProvider(bookId));
+  void _showSceneOverview(PagedBook pagedBook) {
+    final currentIndex = ref.read(currentPageIndexProvider);
+    final currentPage = pagedBook.pages[currentIndex.clamp(0, pagedBook.pages.length - 1)];
     
-    bookIndexAsync.whenData((bookIndex) {
-      // Find current scene index
-      final currentKnotName = runtime.currentKnotName;
-      final knotNames = bookIndex.chapters.map((c) => c.title).toList();
-      final currentIndex = knotNames.indexOf(currentKnotName);
-      
-      ChapterOverviewDialog.show(
-        context,
-        isInkStory: true,
-        currentChapterName: currentKnotName,
-        currentChapterIndex: currentIndex >= 0 ? currentIndex : 0,
-      );
-    });
-  }
-
-  String _formatKnotName(String name) {
-    return name
-        .replaceAll('_', ' ')
-        .split(' ')
-        .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
-        .join(' ');
+    ChapterOverviewDialog.show(
+      context,
+      isInkStory: true,
+      currentChapterName: currentPage.sceneId,
+      currentChapterIndex: currentIndex,
+    );
   }
 }

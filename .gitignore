@@ -54,5 +54,6 @@ app.*.map.json
 .env
 .env.*
 secrets/*.local.json
+git_credentials.txt
 
 

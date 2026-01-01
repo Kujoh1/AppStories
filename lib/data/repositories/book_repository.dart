@@ -1,5 +1,4 @@
 import '../../domain/models/book_graph.dart';
-import '../../domain/models/story_page.dart';
 import '../../domain/models/chapter_info.dart';
 import '../../core/services/story_parser.dart';
 import '../../core/services/ink_parser.dart';
@@ -15,8 +14,8 @@ abstract class BookRepository {
   /// Get full book (legacy - loads everything)
   Future<BookGraph> getBook(String bookId);
   
-  /// Get page by ID
-  Future<StoryPage?> getPage(String bookId, String pageId);
+  /// Get page by ID (legacy)
+  Future<LegacyPage?> getPage(String bookId, String pageId);
   
   /// STAGE 1: Get book index (structure only) - FAST
   Future<BookIndex> getBookIndex(String bookId);
@@ -212,7 +211,7 @@ class DocxBookRepository implements BookRepository {
         author: author,
         startPageId: 'page_1',
         pages: {
-          'page_1': StoryPage(
+          'page_1': LegacyPage(
             id: 'page_1',
             title: title,
             content: firstKnot?.content ?? '',
@@ -237,7 +236,7 @@ class DocxBookRepository implements BookRepository {
       author: author,
       startPageId: 'page_1',
       pages: {
-        'page_1': StoryPage(
+        'page_1': LegacyPage(
           id: 'page_1',
           title: title,
           content: content,
@@ -249,7 +248,7 @@ class DocxBookRepository implements BookRepository {
   }
   
   @override
-  Future<StoryPage?> getPage(String bookId, String pageId) async {
+  Future<LegacyPage?> getPage(String bookId, String pageId) async {
     final book = await getBook(bookId);
     return book.getPage(pageId);
   }

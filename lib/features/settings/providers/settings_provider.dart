@@ -30,19 +30,19 @@ class AppSettings {
     );
   }
   
-  /// Get speed multiplier (lower = faster)
+  /// Get speed multiplier (higher = faster animation)
   double get speedMultiplier {
     switch (textSpeed) {
       case TextAnimationSpeed.slow:
-        return 1.0;
+        return 0.5;   // Halb so schnell wie normal
       case TextAnimationSpeed.normal:
-        return 0.5;
+        return 1.0;   // Basis-Geschwindigkeit
       case TextAnimationSpeed.fast:
-        return 0.25;
+        return 2.0;   // Doppelt so schnell
       case TextAnimationSpeed.faster:
-        return 0.125;  // 2x schneller als fast
+        return 4.0;   // 4x so schnell
       case TextAnimationSpeed.instant:
-        return 0.0;
+        return 0.0;   // Keine Animation
     }
   }
   

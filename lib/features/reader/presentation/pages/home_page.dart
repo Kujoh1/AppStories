@@ -175,18 +175,30 @@ class _HomePageState extends ConsumerState<HomePage> {
                               ],
                             ),
                           ),
-                          data: (books) => ListView.builder(
-                            itemCount: books.length,
-                            itemBuilder: (context, index) {
-                              final book = books[index];
-                              final isSelected = selectedBookId == book.id;
-                              final format = repository.getStoryFormat(book.id);
-                              final isInk = format == StoryFormat.ink;
-                              
-                              // Get chapter count for this book
-                              final chapterCount = isSelected 
-                                  ? bookIndexAsync.whenOrNull(data: (idx) => idx.chapterCount) ?? 0
-                                  : 0;
+                          data: (books) {
+                            // Watch all book indexes once
+                            final allIndexesAsync = ref.watch(allBookIndexesProvider);
+                            
+                            return ListView.builder(
+                              itemCount: books.length,
+                              itemBuilder: (context, index) {
+                                final book = books[index];
+                                final isSelected = selectedBookId == book.id;
+                                final format = repository.getStoryFormat(book.id);
+                                final isInk = format == StoryFormat.ink;
+                                
+                                // Get chapter count from cached indexes
+                                final chapterCount = allIndexesAsync.whenOrNull(
+                                  data: (indexes) => indexes[book.id]?.chapterCount ?? 0,
+                                ) ?? 0;
+                                final isLoadingChapters = allIndexesAsync.isLoading;
+                                
+                                // Debug: Log loading state
+                                if (isLoadingChapters) {
+                                  print('DEBUG: All book indexes are loading...');
+                                } else if (chapterCount > 0) {
+                                  print('DEBUG: Book ${book.id} has $chapterCount chapters (from cache)');
+                                }
                               
                               return Card(
                                 margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
@@ -253,9 +265,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                             ),
                                             const SizedBox(width: 8),
                                             Text(
-                                              isSelected && chapterCount > 0
-                                                  ? (isInk ? '$chapterCount Szenen' : '$chapterCount Kapitel')
-                                                  : (isInk ? 'Interaktive Geschichte' : 'Kapitel werden geladen...'),
+                                              _getChapterDisplayText(isInk, chapterCount, isLoadingChapters),
                                               style: theme.textTheme.bodySmall,
                                             ),
                                             const Spacer(),
@@ -272,8 +282,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                                   ),
                                 ),
                               );
-                            },
-                          ),
+                              },
+                            );
+                          },
                         ),
                       ),
 
@@ -331,5 +342,19 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
       ],
     );
+  }
+
+  /// Get appropriate chapter display text based on loading state and format
+  String _getChapterDisplayText(bool isInk, int chapterCount, bool isLoadingChapters) {
+    if (isLoadingChapters) {
+      return isInk ? 'Szenen werden geladen...' : 'Kapitel werden geladen...';
+    }
+    
+    if (chapterCount > 0) {
+      return isInk ? '$chapterCount Szenen' : '$chapterCount Kapitel';
+    }
+    
+    // Fallback for when count is 0 (shouldn't happen normally)
+    return isInk ? 'Interaktive Geschichte' : 'Klassische Geschichte';
   }
 }

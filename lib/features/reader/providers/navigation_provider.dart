@@ -1,15 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/models/story_page.dart';
+import '../../../domain/models/book_graph.dart';
 import 'book_provider.dart';
 
-/// Provider for navigation logic
+/// Provider for navigation logic (legacy - uses BookGraph)
+/// New readers use PagedBook from page_state_provider instead
 class NavigationNotifier extends StateNotifier<void> {
   final Ref ref;
 
   NavigationNotifier(this.ref) : super(null);
 
   /// Navigate to next page (linear)
-  StoryPage? getNextPage(String currentPageId) {
+  LegacyPage? getNextPage(String currentPageId) {
     final bookAsync = ref.read(bookProvider);
     return bookAsync.maybeWhen(
       data: (book) => book.getNextLinearPage(currentPageId),
@@ -18,7 +19,7 @@ class NavigationNotifier extends StateNotifier<void> {
   }
 
   /// Navigate to previous page (linear)
-  StoryPage? getPreviousPage(String currentPageId) {
+  LegacyPage? getPreviousPage(String currentPageId) {
     final bookAsync = ref.read(bookProvider);
     return bookAsync.maybeWhen(
       data: (book) => book.getPreviousLinearPage(currentPageId),
@@ -27,7 +28,7 @@ class NavigationNotifier extends StateNotifier<void> {
   }
 
   /// Navigate to specific page by ID
-  StoryPage? getPageById(String pageId) {
+  LegacyPage? getPageById(String pageId) {
     final bookAsync = ref.read(bookProvider);
     return bookAsync.maybeWhen(
       data: (book) => book.getPage(pageId),
@@ -70,4 +71,3 @@ class NavigationNotifier extends StateNotifier<void> {
 final navigationProvider = StateNotifierProvider<NavigationNotifier, void>(
   (ref) => NavigationNotifier(ref),
 );
-

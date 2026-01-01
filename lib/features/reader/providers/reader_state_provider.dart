@@ -50,7 +50,7 @@ class ReaderStateNotifier extends StateNotifier<ReaderState> {
 
   void setCurrentPage(StoryPage page) {
     state = state.copyWith(
-      currentPageId: page.id,
+      currentPageId: page.id.toString(),
       currentPage: page,
       isLoading: false,
       error: null,

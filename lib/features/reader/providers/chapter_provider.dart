@@ -9,6 +9,36 @@ final bookIndexProvider = FutureProvider.family<BookIndex, String>((ref, bookId)
   return repository.getBookIndex(bookId);
 });
 
+/// Provider for all book indexes (cached for library display)
+/// This loads all book indexes once and caches them
+final allBookIndexesProvider = FutureProvider<Map<String, BookIndex>>((ref) async {
+  final repository = ref.watch(bookRepositoryProvider);
+  final books = await ref.watch(booksProvider.future);
+  
+  final Map<String, BookIndex> indexes = {};
+  
+  // Load all book indexes in parallel
+  final futures = books.map((book) async {
+    try {
+      final index = await repository.getBookIndex(book.id);
+      indexes[book.id] = index;
+    } catch (e) {
+      print('Error loading index for ${book.id}: $e');
+      // Create a fallback index
+      indexes[book.id] = BookIndex(
+        id: book.id,
+        title: book.title,
+        author: book.author,
+        chapters: [],
+        totalLength: 0,
+      );
+    }
+  });
+  
+  await Future.wait(futures);
+  return indexes;
+});
+
 /// Provider for current chapter index
 final currentChapterIndexProvider = StateProvider<int>((ref) => 0);
 
