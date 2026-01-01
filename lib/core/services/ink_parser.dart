@@ -89,12 +89,30 @@ class InkStory {
   InkKnot? getKnot(String name) => knots[name];
 }
 
+/// Represents a choice made by the user
+class UserChoice {
+  final String fromKnot;
+  final String toKnot;
+  final String choiceText;
+  final int choiceIndex;
+  final DateTime timestamp;
+
+  const UserChoice({
+    required this.fromKnot,
+    required this.toKnot,
+    required this.choiceText,
+    required this.choiceIndex,
+    required this.timestamp,
+  });
+}
+
 /// Runtime state for playing an Ink story
 class InkRuntime {
   final InkStory story;
   final Map<String, int> variables;
   String currentKnotName;
   final List<String> history = []; // Stores previous knot names
+  final List<UserChoice> choiceHistory = []; // Stores user choices
   
   InkRuntime(this.story) 
       : variables = Map.from(story.variables),
@@ -185,8 +203,19 @@ class InkRuntime {
   /// Make a choice and go to target knot
   void makeChoice(int choiceIndex) {
     if (choiceIndex >= 0 && choiceIndex < currentChoices.length) {
+      final choice = currentChoices[choiceIndex];
+      
+      // Record the choice
+      choiceHistory.add(UserChoice(
+        fromKnot: currentKnotName,
+        toKnot: choice.targetKnot,
+        choiceText: choice.text,
+        choiceIndex: choiceIndex,
+        timestamp: DateTime.now(),
+      ));
+      
       history.add(currentKnotName); // Save current to history
-      currentKnotName = currentChoices[choiceIndex].targetKnot;
+      currentKnotName = choice.targetKnot;
     }
   }
   
@@ -196,6 +225,36 @@ class InkRuntime {
     variables.clear();
     variables.addAll(story.variables);
     history.clear();
+    choiceHistory.clear();
+  }
+
+  /// Navigate directly to a specific knot
+  void navigateToKnot(String knotName) {
+    if (story.knots.containsKey(knotName)) {
+      history.add(currentKnotName); // Save current to history
+      currentKnotName = knotName;
+    }
+  }
+
+  /// Get the choice that led to a specific knot
+  UserChoice? getChoiceToKnot(String knotName) {
+    return choiceHistory.cast<UserChoice?>().firstWhere(
+      (choice) => choice?.toKnot == knotName,
+      orElse: () => null,
+    );
+  }
+
+  /// Get the choice that was made from a specific knot
+  UserChoice? getChoiceFromKnot(String knotName) {
+    return choiceHistory.cast<UserChoice?>().firstWhere(
+      (choice) => choice?.fromKnot == knotName,
+      orElse: () => null,
+    );
+  }
+
+  /// Check if a knot was visited via user choice
+  bool wasKnotVisitedByChoice(String knotName) {
+    return choiceHistory.any((choice) => choice.toKnot == knotName);
   }
   
   String _substituteVariables(String text) {

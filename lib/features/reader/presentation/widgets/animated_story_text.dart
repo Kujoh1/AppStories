@@ -804,14 +804,24 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     // Start typewriter after pages are calculated
     if (_charIndex == 0 && _pages.isNotEmpty) {
       if (widget.skipAnimation) {
-        // Instant mode - show all text immediately
+        // Instant mode - show first page immediately, but allow navigation
         Future.delayed(const Duration(milliseconds: 100), () {
           if (mounted) {
             setState(() {
-              _charIndex = _displayText.length;
+              // Only show the first page initially in instant mode
+              _charIndex = _pages.isNotEmpty ? _pages[0].endCharIndex : _displayText.length;
             });
-            // In skip mode, notify immediately since there are no effects
-            widget.onPageComplete?.call();
+            // Don't call onPageComplete immediately - let user navigate through pages
+            if (_pages.length <= 1) {
+              // Only one page, so we can complete immediately
+              widget.onPageComplete?.call();
+            } else {
+              // Multiple pages - wait for user navigation
+              setState(() {
+                _awaitingNextPageSwipe = true;
+              });
+              widget.onNextPageButtonVisibility?.call(true);
+            }
           }
         });
       } else {
@@ -1062,10 +1072,28 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
       _currentWordStartTime = 0;
       _currentWordBlurDuration = _Config.blurDurationMinMs;
       _isPageTransitioning = false;
+      
+      // In instant mode, show the entire page immediately
+      if (widget.skipAnimation) {
+        _charIndex = _pages[_currentPageIndex].endCharIndex;
+      }
     });
 
     // Start the next page only after release (we call this from drag end/tap).
-    _startTypewriter();
+    if (widget.skipAnimation) {
+      // In instant mode, check if we need to show next page button or complete
+      if (_currentPageIndex < _pages.length - 1) {
+        setState(() {
+          _awaitingNextPageSwipe = true;
+        });
+        widget.onNextPageButtonVisibility?.call(true);
+      } else {
+        // Last page completed
+        widget.onPageComplete?.call();
+      }
+    } else {
+      _startTypewriter();
+    }
   }
   
   @override
@@ -1119,16 +1147,25 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
       }
     }
     
-    // If skipAnimation changed to true, show all text immediately
+    // If skipAnimation changed to true, show current page immediately
     if (!oldWidget.skipAnimation && widget.skipAnimation) {
       _typeTimer?.cancel();
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
+        if (mounted && _pages.isNotEmpty) {
           setState(() {
-            _charIndex = _displayText.length;
+            // Show current page completely
+            _charIndex = _pages[_currentPageIndex].endCharIndex;
           });
-          // In skip mode, notify immediately since there are no effects
-          widget.onPageComplete?.call();
+          // Check if we need to show navigation or complete
+          if (_currentPageIndex < _pages.length - 1) {
+            setState(() {
+              _awaitingNextPageSwipe = true;
+            });
+            widget.onNextPageButtonVisibility?.call(true);
+          } else {
+            // Last page completed
+            widget.onPageComplete?.call();
+          }
         }
       });
     }

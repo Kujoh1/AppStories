@@ -75,6 +75,16 @@ class InkRuntimeNotifier extends StateNotifier<InkRuntime?> {
       state = current;
     }
   }
+
+  void navigateToKnot(String knotName) {
+    if (state != null) {
+      state!.navigateToKnot(knotName);
+      // Trigger rebuild
+      final current = state!;
+      state = null;
+      state = current;
+    }
+  }
 }
 
 /// Provider for the list of all available books

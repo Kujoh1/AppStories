@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/story_constants.dart';
 import '../../providers/book_provider.dart';
@@ -7,6 +9,8 @@ import '../../providers/chapter_provider.dart';
 import '../widgets/reader_app_bar.dart';
 import '../widgets/navigation_bar.dart';
 import '../widgets/animated_story_text.dart';
+import '../widgets/chapter_overview_dialog.dart';
+import '../../../settings/presentation/settings_dialog.dart';
 
 /// Main reader screen for displaying story chapters
 class ReaderPage extends ConsumerStatefulWidget {
@@ -21,35 +25,53 @@ class ReaderPage extends ConsumerStatefulWidget {
   ConsumerState<ReaderPage> createState() => _ReaderPageState();
 }
 
-class _ReaderPageState extends ConsumerState<ReaderPage> 
-    with SingleTickerProviderStateMixin {
+class _ReaderPageState extends ConsumerState<ReaderPage> {
   bool _isPaused = false;
   bool _isLoadingNextChapter = false;
-  late AnimationController _barsAnimationController;
-  late Animation<double> _barsAnimation;
+  bool _showSwipeHint = false;
+  Timer? _swipeHintTimer;
 
   @override
   void initState() {
     super.initState();
     
-    // Animation for bars visibility
-    _barsAnimationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 250),
-    );
-    _barsAnimation = CurvedAnimation(
-      parent: _barsAnimationController,
-      curve: Curves.easeOutCubic,
-    );
-    
     // Preload next chapter in background
     _preloadNextChapter();
+    
+    // Start swipe hint timer
+    _startSwipeHintTimer();
   }
-
+  
   @override
   void dispose() {
-    _barsAnimationController.dispose();
+    _swipeHintTimer?.cancel();
     super.dispose();
+  }
+  
+  void _startSwipeHintTimer() {
+    _swipeHintTimer?.cancel();
+    _swipeHintTimer = Timer(const Duration(seconds: 8), () {
+      if (mounted) {
+        setState(() {
+          _showSwipeHint = true;
+        });
+        // Hide hint after 3 seconds
+        Timer(const Duration(seconds: 3), () {
+          if (mounted) {
+            setState(() {
+              _showSwipeHint = false;
+            });
+          }
+        });
+      }
+    });
+  }
+  
+  void _hideSwipeHint() {
+    _swipeHintTimer?.cancel();
+    setState(() {
+      _showSwipeHint = false;
+    });
   }
   
   void _preloadNextChapter() {
@@ -63,11 +85,7 @@ class _ReaderPageState extends ConsumerState<ReaderPage>
     setState(() {
       _isPaused = isPaused;
     });
-    if (isPaused) {
-      _barsAnimationController.forward();
-    } else {
-      _barsAnimationController.reverse();
-    }
+    // No UI changes - pause only affects text animation
   }
 
   Future<void> _handleNextChapter() async {
@@ -113,6 +131,7 @@ class _ReaderPageState extends ConsumerState<ReaderPage>
     final bookIndexAsync = ref.watch(bookIndexProvider(bookId));
 
     return Scaffold(
+      backgroundColor: const Color(0xFF0A0806), // Match ink reader background
       body: chapterAsync.when(
         loading: () => _buildLoadingState(),
         error: (error, stack) => _buildErrorState(error),
@@ -123,60 +142,74 @@ class _ReaderPageState extends ConsumerState<ReaderPage>
           final hasPrevious = chapterIndex > 0;
 
           return Stack(
+            fit: StackFit.expand,
             children: [
-              Scaffold(
-                extendBodyBehindAppBar: true,
-                appBar: _isPaused ? PreferredSize(
-                  preferredSize: const Size.fromHeight(kToolbarHeight + 4),
-                  child: AnimatedBuilder(
-                    animation: _barsAnimation,
-                    builder: (context, child) => Transform.translate(
-                      offset: Offset(0, -kToolbarHeight * (1 - _barsAnimation.value)),
-                      child: Opacity(
-                        opacity: _barsAnimation.value,
-                        child: child,
-                      ),
-                    ),
-                    child: ReaderAppBar(
-                      title: chapter.title,
-                      currentPage: chapterIndex + 1,
-                      totalPages: totalChapters,
-                      onBackTap: () => Navigator.of(context).pop(),
-                      onSettingsTap: () => _showSettingsSheet(context),
-                    ),
-                  ),
-                ) : null,
-                body: Align(
-                  alignment: Alignment.topCenter,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      minWidth: StoryConstants.canvasMinWidth,
-                      maxWidth: StoryConstants.canvasMaxWidth,
-                    ),
-                    child: DecorativeStoryText(
-                      key: ValueKey('chapter_$chapterIndex'),
-                      text: chapter.content,
-                      onPauseChanged: _onPauseChanged,
-                    ),
+              // Dark overlay for readability (matching ink reader)
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.3),
+                      Colors.black.withOpacity(0.6),
+                      Colors.black.withOpacity(0.8),
+                    ],
                   ),
                 ),
-                bottomNavigationBar: _isPaused ? AnimatedBuilder(
-                  animation: _barsAnimation,
-                  builder: (context, child) => Transform.translate(
-                    offset: Offset(0, 80 * (1 - _barsAnimation.value)),
-                    child: Opacity(
-                      opacity: _barsAnimation.value,
-                      child: child,
-                    ),
-                  ),
-                  child: PageNavigationBar(
-                    canGoBack: hasPrevious,
-                    canGoForward: hasNext,
-                    onPreviousPressed: _handlePreviousChapter,
-                    onNextPressed: _handleNextChapter,
-                  ),
-                ) : null,
               ),
+
+              // Main content
+              SafeArea(
+                child: Column(
+                  children: [
+                    // App bar (always visible for normal books)
+                    _buildUnifiedAppBar(chapter.title, chapterIndex + 1, totalChapters),
+
+                    // Story content with chapter navigation
+                    Expanded(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onHorizontalDragStart: (_) {
+                          _hideSwipeHint();
+                        },
+                        onHorizontalDragEnd: (details) {
+                          // Swipe left (negative velocity) = next chapter
+                          // Swipe right (positive velocity) = previous chapter
+                          final velocity = details.primaryVelocity ?? 0;
+                          const threshold = 500.0; // Minimum swipe velocity
+                          
+                          if (velocity < -threshold && hasNext) {
+                            _handleNextChapter();
+                          } else if (velocity > threshold && hasPrevious) {
+                            _handlePreviousChapter();
+                          }
+                        },
+                        onTap: () {
+                          _hideSwipeHint();
+                        },
+                        child: Align(
+                          alignment: Alignment.topCenter,
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              minWidth: StoryConstants.canvasMinWidth,
+                              maxWidth: StoryConstants.canvasMaxWidth,
+                            ),
+                            child: DecorativeStoryText(
+                              key: ValueKey('chapter_$chapterIndex'),
+                              text: chapter.content,
+                              onPauseChanged: _onPauseChanged,
+                              // Don't auto-advance chapters - let user control navigation
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // No UI changes during pause - pause only affects text animation
               
               // Loading overlay for chapter transitions
               if (_isLoadingNextChapter)
@@ -193,6 +226,73 @@ class _ReaderPageState extends ConsumerState<ReaderPage>
                           style: TextStyle(color: Colors.white),
                         ),
                       ],
+                    ),
+                  ),
+                ),
+
+              // Swipe hint overlay
+              if (_showSwipeHint && (hasNext || hasPrevious))
+                Positioned(
+                  bottom: 100,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.8),
+                        borderRadius: BorderRadius.circular(25),
+                        border: Border.all(
+                          color: const Color(0xFFE8DCC0).withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (hasPrevious) ...[
+                            const Icon(
+                              Icons.arrow_back_ios,
+                              color: Color(0xFFE8DCC0),
+                              size: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Vorheriges',
+                              style: TextStyle(
+                                color: Color(0xFFE8DCC0),
+                                fontSize: 12,
+                                fontFamily: 'Mynerve',
+                              ),
+                            ),
+                          ],
+                          if (hasPrevious && hasNext) ...[
+                            const SizedBox(width: 16),
+                            Container(
+                              width: 1,
+                              height: 16,
+                              color: const Color(0xFFE8DCC0).withOpacity(0.3),
+                            ),
+                            const SizedBox(width: 16),
+                          ],
+                          if (hasNext) ...[
+                            const Text(
+                              'Nächstes',
+                              style: TextStyle(
+                                color: Color(0xFFE8DCC0),
+                                fontSize: 12,
+                                fontFamily: 'Mynerve',
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Icon(
+                              Icons.arrow_forward_ios,
+                              color: Color(0xFFE8DCC0),
+                              size: 16,
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -231,6 +331,68 @@ class _ReaderPageState extends ConsumerState<ReaderPage>
           ),
         ],
       ),
+    );
+  }
+
+  /// Build unified app bar matching the ink reader
+  Widget _buildUnifiedAppBar(String title, int currentPage, int totalPages) {
+    return Container(
+      height: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Row(
+        children: [
+          // Back button
+          IconButton(
+            icon: const Icon(
+              Icons.arrow_back_rounded,
+              color: Colors.white38,
+              size: 22,
+            ),
+            onPressed: () => _showChapterOverview(context),
+            tooltip: 'Kapitel-Übersicht',
+          ),
+
+          // Chapter indicator
+          Expanded(
+            child: Text(
+              '$title ($currentPage/$totalPages)',
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: Colors.white24,
+                letterSpacing: 1.5,
+                fontFamily: 'Mynerve',
+              ),
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+
+          // Settings
+          IconButton(
+            icon: const Icon(Icons.tune_rounded, color: Colors.white38, size: 20),
+            onPressed: () => SettingsDialog.show(context),
+            tooltip: 'Einstellungen',
+          ),
+
+          // Home button (matching ink reader)
+          IconButton(
+            icon: const Icon(Icons.home_rounded, color: Colors.white38, size: 20),
+            onPressed: () => context.go('/'),
+            tooltip: 'Zum Startbildschirm',
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showChapterOverview(BuildContext context) {
+    final chapterIndex = ref.read(currentChapterIndexProvider);
+    ChapterOverviewDialog.show(
+      context,
+      isInkStory: false,
+      currentChapterName: 'Kapitel ${chapterIndex + 1}',
+      currentChapterIndex: chapterIndex,
     );
   }
 

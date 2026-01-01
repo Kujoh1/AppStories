@@ -5,7 +5,9 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/services/ink_parser.dart';
 import '../../../../core/widgets/smart_image.dart';
 import '../../providers/book_provider.dart';
+import '../../providers/chapter_provider.dart';
 import '../widgets/scene_container.dart';
+import '../widgets/chapter_overview_dialog.dart';
 import '../../../settings/presentation/settings_dialog.dart';
 
 /// Reader page for Ink format stories with choices
@@ -292,6 +294,13 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
             tooltip: runtime.canGoBack ? 'Eine Szene zurück' : 'Schließen',
           ),
 
+          // Scene overview button
+          IconButton(
+            icon: const Icon(Icons.account_tree, color: Colors.white38, size: 20),
+            onPressed: () => _showSceneOverview(runtime),
+            tooltip: 'Szenen-Übersicht',
+          ),
+
           // Scene indicator
           Expanded(
             child: Text(
@@ -443,6 +452,25 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
     _currentBackground = null;
     _previousBackground = null;
     ref.read(inkRuntimeProvider.notifier).reset();
+  }
+
+  void _showSceneOverview(InkRuntime runtime) {
+    final bookId = ref.read(selectedBookIdProvider);
+    final bookIndexAsync = ref.read(bookIndexProvider(bookId));
+    
+    bookIndexAsync.whenData((bookIndex) {
+      // Find current scene index
+      final currentKnotName = runtime.currentKnotName;
+      final knotNames = bookIndex.chapters.map((c) => c.title).toList();
+      final currentIndex = knotNames.indexOf(currentKnotName);
+      
+      ChapterOverviewDialog.show(
+        context,
+        isInkStory: true,
+        currentChapterName: currentKnotName,
+        currentChapterIndex: currentIndex >= 0 ? currentIndex : 0,
+      );
+    });
   }
 
   String _formatKnotName(String name) {

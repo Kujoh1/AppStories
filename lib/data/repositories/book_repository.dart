@@ -49,18 +49,6 @@ class DocxBookRepository implements BookRepository {
       'path': 'assets/stories/Zwischen den Gleisen.docx',
       'format': StoryFormat.docx,
     },
-    'moby_dick': {
-      'title': 'Moby Dick',
-      'author': 'Herman Melville',
-      'path': 'assets/stories/Moby Dick.docx',
-      'format': StoryFormat.docx,
-    },
-    'fuenf_akte_der_stille': {
-      'title': 'Fünf Akte der Stille',
-      'author': 'Unbekannt',
-      'path': 'assets/stories/ink/Story_01.md',
-      'format': StoryFormat.ink,
-    },
     'hk2045_death_row': {
       'title': 'Hongkong 2045 — Der Korridor der Wahrheit',
       'author': 'AppStories Studio',
