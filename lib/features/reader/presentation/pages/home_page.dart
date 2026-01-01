@@ -5,6 +5,9 @@ import '../../../../core/router/app_router.dart';
 import '../../../../data/repositories/book_repository.dart';
 import '../../providers/book_provider.dart';
 import '../../providers/chapter_provider.dart';
+import '../../providers/reading_progress_provider.dart';
+import '../../providers/page_state_provider.dart';
+import '../widgets/continue_reading_sheet.dart';
 
 /// Home page / landing page of the app
 class HomePage extends ConsumerStatefulWidget {
@@ -20,6 +23,51 @@ class _HomePageState extends ConsumerState<HomePage> {
   double _loadingProgress = 0.0;
 
   Future<void> _startBook() async {
+    final selectedBookId = ref.read(selectedBookIdProvider);
+    final repository = ref.read(bookRepositoryProvider);
+    final progressService = ref.read(readingProgressServiceProvider);
+    
+    // Check for saved progress
+    final savedProgress = await progressService.getProgress(selectedBookId);
+    
+    if (savedProgress != null && savedProgress > 0 && mounted) {
+      // Get book info for the sheet
+      final bookIndex = await ref.read(bookIndexProvider(selectedBookId).future);
+      final books = await ref.read(booksProvider.future);
+      final book = books.firstWhere((b) => b.id == selectedBookId);
+      
+      if (!mounted) return;
+      
+      // Show continue reading sheet
+      final shouldContinue = await ContinueReadingSheet.show(
+        context,
+        bookTitle: book.title,
+        savedPageIndex: savedProgress,
+        totalPages: bookIndex.totalLength > 0 ? bookIndex.totalLength : bookIndex.chapterCount * 10, // Estimate if not available
+      );
+      
+      if (!mounted) return;
+      
+      if (shouldContinue == null) {
+        // User dismissed the sheet
+        return;
+      }
+      
+      if (shouldContinue) {
+        // Continue from saved position
+        _loadBook(startFromPage: savedProgress);
+      } else {
+        // Start from beginning - clear progress
+        await progressService.clearProgress(selectedBookId);
+        _loadBook(startFromPage: 0);
+      }
+    } else {
+      // No saved progress - start from beginning
+      _loadBook(startFromPage: 0);
+    }
+  }
+  
+  Future<void> _loadBook({required int startFromPage}) async {
     final selectedBookId = ref.read(selectedBookIdProvider);
     final repository = ref.read(bookRepositoryProvider);
     final format = repository.getStoryFormat(selectedBookId);
@@ -42,6 +90,9 @@ class _HomePageState extends ConsumerState<HomePage> {
         
         if (!mounted) return;
         
+        // Set start page
+        ref.read(currentPageIndexProvider.notifier).state = startFromPage;
+        
         setState(() {
           _loadingMessage = 'Bereit!';
           _loadingProgress = 1.0;
@@ -60,10 +111,12 @@ class _HomePageState extends ConsumerState<HomePage> {
         if (!mounted) return;
         
         setState(() {
-          _loadingMessage = 'Lade Kapitel 1 von ${bookIndex.chapterCount}...';
+          _loadingMessage = 'Lade Kapitel...';
           _loadingProgress = 0.5;
         });
         
+        // Set start page
+        ref.read(currentPageIndexProvider.notifier).state = startFromPage;
         ref.read(currentChapterIndexProvider.notifier).state = 0;
         await ref.read(currentChapterProvider.future);
         

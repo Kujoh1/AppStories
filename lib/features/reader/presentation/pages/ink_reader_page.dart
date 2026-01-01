@@ -6,6 +6,7 @@ import '../../../../core/widgets/smart_image.dart';
 import '../../../../domain/models/story_page.dart';
 import '../../providers/book_provider.dart';
 import '../../providers/page_state_provider.dart';
+import '../../providers/reading_progress_provider.dart';
 import '../widgets/page_view_widget.dart';
 import '../widgets/chapter_overview_dialog.dart';
 import '../../../settings/presentation/settings_dialog.dart';
@@ -45,11 +46,8 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
       parent: _bgController,
       curve: Curves.easeInOut,
     );
-    
-    // Reset page index on enter
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(currentPageIndexProvider.notifier).state = 0;
-    });
+    // Note: Page index is set by HomePage before navigation
+    // Either to 0 (start from beginning) or to saved progress
   }
 
   @override
@@ -98,6 +96,7 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
   Widget _buildReader(PagedBook pagedBook, PageAnalysisParams params) {
     final pageIndex = ref.watch(currentPageIndexProvider);
     final settings = ref.watch(settingsProvider);
+    final bookId = ref.watch(selectedBookIdProvider);
     
     // Safety check
     if (pagedBook.pages.isEmpty) {
@@ -170,7 +169,10 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
   void _goToNextPage(PagedBook pagedBook) {
     final currentIndex = ref.read(currentPageIndexProvider);
     if (currentIndex < pagedBook.pages.length - 1) {
-      ref.read(currentPageIndexProvider.notifier).state = currentIndex + 1;
+      final newIndex = currentIndex + 1;
+      ref.read(currentPageIndexProvider.notifier).state = newIndex;
+      // Save progress
+      _saveProgress(newIndex);
     } else {
       // End of book
       _showEndScreen();
@@ -197,6 +199,15 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
     final targetPageIndex = pagedBook.getPageIndexForScene(choice.targetSceneId);
     if (targetPageIndex != null) {
       ref.read(currentPageIndexProvider.notifier).state = targetPageIndex;
+      // Save progress
+      _saveProgress(targetPageIndex);
+    }
+  }
+  
+  void _saveProgress(int pageIndex) {
+    if (pageIndex > 0) {
+      final bookId = ref.read(selectedBookIdProvider);
+      ref.read(readingProgressServiceProvider).saveProgress(bookId, pageIndex);
     }
   }
 
