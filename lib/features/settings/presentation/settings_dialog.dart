@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/settings_provider.dart';
+import '../../../core/widgets/animated_smart_image.dart';
+import 'pages/image_settings_page.dart';
 
 /// Settings dialog for app configuration
 class SettingsDialog extends ConsumerWidget {
@@ -102,6 +104,11 @@ class SettingsDialog extends ConsumerWidget {
                 fontStyle: FontStyle.italic,
               ),
             ),
+            const SizedBox(height: 24),
+            
+            // Image Animation Settings
+            _buildImageSettings(context, ref),
+            
             const SizedBox(height: 16),
           ],
         ),
@@ -122,6 +129,122 @@ class SettingsDialog extends ConsumerWidget {
       case TextAnimationSpeed.instant:
         return 'Text wird sofort vollständig angezeigt';
     }
+  }
+
+  Widget _buildImageSettings(BuildContext context, WidgetRef ref) {
+    final imageSettings = ref.watch(imageAnimationSettingsProvider);
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section title
+        Row(
+          children: [
+            Icon(
+              imageSettings.instantMode ? Icons.flash_on : Icons.animation,
+              color: Theme.of(context).colorScheme.primary,
+              size: 18,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Bild-Animationen',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.white70,
+                fontFamily: 'Mynerve',
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        
+        // Quick toggle for instant mode
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white10),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () {
+                ref.read(imageAnimationSettingsProvider.notifier)
+                    .setInstantMode(!imageSettings.instantMode);
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            imageSettings.instantMode ? 'Sofort-Modus' : 'Blur-Fade-Effekt',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white.withOpacity(0.87),
+                              fontFamily: 'Mynerve',
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            imageSettings.instantMode 
+                                ? 'Bilder erscheinen sofort'
+                                : 'Coole ${imageSettings.blurDuration.inMilliseconds}ms Blur-Animation',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.white54,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Switch.adaptive(
+                      value: imageSettings.instantMode,
+                      onChanged: (value) {
+                        ref.read(imageAnimationSettingsProvider.notifier)
+                            .setInstantMode(value);
+                      },
+                      activeColor: Theme.of(context).colorScheme.primary,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        
+        const SizedBox(height: 12),
+        
+        // Advanced settings button
+        Center(
+          child: TextButton.icon(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close current dialog
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const ImageSettingsPage(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.tune, size: 16),
+            label: const Text(
+              'Erweiterte Einstellungen',
+              style: TextStyle(fontSize: 12),
+            ),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.primary,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 

@@ -183,6 +183,12 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
   SceneData _buildSceneData(InkRuntime runtime) {
     final knot = runtime.currentKnot!;
     
+    // DEBUG: Print image debugging info
+    print('DEBUG: Building scene for knot: ${runtime.currentKnotName}');
+    print('DEBUG: Current tags: ${runtime.currentTags}');
+    print('DEBUG: Current image path: ${runtime.currentImage}');
+    print('DEBUG: Has image: ${runtime.currentImage != null}');
+    
     return SceneData(
       id: runtime.currentKnotName,
       text: knot.content,
@@ -309,11 +315,11 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
             tooltip: 'Einstellungen',
           ),
 
-          // Restart
+          // Home
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Colors.white38, size: 20),
-            onPressed: _resetStory,
-            tooltip: 'Neu starten',
+            icon: const Icon(Icons.home_rounded, color: Colors.white38, size: 20),
+            onPressed: () => context.go('/'),
+            tooltip: 'Zum Startbildschirm',
           ),
         ],
       ),

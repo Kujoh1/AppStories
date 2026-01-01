@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -77,13 +78,14 @@ class _SceneContainerState extends ConsumerState<SceneContainer>
   // Text pagination "Weiter" button state
   bool _showTextNextPageButton = false;
   final ValueNotifier<int> _textNextPageTrigger = ValueNotifier<int>(0);
+  
 
   // Timing
   static const Duration _sceneFadeDuration = Duration(milliseconds: 400);
-  static const Duration _imageFadeDuration = Duration(milliseconds: 600);
+  static const Duration _imageFadeDuration = Duration(milliseconds: 1200); // Longer for emotional impact
   static const Duration _interactionFadeDuration = Duration(milliseconds: 400);
-  static const Duration _delayAfterText = Duration(milliseconds: 300);
-  static const Duration _delayAfterImage = Duration(milliseconds: 200);
+  static const Duration _delayAfterText = Duration(milliseconds: 400); // Emotional timing
+  static const Duration _delayAfterImage = Duration(milliseconds: 200); // Faster flow
 
   @override
   void initState() {
@@ -150,22 +152,19 @@ class _SceneContainerState extends ConsumerState<SceneContainer>
     
     setState(() => _phase = ScenePhase.revealing);
     
-    // Sequence: Text done → Image fades in → Interaction fades in
-    Future.delayed(_delayAfterText, () {
-      if (!mounted) return;
-      
-      if (widget.scene.hasImage) {
-        _imageController.forward().then((_) {
+    // Immediate sequence: Text done → Image fades in → Interaction fades in
+    if (widget.scene.hasImage) {
+      // Start the image fade-in animation immediately
+      _imageController.forward().then((_) {
+        if (!mounted) return;
+        Future.delayed(_delayAfterImage, () {
           if (!mounted) return;
-          Future.delayed(_delayAfterImage, () {
-            if (!mounted) return;
-            _showInteraction();
-          });
+          _showInteraction();
         });
-      } else {
-        _showInteraction();
-      }
-    });
+      });
+    } else {
+      _showInteraction();
+    }
   }
 
   void _showInteraction() {
@@ -216,8 +215,8 @@ class _SceneContainerState extends ConsumerState<SceneContainer>
             textWidget: _buildTextArea(layout.textAreaHeight, constraints.maxWidth),
             imageWidget: widget.scene.hasImage ? _buildImage() : null,
             interactionWidget: widget.scene.hasInteraction ? _buildInteraction() : null,
-            imageVisible: _imageController.value > 0 || _phase == ScenePhase.complete,
-            interactionVisible: _interactionController.value > 0 || _phase == ScenePhase.complete,
+            imageVisible: _phase != ScenePhase.textPlaying,
+            interactionVisible: _phase == ScenePhase.complete,
             textNextPageButton: _showTextNextPageButton ? _buildTextNextPageButton() : null,
           ),
         );
@@ -285,22 +284,65 @@ class _SceneContainerState extends ConsumerState<SceneContainer>
   }
 
   Widget _buildImage() {
-    return FadeTransition(
-      opacity: CurvedAnimation(
-        parent: _imageController,
-        curve: Curves.easeOut,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingLarge),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: SmartImage(
-            assetPath: widget.scene.imagePath!,
-            fit: BoxFit.contain,
-            width: double.infinity,
+    return AnimatedBuilder(
+      animation: _imageController,
+      builder: (context, child) {
+        final progress = CurvedAnimation(
+          parent: _imageController,
+          curve: Curves.easeOutQuart,
+        ).value;
+        
+        // Emotional fade-in: Blur → Sharp + Scale + Opacity
+        final blurAmount = (1.0 - progress) * 6.0;
+        final scale = 0.96 + (progress * 0.04);
+        final opacity = progress * progress;
+        
+        Widget imageWidget = Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingLarge),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: SmartImage(
+              assetPath: widget.scene.imagePath!,
+              fit: BoxFit.contain,
+              width: double.infinity,
+              fallback: Container(
+                height: 200,
+                color: Colors.blue.withOpacity(0.5),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.image_not_supported, color: Colors.white, size: 48),
+                      const SizedBox(height: 8),
+                      Text(
+                        'IMAGE WIDGET CREATED\nPath: ${widget.scene.imagePath}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+        
+        // Apply blur filter only when needed for performance
+        if (blurAmount > 0.1) {
+          imageWidget = ImageFiltered(
+            imageFilter: ImageFilter.blur(sigmaX: blurAmount, sigmaY: blurAmount),
+            child: imageWidget,
+          );
+        }
+        
+        return Opacity(
+          opacity: opacity,
+          child: Transform.scale(
+            scale: scale,
+            child: imageWidget,
+          ),
+        );
+      },
     );
   }
 
@@ -328,29 +370,34 @@ class _SceneContainerState extends ConsumerState<SceneContainer>
   Widget _buildChoices() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingLarge),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Header
-          Text(
-            'Was tust du?',
-            style: TextStyle(
-              fontFamily: 'Mynerve',
-              fontSize: 14,
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
-              letterSpacing: 1.5,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header
+            Text(
+              'Was tust du?',
+              style: TextStyle(
+                fontFamily: 'Mynerve',
+                fontSize: 14,
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
+                letterSpacing: 1.5,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 12),
-          
-          // Choice buttons
-          ...widget.scene.choices.map((choice) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: _buildChoiceButton(choice),
-          )),
-        ],
+            const SizedBox(height: 12),
+            
+            // Choice buttons
+            ...widget.scene.choices.map((choice) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _buildChoiceButton(choice),
+            )),
+            
+            // Extra bottom padding to prevent overflow
+            const SizedBox(height: 8),
+          ],
+        ),
       ),
     );
   }

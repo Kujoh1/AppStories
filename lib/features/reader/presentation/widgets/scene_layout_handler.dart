@@ -47,8 +47,9 @@ class SceneLayoutCalculator {
     fixedHeight += bottomPadding;
     
     // Text gets remaining space - subtract extra buffer to be safe
-    // Buffer includes: 2px for border + extra safety margin
-    final textAreaHeight = (availableHeight - fixedHeight - 24).clamp(100.0, double.infinity);
+    // Buffer includes: 2px for border + extra safety margin + overflow prevention
+    final safetyBuffer = 32.0; // Increased buffer to prevent any overflow
+    final textAreaHeight = (availableHeight - fixedHeight - safetyBuffer).clamp(100.0, double.infinity);
     
     return SceneLayout(
       totalHeight: availableHeight,
@@ -68,7 +69,8 @@ class SceneLayoutCalculator {
            12 + // spacing after header
            (count * choiceButtonHeight) +
            ((count - 1) * choiceSpacing) +
-           8; // bottom margin
+           16 + // increased bottom margin
+           8; // extra safety buffer to prevent overflow
   }
 }
 
@@ -128,9 +130,10 @@ class SceneLayoutWidget extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: layout.totalHeight,
-      child: Column(
+    return ClipRect(
+      child: SizedBox(
+        height: layout.totalHeight,
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // TOP PADDING
@@ -151,7 +154,7 @@ class SceneLayoutWidget extends StatelessWidget {
                 ),
               ),
               
-              // IMAGE - 24px below text
+              // IMAGE - 24px below text  
               if (layout.hasImage && imageWidget != null && imageVisible) ...[
                 SizedBox(height: layout.spacing),
                 SizedBox(
@@ -176,6 +179,7 @@ class SceneLayoutWidget extends StatelessWidget {
             SizedBox(height: layout.bottomPadding),
           ],
         ],
+        ),
       ),
     );
   }

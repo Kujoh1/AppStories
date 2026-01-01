@@ -70,7 +70,7 @@ class _Config {
   static const int chapterFadeOutMs = 600;
   static const int chapterToTextDelayMs = 300;
   
-  static const int glowDurationMs = 1800;
+  static const int glowDurationMs = 1200; // Reduced from 1800ms for faster completion
   // Blur duration varies by sentence length: short=min, long=max
   static const int blurDurationMinMs = 500;
   static const int blurDurationMaxMs = 1500;
@@ -349,30 +349,86 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     
     // Cleanup old glows and trigger repaint for blur animation
     if (now % 50 < 16) {
+      final hadEffects = _hasActiveEffects();
       _cleanupOldGlows();
-      if (_hasActiveEffects()) {
+      final hasEffects = _hasActiveEffects();
+      
+      // Force UI update if effects changed or are still active (iOS rendering bug fix)
+      if (hasEffects || hadEffects != hasEffects) {
         setState(() {});
+        // Force additional repaint on iOS to prevent stuck blur
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() {});
+          }
+        });
       }
+    }
+    
+    // iOS rendering bug fix: Force cleanup every 2 seconds
+    if (now % 2000 < 50) {
+      _forceCleanupStuckEffects();
     }
   }
   
   bool _hasActiveEffects() {
     final now = DateTime.now().millisecondsSinceEpoch;
     for (final word in _glowingWords) {
-      if (now - word.revealTime < _Config.glowDurationMs) return true;
+      // Check if EITHER glow OR blur effects are still active
+      final maxDuration = math.max(_Config.glowDurationMs, word.blurDuration);
+      if (now - word.revealTime < maxDuration) return true;
     }
     if (_currentWordStartTime > 0) return true;
     return false;
   }
+
+  /// Wait for all text effects (glow, blur) to complete before notifying parent
+  void _waitForEffectsToComplete() {
+    if (!_hasActiveEffects()) {
+      // No active effects, notify immediately
+      widget.onPageComplete?.call();
+      return;
+    }
+
+    // Check every 50ms until all effects are done
+    Timer.periodic(const Duration(milliseconds: 50), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
+      if (!_hasActiveEffects()) {
+        timer.cancel();
+        widget.onPageComplete?.call();
+      }
+    });
+  }
   
   void _cleanupOldGlows() {
     final now = DateTime.now().millisecondsSinceEpoch;
+    bool removedAny = false;
+    
     while (_glowingWords.isNotEmpty) {
-      if (now - _glowingWords.first.revealTime > _Config.glowDurationMs) {
+      final word = _glowingWords.first;
+      // Clean up when BOTH glow AND blur effects are complete
+      final maxDuration = math.max(_Config.glowDurationMs, word.blurDuration);
+      // Force cleanup after 2.5 seconds to prevent iOS rendering bugs
+      final forceCleanupTime = 2500;
+      if (now - word.revealTime > maxDuration || now - word.revealTime > forceCleanupTime) {
         _glowingWords.removeAt(0);
+        removedAny = true;
       } else {
         break;
       }
+    }
+    
+    // Force UI update if we removed effects (iOS rendering bug fix)
+    if (removedAny && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {});
+        }
+      });
     }
   }
   
@@ -754,6 +810,7 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
             setState(() {
               _charIndex = _displayText.length;
             });
+            // In skip mode, notify immediately since there are no effects
             widget.onPageComplete?.call();
           }
         });
@@ -835,7 +892,7 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
     } else if (_charIndex >= text.length && _charIndex > _currentWordStart) {
       final blurDuration = _calculateBlurDuration(_currentWordStart);
       _glowingWords.add(_WordInfo(_currentWordStart, _charIndex, _currentWordStartTime, blurDuration));
-      // Animation complete - notify parent
+      // Animation complete - notify parent immediately
       widget.onPageComplete?.call();
     }
   }
@@ -907,6 +964,10 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
   
   void _onPressStart() {
     if (_awaitingNextPageSwipe) return;
+    
+    // Force cleanup of stuck blur effects on touch (iOS rendering bug fix)
+    _forceCleanupStuckEffects();
+    
     _pauseTimer?.cancel();
     _pauseTimer = Timer(const Duration(milliseconds: 40), () {
       if (mounted && !_isPaused) {
@@ -924,6 +985,31 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
       _isPaused = false;
       widget.onPauseChanged?.call(false);
       _startTypewriter();
+    }
+  }
+  
+  /// Force cleanup of stuck blur effects (iOS rendering bug fix)
+  void _forceCleanupStuckEffects() {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    bool removedAny = false;
+    
+    // Remove effects that are older than 2 seconds (aggressive cleanup on touch)
+    _glowingWords.removeWhere((word) {
+      if (now - word.revealTime > 2000) {
+        removedAny = true;
+        return true;
+      }
+      return false;
+    });
+    
+    if (removedAny && mounted) {
+      setState(() {});
+      // Double repaint to force iOS to update
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {});
+        }
+      });
     }
   }
 
@@ -1041,6 +1127,7 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
           setState(() {
             _charIndex = _displayText.length;
           });
+          // In skip mode, notify immediately since there are no effects
           widget.onPageComplete?.call();
         }
       });
@@ -1437,7 +1524,7 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
       if (elapsed < word.blurDuration) {
         final t = elapsed / word.blurDuration;
         final wordBlurIntensity = (1.0 - t) * (1.0 - t) * (1.0 - t);
-        if (wordBlurIntensity > 0.05) {
+        if (wordBlurIntensity > 0.02) { // Lower threshold for earlier blur removal
           for (int i = wordStart.clamp(0, page.text.length); i < wordEnd.clamp(0, pageRevealedChars); i++) {
             blurredChars.add(i);
           }
@@ -1534,7 +1621,7 @@ class _PagedTypewriterState extends State<_PagedTypewriter>
         final t = elapsed / word.blurDuration;
         final blurIntensity = (1.0 - t) * (1.0 - t) * (1.0 - t);
         
-        if (blurIntensity > 0.05) {
+        if (blurIntensity > 0.02) { // Lower threshold for earlier blur removal
           // Convert to page-relative
           final wordStartRel = (word.startIndex - page.startCharIndex).clamp(0, page.text.length);
           final wordEndRel = (word.endIndex - page.startCharIndex).clamp(0, page.text.length);
