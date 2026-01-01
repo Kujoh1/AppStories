@@ -22,16 +22,21 @@ class StoryAssets {
   
   static Future<StoryAssets> loadFromAsset(String path) async {
     try {
+      print('🎨 [StoryAssets] Loading from: $path');
       final content = await rootBundle.loadString(path);
       final json = jsonDecode(content) as Map<String, dynamic>;
       
+      final images = Map<String, String>.from(json['IMG'] ?? {});
+      print('🎨 [StoryAssets] Loaded ${images.length} images: ${images.keys.take(5).join(", ")}...');
+      
       return StoryAssets(
         backgrounds: Map<String, String>.from(json['BG'] ?? {}),
-        images: Map<String, String>.from(json['IMG'] ?? {}),
+        images: images,
         sounds: Map<String, String>.from(json['SFX'] ?? {}),
         moods: Map<String, String>.from(json['MOOD'] ?? {}),
       );
     } catch (e) {
+      print('❌ [StoryAssets] Failed to load from $path: $e');
       // Return empty assets if file doesn't exist
       return const StoryAssets();
     }

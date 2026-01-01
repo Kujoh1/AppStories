@@ -307,6 +307,7 @@ class PageAnalyzer {
         if (tag.startsWith('IMG:')) {
           final key = tag.substring(4);
           imagePath = story.assets.getImage(key);
+          print('🎨 [PageAnalyzer] Image tag found: $key -> Path: $imagePath');
           break;
         }
       }

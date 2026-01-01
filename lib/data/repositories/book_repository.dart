@@ -54,6 +54,18 @@ class DocxBookRepository implements BookRepository {
       'path': 'assets/stories/ink/Story_02.md',
       'format': StoryFormat.ink,
     },
+    'die_regeln_des_taeters': {
+      'title': 'Die Regeln des Täters',
+      'author': 'AppStories',
+      'path': 'assets/stories/ink/Story_03.md',
+      'format': StoryFormat.ink,
+    },
+    'frankfurt_komplex': {
+      'title': 'Der Frankfurt-Komplex',
+      'author': 'AppStories',
+      'path': 'assets/stories/ink/Story_04.md',
+      'format': StoryFormat.ink,
+    },
   };
 
   @override

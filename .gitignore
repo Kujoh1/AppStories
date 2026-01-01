@@ -55,5 +55,6 @@ app.*.map.json
 .env.*
 secrets/*.local.json
 git_credentials.txt
+.replicate_token
 
 
