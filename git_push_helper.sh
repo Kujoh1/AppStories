@@ -56,3 +56,4 @@ git config --local --unset credential.helper
 
 echo "✅ Git push erfolgreich abgeschlossen!"
 echo "🎉 Alle Änderungen wurden zu GitHub hochgeladen!"
+

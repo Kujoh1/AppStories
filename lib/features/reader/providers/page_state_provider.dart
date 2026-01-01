@@ -36,8 +36,12 @@ class PageAnalysisParams {
 }
 
 /// Provider for pre-analyzed paged book
-/// This calculates all pages ONCE before reading starts
-final pagedBookProvider = FutureProvider.family<PagedBook, PageAnalysisParams>((ref, params) async {
+/// This calculates all pages when needed and recalculates on book reload
+/// Uses autoDispose to ensure fresh calculations when book is reloaded
+final pagedBookProvider = FutureProvider.family.autoDispose<PagedBook, PageAnalysisParams>((ref, params) async {
+  print('📐 [PageAnalyzer] Starting page calculation for ${params.bookId}');
+  print('   Viewport: ${params.viewportWidth.toInt()}x${params.viewportHeight.toInt()}');
+  
   final analyzer = ref.watch(pageAnalyzerProvider);
   final repository = ref.watch(bookRepositoryProvider);
   final format = repository.getStoryFormat(params.bookId);
@@ -45,12 +49,14 @@ final pagedBookProvider = FutureProvider.family<PagedBook, PageAnalysisParams>((
   if (format == StoryFormat.ink) {
     // Ink story
     final story = await repository.getInkStory(params.bookId);
-    return analyzer.analyzeInkStory(
+    final result = await analyzer.analyzeInkStory(
       story: story,
       bookId: params.bookId,
       viewportWidth: params.viewportWidth,
       viewportHeight: params.viewportHeight,
     );
+    print('✅ [PageAnalyzer] Completed! Generated ${result.totalPages} pages');
+    return result;
   } else {
     // DOCX story
     final bookIndex = await repository.getBookIndex(params.bookId);
@@ -61,13 +67,15 @@ final pagedBookProvider = FutureProvider.family<PagedBook, PageAnalysisParams>((
       chapters.add((title: chapter.title, content: chapter.content));
     }
     
-    return analyzer.analyzeDocxStory(
+    final result = await analyzer.analyzeDocxStory(
       bookId: params.bookId,
       title: bookIndex.title,
       chapters: chapters,
       viewportWidth: params.viewportWidth,
       viewportHeight: params.viewportHeight,
     );
+    print('✅ [PageAnalyzer] Completed! Generated ${result.totalPages} pages');
+    return result;
   }
 });
 
@@ -111,6 +119,12 @@ void goToScene(WidgetRef ref, PageAnalysisParams params, String sceneId) {
       ref.read(currentPageIndexProvider.notifier).state = pageIndex;
     }
   });
+}
+
+/// Invalidate the paged book cache to force recalculation
+/// Call this when book changes or when layout needs to be recalculated
+void invalidatePagedBook(WidgetRef ref, PageAnalysisParams params) {
+  ref.invalidate(pagedBookProvider(params));
 }
 
 /// State notifier for more complex reading state

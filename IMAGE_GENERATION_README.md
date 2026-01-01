@@ -132,3 +132,4 @@ Nach der Generierung:
 - FLUX Schnell Docs: https://replicate.com/black-forest-labs/flux-schnell
 - Replicate API Docs: https://replicate.com/docs
 
+

@@ -90,3 +90,4 @@ if __name__ == "__main__":
     os.environ["REPLICATE_API_TOKEN"] = token
     generate_image()
 
+

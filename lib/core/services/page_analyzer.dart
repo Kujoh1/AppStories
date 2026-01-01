@@ -35,12 +35,12 @@ class PageLayoutConfig {
     this.fontFamily = 'Mynerve',
     this.imageHeight = 180.0,
     this.imageSpacing = 20.0,
-    this.choiceButtonHeight = 200.0,
-    this.choiceSpacing = 8.0,
-    this.choiceHeaderHeight = 40.0,
+    this.choiceButtonHeight = 240.0,  // Increased for new gradient design with more padding
+    this.choiceSpacing = 12.0,        // Match actual spacing in PageViewWidget
+    this.choiceHeaderHeight = 70.0,   // Increased for icon + text + spacing (28 + 20 + 20)
     this.topPadding = 16.0,
-    this.bottomPadding = 40.0,  // Match PageViewWidget bottom padding
-    this.safetyBuffer = 8.0,    // Minimal safety margin - maximize text space
+    this.bottomPadding = 40.0,        // Match PageViewWidget bottom padding
+    this.safetyBuffer = 8.0,          // Minimal safety margin - maximize text space
   });
 
   TextStyle get textStyle => TextStyle(
@@ -59,31 +59,146 @@ class PageAnalyzer {
   
   const PageAnalyzer({this.config = const PageLayoutConfig()});
 
+  /// Calculate the actual height needed for a single choice button
+  /// MUST match PageViewWidget._buildChoiceButton EXACTLY
+  double _calculateChoiceHeight(String choiceText, double viewportWidth) {
+    // Constants from PageViewWidget._buildChoiceButton
+    // Container padding (line 625)
+    const containerPaddingH = 20.0;
+    const containerPaddingV = 16.0;
+    
+    // Badge (lines 651-672): width 28, height 28
+    const badgeWidth = 28.0;
+    const badgeHeight = 28.0;
+    
+    // Spacing after badge (line 673)
+    const badgeSpacing = 14.0;
+    
+    // Arrow icon (lines 690-694): width 16
+    const arrowWidth = 16.0;
+    
+    // Spacing before arrow (line 688)
+    const arrowSpacing = 10.0;
+    
+    // Box shadow offset (line 644)
+    const shadowOffset = 4.0;
+    
+    // Available width for text (badge + spacing + text + spacing + arrow)
+    final availableTextWidth = viewportWidth 
+        - (containerPaddingH * 2)  // left + right padding
+        - badgeWidth 
+        - badgeSpacing 
+        - arrowSpacing
+        - arrowWidth
+        - (config.horizontalPadding * 2);  // screen padding
+    
+    // Measure text height (lines 676-686)
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: choiceText,
+        style: const TextStyle(
+          fontSize: 15,
+          fontFamily: 'Mynerve',
+          height: 1.4,
+          letterSpacing: 0.3,
+        ),
+      ),
+      maxLines: null,
+      textDirection: TextDirection.ltr,
+    );
+    
+    textPainter.layout(maxWidth: availableTextWidth);
+    
+    // Total button height
+    // = max(textHeight, badgeHeight) + vertical padding + shadow
+    final contentHeight = textPainter.height > badgeHeight ? textPainter.height : badgeHeight;
+    final totalHeight = contentHeight + (containerPaddingV * 2) + shadowOffset;
+    
+    textPainter.dispose();
+    
+    return totalHeight;
+  }
+
+  /// Calculate total height needed for all choices
+  /// MUST match PageViewWidget._buildChoices EXACTLY
+  double _calculateTotalChoicesHeight(List<PageChoice> choices, double viewportWidth) {
+    if (choices.isEmpty) return 0.0;
+    
+    double totalHeight = 0.0;
+    
+    // Header section (lines 552-579 in page_view_widget.dart)
+    // Row: Icon container (28px) + SizedBox(10px) + Text (~20px) = ~58px
+    totalHeight += 58.0;
+    
+    // SizedBox(height: 20) after header (line 579)
+    totalHeight += 20.0;
+    
+    // Calculate actual height for each choice
+    final choiceHeights = <double>[];
+    for (int i = 0; i < choices.length; i++) {
+      final height = _calculateChoiceHeight(choices[i].text, viewportWidth);
+      choiceHeights.add(height);
+      
+      // Choice button height
+      totalHeight += height;
+      
+      // Padding.only(bottom: 12) for each choice (line 585)
+      totalHeight += 12.0;
+    }
+    
+    print('   📦 Choice box breakdown:');
+    print('      Header (icon + text + spacing): 78px');
+    print('      ${choices.length} choices: ${choiceHeights.map((h) => h.toInt()).toList()}');
+    print('      Spacing after each: 12px × ${choices.length}');
+    print('      ✅ TOTAL: ${totalHeight.toInt()}px');
+    
+    return totalHeight;
+  }
+
   /// Calculate available text height based on what elements are on the page
   double _calculateTextAreaHeight({
     required double viewportHeight,
+    required double viewportWidth,
     required bool hasImage,
-    required bool hasChoices,
-    required int choiceCount,
+    required List<PageChoice> choices,
     bool hasContinueButton = true, // Default: always reserve space for button
+    String? debugPageId, // For logging
   }) {
     double fixedHeight = config.topPadding + config.bottomPadding + config.safetyBuffer;
+    final breakdown = <String, double>{
+      'topPadding': config.topPadding,
+      'bottomPadding': config.bottomPadding,
+      'safetyBuffer': config.safetyBuffer,
+    };
     
     if (hasImage) {
-      fixedHeight += config.imageHeight + config.imageSpacing;
+      final imageTotal = config.imageHeight + config.imageSpacing;
+      fixedHeight += imageTotal;
+      breakdown['image'] = imageTotal;
     }
     
-    if (hasChoices && choiceCount > 0) {
-      fixedHeight += config.choiceHeaderHeight +
-                     (choiceCount * config.choiceButtonHeight) +
-                     ((choiceCount - 1) * config.choiceSpacing) +
-                     16.0; // spacing before choices
+    if (choices.isNotEmpty) {
+      // Dynamic height calculation based on actual choice text
+      final choicesHeight = _calculateTotalChoicesHeight(choices, viewportWidth);
+      fixedHeight += choicesHeight;
+      breakdown['choices'] = choicesHeight;
     } else if (hasContinueButton) {
       // Reserve space for "Weiter" button + spacing (16px spacing + ~48px button + 16px)
       fixedHeight += 80.0;
+      breakdown['continueButton'] = 80.0;
     }
     
-    return (viewportHeight - fixedHeight).clamp(100.0, double.infinity);
+    final availableHeight = (viewportHeight - fixedHeight).clamp(100.0, double.infinity);
+    
+    if (debugPageId != null) {
+      print('   📏 [Page $debugPageId] Layout calculation:');
+      print('      Viewport height: ${viewportHeight.toInt()}px');
+      print('      Fixed heights: ${breakdown.map((k, v) => MapEntry(k, "${v.toInt()}px"))}');
+      print('      Total fixed: ${fixedHeight.toInt()}px');
+      print('      ✅ Available for text: ${availableHeight.toInt()}px');
+    }
+    
+    return availableHeight;
   }
 
   /// Calculate how many lines fit in available height
@@ -93,7 +208,7 @@ class PageAnalyzer {
   }
 
   /// Find how much text fits in available space using TextPainter
-  int _findTextThatFits(String text, int startIndex, double width, double maxHeight) {
+  int _findTextThatFits(String text, int startIndex, double width, double maxHeight, {String? debugInfo}) {
     if (startIndex >= text.length) return text.length;
     
     final maxLines = _calculateLinesPerPage(maxHeight);
@@ -116,6 +231,25 @@ class PageAnalyzer {
       } else {
         high = mid - 1;
       }
+    }
+    
+    // Verify the result and log details if requested
+    if (debugInfo != null) {
+      final finalText = text.substring(startIndex, low);
+      final verifyPainter = TextPainter(
+        text: TextSpan(text: finalText, style: config.textStyle),
+        textDirection: ui.TextDirection.ltr,
+      )..layout(maxWidth: width);
+      final actualLines = verifyPainter.computeLineMetrics().length;
+      final actualHeight = verifyPainter.height;
+      verifyPainter.dispose();
+      
+      print('   📝 [$debugInfo] Text fitting:');
+      print('      Max lines allowed: $maxLines (from ${maxHeight.toInt()}px height)');
+      print('      Actual lines used: $actualLines');
+      print('      Calculated text height: ${actualHeight.toInt()}px');
+      print('      Characters fitted: ${low - startIndex}');
+      print('      Text preview: "${finalText.substring(0, finalText.length > 50 ? 50 : finalText.length)}..."');
     }
     
     return low;
@@ -233,17 +367,25 @@ class PageAnalyzer {
     required String text,
     required double viewportWidth,
     required double textAreaHeight,
+    String? debugSceneId, // For logging specific scenes
   }) {
     if (text.trim().isEmpty) return [''];
     
     final textWidth = viewportWidth - (config.horizontalPadding * 2);
     final pages = <String>[];
     int startCharIndex = 0;
+    int pageInScene = 1;
     
     while (startCharIndex < text.length) {
       // Find MAXIMUM text that fits visually
+      final shouldDebug = debugSceneId != null;
       int endCharIndex = _findTextThatFits(
-        text, startCharIndex, textWidth, textAreaHeight);
+        text, 
+        startCharIndex, 
+        textWidth, 
+        textAreaHeight,
+        debugInfo: shouldDebug ? '$debugSceneId-P$pageInScene' : null,
+      );
       
       // If we can fit ALL remaining text, do it - no break needed
       if (endCharIndex >= text.length) {
@@ -266,6 +408,7 @@ class PageAnalyzer {
       final pageText = text.substring(startCharIndex, breakPoint).trim();
       if (pageText.isNotEmpty) {
         pages.add(pageText);
+        pageInScene++;
       }
       startCharIndex = breakPoint;
       
@@ -280,6 +423,9 @@ class PageAnalyzer {
   }
 
   /// Analyze an Ink story and create all pages
+  /// 
+  /// KEY PRINCIPLE: For scenes with choices, calculate the LAST page first
+  /// (where choices appear), then paginate the remaining text for earlier pages.
   Future<PagedBook> analyzeInkStory({
     required InkStory story,
     required String bookId,
@@ -294,6 +440,9 @@ class PageAnalyzer {
     // Get knot order starting from startKnot
     final knotOrder = _getLinearKnotOrder(story, startKnot ?? story.startKnot);
     
+    print('📐 [PageAnalyzer] Analyzing ${knotOrder.length} scenes');
+    print('   Viewport: ${viewportWidth.toInt()}x${viewportHeight.toInt()}');
+    
     for (final knotName in knotOrder) {
       final knot = story.knots[knotName];
       if (knot == null) continue;
@@ -307,7 +456,6 @@ class PageAnalyzer {
         if (tag.startsWith('IMG:')) {
           final key = tag.substring(4);
           imagePath = story.assets.getImage(key);
-          print('🎨 [PageAnalyzer] Image tag found: $key -> Path: $imagePath');
           break;
         }
       }
@@ -323,48 +471,23 @@ class PageAnalyzer {
       final hasChoices = choices.isNotEmpty;
       final canContinue = knot.divert != null;
       
-      // Calculate text area height for last page (may have image/choices)
-      final lastPageTextHeight = _calculateTextAreaHeight(
-        viewportHeight: viewportHeight,
-        hasImage: hasImage,
-        hasChoices: hasChoices,
-        choiceCount: choices.length,
-        hasContinueButton: !hasChoices && canContinue,
-      );
-      
-      // Calculate text area height for non-last pages (no image/choices, but always has continue button)
-      final regularTextHeight = _calculateTextAreaHeight(
-        viewportHeight: viewportHeight,
-        hasImage: false,
-        hasChoices: false,
-        choiceCount: 0,
-        hasContinueButton: true,
-      );
-      
-      // Paginate the text
-      // First pass: estimate how many pages without image/choices
-      final textPages = _paginateText(
+      // Paginate using new "last page first" algorithm
+      final textPages = _paginateSceneText(
         text: knot.content,
         viewportWidth: viewportWidth,
-        textAreaHeight: regularTextHeight,
+        viewportHeight: viewportHeight,
+        hasImage: hasImage,
+        choices: choices,
+        hasContinueButton: choices.isEmpty && canContinue,
+        debugSceneId: hasChoices ? knotName : null,
       );
-      
-      // If last page would overflow with image/choices, re-paginate
-      if ((hasImage || hasChoices) && textPages.length == 1 && knot.content.isNotEmpty) {
-        final adjustedPages = _paginateText(
-          text: knot.content,
-          viewportWidth: viewportWidth,
-          textAreaHeight: lastPageTextHeight,
-        );
-        textPages.clear();
-        textPages.addAll(adjustedPages);
-      }
       
       final totalPagesInScene = textPages.length;
       
       // Create StoryPage objects
       for (int i = 0; i < textPages.length; i++) {
         final isLast = i == textPages.length - 1;
+        final currentPageId = pageId;
         
         pages.add(StoryPage(
           id: pageId++,
@@ -378,8 +501,15 @@ class PageAnalyzer {
           canContinue: isLast ? canContinue : true,
           sceneTitle: i == 0 ? _formatSceneTitle(knotName) : null,
         ));
+        
+        // Log pages with choices for debugging
+        if (isLast && choices.isNotEmpty) {
+          print('   🎯 Page $currentPageId ($knotName): ${choices.length} choices, text: ${textPages[i].length} chars');
+        }
       }
     }
+    
+    print('✅ [PageAnalyzer] Generated ${pages.length} total pages');
     
     return PagedBook(
       bookId: bookId,
@@ -389,6 +519,156 @@ class PageAnalyzer {
       viewportWidth: viewportWidth,
       viewportHeight: viewportHeight,
     );
+  }
+  
+  /// Paginate scene text using "last page first" algorithm
+  /// 
+  /// This ensures that the last page (with choices/image) is calculated first,
+  /// then the remaining text is paginated for earlier pages.
+  List<String> _paginateSceneText({
+    required String text,
+    required double viewportWidth,
+    required double viewportHeight,
+    required bool hasImage,
+    required List<PageChoice> choices,
+    required bool hasContinueButton,
+    String? debugSceneId,
+  }) {
+    if (text.trim().isEmpty) return [''];
+    
+    final textWidth = viewportWidth - (config.horizontalPadding * 2);
+    final trimmedText = text.trim();
+    
+    // Calculate available text height for LAST page (with image/choices)
+    final lastPageTextHeight = _calculateTextAreaHeight(
+      viewportHeight: viewportHeight,
+      viewportWidth: viewportWidth,
+      hasImage: hasImage,
+      choices: choices,
+      hasContinueButton: hasContinueButton,
+      debugPageId: debugSceneId != null ? '$debugSceneId-LAST' : null,
+    );
+    
+    // Calculate available text height for REGULAR pages (no image/choices)
+    final regularTextHeight = _calculateTextAreaHeight(
+      viewportHeight: viewportHeight,
+      viewportWidth: viewportWidth,
+      hasImage: false,
+      choices: const [],
+      hasContinueButton: true,
+    );
+    
+    // STEP 1: Find how much text fits on the LAST page
+    // We work backwards: find the text that fits with choices/image
+    final lastPageMaxChars = _findTextThatFitsFromEnd(
+      trimmedText,
+      textWidth,
+      lastPageTextHeight,
+    );
+    
+    // If ALL text fits on the last page, we're done
+    if (lastPageMaxChars >= trimmedText.length) {
+      if (debugSceneId != null) {
+        print('   ✅ [$debugSceneId] All text fits on 1 page (${trimmedText.length} chars)');
+      }
+      return [trimmedText];
+    }
+    
+    // STEP 2: Find a good break point for the last page
+    // Start from end, find text that fits, then find sentence boundary
+    final lastPageStartIndex = trimmedText.length - lastPageMaxChars;
+    final lastPageBreakPoint = _findBestBreakPointForLastPage(trimmedText, lastPageStartIndex);
+    
+    // Extract last page text
+    final lastPageText = trimmedText.substring(lastPageBreakPoint).trim();
+    final remainingText = trimmedText.substring(0, lastPageBreakPoint).trim();
+    
+    if (debugSceneId != null) {
+      print('   📄 [$debugSceneId] Split: ${remainingText.length} chars before, ${lastPageText.length} chars on last page');
+    }
+    
+    // STEP 3: Paginate the remaining text for earlier pages (regular height)
+    final earlierPages = <String>[];
+    if (remainingText.isNotEmpty) {
+      earlierPages.addAll(_paginateText(
+        text: remainingText,
+        viewportWidth: viewportWidth,
+        textAreaHeight: regularTextHeight,
+      ));
+    }
+    
+    // Combine: earlier pages + last page
+    return [...earlierPages, lastPageText];
+  }
+  
+  /// Find how much text fits from the END of the text
+  /// Returns the maximum number of characters that fit
+  int _findTextThatFitsFromEnd(String text, double width, double maxHeight) {
+    final maxLines = _calculateLinesPerPage(maxHeight);
+    int low = 1;
+    int high = text.length;
+    
+    // Binary search to find max characters that fit
+    while (low < high) {
+      final mid = (low + high + 1) ~/ 2;
+      final startIndex = text.length - mid;
+      final testText = text.substring(startIndex);
+      final painter = TextPainter(
+        text: TextSpan(text: testText, style: config.textStyle),
+        textDirection: ui.TextDirection.ltr,
+      )..layout(maxWidth: width);
+      final lines = painter.computeLineMetrics().length;
+      painter.dispose();
+      
+      if (lines <= maxLines) {
+        low = mid;
+      } else {
+        high = mid - 1;
+      }
+    }
+    
+    return low;
+  }
+  
+  /// Find the best break point for the last page
+  /// Searches forward from the approximate start to find a sentence boundary
+  int _findBestBreakPointForLastPage(String text, int approximateStart) {
+    // Don't start too close to the beginning
+    final minStart = (text.length * 0.3).round();
+    final searchStart = approximateStart < minStart ? minStart : approximateStart;
+    
+    // Look for sentence end near the approximate start
+    // Search forward up to 200 characters to find a good break
+    for (int i = searchStart; i < text.length && i < searchStart + 200; i++) {
+      if (_isSentenceEnd(text, i)) {
+        // Skip any whitespace after the sentence
+        int breakPoint = i + 1;
+        while (breakPoint < text.length && 
+               (text[breakPoint] == ' ' || text[breakPoint] == '\n')) {
+          breakPoint++;
+        }
+        return breakPoint;
+      }
+    }
+    
+    // If no sentence end found, look for paragraph break
+    for (int i = searchStart; i < text.length && i < searchStart + 200; i++) {
+      if (text[i] == '\n') {
+        return i + 1;
+      }
+    }
+    
+    // If no good break found, just use the approximate start
+    // But ensure we're at a word boundary
+    int wordStart = searchStart;
+    while (wordStart < text.length && text[wordStart] != ' ' && text[wordStart] != '\n') {
+      wordStart++;
+    }
+    while (wordStart < text.length && (text[wordStart] == ' ' || text[wordStart] == '\n')) {
+      wordStart++;
+    }
+    
+    return wordStart;
   }
 
   /// Get linear order of knots following diverts (for initial analysis)
@@ -454,9 +734,10 @@ class PageAnalyzer {
       // Calculate text area height (no image/choices for DOCX)
       final textHeight = _calculateTextAreaHeight(
         viewportHeight: viewportHeight,
+        viewportWidth: viewportWidth,
         hasImage: false,
-        hasChoices: false,
-        choiceCount: 0,
+        choices: const [],
+        hasContinueButton: true,
       );
       
       // Paginate the chapter

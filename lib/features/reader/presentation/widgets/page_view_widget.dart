@@ -222,71 +222,74 @@ class _PageViewWidgetState extends State<PageViewWidget>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onHorizontalDragUpdate: _onHorizontalDragUpdate,
-      onHorizontalDragEnd: _onHorizontalDragEnd,
-      onTap: _goNext,
-      child: Transform.translate(
-        offset: Offset(_swipeDx * 0.3, 0),
-        child: Stack(
-          children: [
-            // Main scrollable content - PREVENTS ALL OVERFLOW
-            Positioned.fill(
-              child: SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
-                padding: const EdgeInsets.only(
-                  top: 16,
-                  left: 16,
-                  right: 16,
-                  bottom: 40, // Space for page indicator
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onHorizontalDragUpdate: _onHorizontalDragUpdate,
+          onHorizontalDragEnd: _onHorizontalDragEnd,
+          onTap: _goNext,
+          child: Transform.translate(
+            offset: Offset(_swipeDx * 0.3, 0),
+            child: Stack(
+              children: [
+                // Main content - NO SCROLLING, fixed layout
+                // This layout MUST match PageAnalyzer calculations exactly
+                Positioned.fill(
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      top: 16,     // PageLayoutConfig.topPadding
+                      left: 16,    // PageLayoutConfig.horizontalPadding
+                      right: 16,   // PageLayoutConfig.horizontalPadding
+                      bottom: 40,  // PageLayoutConfig.bottomPadding
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Text content - gets ALL remaining space
+                        Expanded(
+                          child: _buildText(),
+                        ),
+                        
+                        // Image (if present and text complete)
+                        if (widget.page.hasImage && _textComplete) ...[
+                          const SizedBox(height: 20), // imageSpacing
+                          _buildImage(),
+                        ],
+                        
+                        // Spacing before buttons
+                        const SizedBox(height: 16),
+                        
+                        // Choices or Continue button
+                        if (_textComplete) ...[
+                          if (widget.page.hasChoices)
+                            _buildChoices()
+                          else if (widget.page.canContinue)
+                            _buildContinueButton(),
+                        ],
+                      ],
+                    ),
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Text content (no ghost layer)
-                    _buildText(),
-                    
-                    // Image (if present and text complete)
-                    if (widget.page.hasImage && _textComplete) ...[
-                      const SizedBox(height: 20),
-                      _buildImage(),
-                    ],
-                    
-                    // Spacing before buttons
-                    const SizedBox(height: 16),
-                    
-                    // Choices or Continue button
-                    if (_textComplete) ...[
-                      if (widget.page.hasChoices)
-                        _buildChoices()
-                      else if (widget.page.canContinue)
-                        _buildContinueButton(),
-                    ],
-                    
-                    // Bottom spacing
-                    const SizedBox(height: 16),
-                  ],
+                
+                // Chapter/Page indicator (fixed at bottom left)
+                Positioned(
+                  left: 8,
+                  bottom: 8,
+                  child: _buildChapterPageIndicator(),
                 ),
-              ),
+                
+                // Copyright (fixed at bottom right)
+                Positioned(
+                  right: 8,
+                  bottom: 8,
+                  child: _buildCopyright(),
+                ),
+              ],
             ),
-            
-            // Chapter/Page indicator (fixed at bottom left)
-            Positioned(
-              left: 8,
-              bottom: 8,
-              child: _buildChapterPageIndicator(),
-            ),
-            
-            // Copyright (fixed at bottom right)
-            Positioned(
-              right: 8,
-              bottom: 8,
-              child: _buildCopyright(),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -302,7 +305,6 @@ class _PageViewWidgetState extends State<PageViewWidget>
       color: _textColor,
     );
 
-    // Simple text display - NO GHOST LAYER (causes offset issues)
     return _buildRevealedText(displayedText, baseStyle, now);
   }
 
@@ -518,47 +520,150 @@ class _PageViewWidgetState extends State<PageViewWidget>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text(
-          'Was tust du?',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFFBB86FC),
-            letterSpacing: 1.0,
-          ),
-          textAlign: TextAlign.center,
+        // Header with icon
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFBB86FC).withOpacity(0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.psychology_rounded,
+                size: 16,
+                color: Color(0xFFBB86FC),
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'Was tust du?',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFFBB86FC),
+                letterSpacing: 1.2,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
-        ...widget.page.choices.map((choice) => Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: _buildChoiceButton(choice),
-        )),
+        const SizedBox(height: 20),
+        // Choice buttons with animation
+        ...widget.page.choices.asMap().entries.map((entry) {
+          final index = entry.key;
+          final choice = entry.value;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: TweenAnimationBuilder<double>(
+              duration: Duration(milliseconds: 300 + (index * 100)),
+              tween: Tween(begin: 0.0, end: 1.0),
+              curve: Curves.easeOutCubic,
+              builder: (context, value, child) {
+                return Opacity(
+                  opacity: value,
+                  child: Transform.translate(
+                    offset: Offset(0, 20 * (1 - value)),
+                    child: child,
+                  ),
+                );
+              },
+              child: _buildChoiceButton(choice, index),
+            ),
+          );
+        }),
       ],
     );
   }
 
-  Widget _buildChoiceButton(PageChoice choice) {
+  Widget _buildChoiceButton(PageChoice choice, int index) {
+    // Different accent colors for variety
+    final accentColors = [
+      const Color(0xFFBB86FC), // Purple
+      const Color(0xFF03DAC6), // Teal
+      const Color(0xFFCF6679), // Pink
+    ];
+    final accentColor = accentColors[index % accentColors.length];
+    
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () => widget.onChoiceSelected?.call(choice),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
+        splashColor: accentColor.withOpacity(0.2),
+        highlightColor: accentColor.withOpacity(0.1),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.black.withOpacity(0.4),
+                Colors.black.withOpacity(0.2),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             border: Border.all(
-              color: const Color(0xFFE8DCC0).withOpacity(0.3),
+              color: accentColor.withOpacity(0.4),
+              width: 1.5,
             ),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: accentColor.withOpacity(0.2),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          child: Text(
-            choice.text,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Color(0xFFE8DCC0),
-              fontFamily: 'Mynerve',
-            ),
-            textAlign: TextAlign.center,
+          child: Row(
+            children: [
+              // Choice number badge
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: accentColor.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: accentColor.withOpacity(0.5),
+                    width: 1,
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    '${index + 1}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: accentColor,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              // Choice text
+              Expanded(
+                child: Text(
+                  choice.text,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: Color(0xFFE8DCC0),
+                    fontFamily: 'Mynerve',
+                    height: 1.4,
+                    letterSpacing: 0.3,
+                  ),
+                  textAlign: TextAlign.left,
+                ),
+              ),
+              const SizedBox(width: 10),
+              // Arrow icon
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 16,
+                color: accentColor.withOpacity(0.6),
+              ),
+            ],
           ),
         ),
       ),

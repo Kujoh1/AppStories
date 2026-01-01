@@ -78,10 +78,18 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
       return _buildLoadingScreen();
     }
     
+    // Calculate actual viewport height for PageViewWidget
+    // Must match exactly: screen - SafeArea(top) - AppBar(56) - SafeArea(bottom)
+    final mediaQuery = MediaQuery.of(context);
+    final contentHeight = _viewportSize!.height 
+        - mediaQuery.padding.top    // SafeArea top (notch/status bar)
+        - 56                        // AppBar height
+        - mediaQuery.padding.bottom; // SafeArea bottom (home indicator)
+    
     final params = PageAnalysisParams(
       bookId: bookId,
       viewportWidth: _viewportSize!.width,
-      viewportHeight: _viewportSize!.height - 56 - MediaQuery.of(context).padding.top, // Subtract app bar
+      viewportHeight: contentHeight,
     );
     
     final pagedBookAsync = ref.watch(pagedBookProvider(params));
@@ -276,10 +284,11 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
               FilledButton.icon(
                 onPressed: () {
                   if (_viewportSize != null) {
+                    final mq = MediaQuery.of(context);
                     ref.invalidate(pagedBookProvider(PageAnalysisParams(
                       bookId: bookId,
                       viewportWidth: _viewportSize!.width,
-                      viewportHeight: _viewportSize!.height - 56,
+                      viewportHeight: _viewportSize!.height - 56 - mq.padding.top - mq.padding.bottom,
                     )));
                   }
                 },
