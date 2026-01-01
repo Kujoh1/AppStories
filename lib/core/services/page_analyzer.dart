@@ -35,7 +35,7 @@ class PageLayoutConfig {
     this.fontFamily = 'Mynerve',
     this.imageHeight = 180.0,
     this.imageSpacing = 20.0,
-    this.choiceButtonHeight = 56.0,
+    this.choiceButtonHeight = 200.0,
     this.choiceSpacing = 8.0,
     this.choiceHeaderHeight = 40.0,
     this.topPadding = 16.0,

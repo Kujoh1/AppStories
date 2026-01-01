@@ -75,7 +75,7 @@ class _PageViewWidgetState extends State<PageViewWidget>
     super.initState();
     _imageController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 300),
     );
     _startAnimation();
   }
@@ -163,7 +163,7 @@ class _PageViewWidgetState extends State<PageViewWidget>
 
   void _onTextComplete() {
     if (widget.page.hasImage) {
-      Future.delayed(const Duration(milliseconds: 300), () {
+      Future.delayed(const Duration(milliseconds: 100), () {
         if (mounted) _imageController.forward();
       });
     }
@@ -312,50 +312,175 @@ class _PageViewWidgetState extends State<PageViewWidget>
       return Text(' ', style: baseStyle);
     }
     
-    // Build rich text with glow spans
+    // Determine which characters are in quotes
+    // ONLY highlight text between „ (German opening, U+201E) and closing quotes
+    final isInQuote = List<bool>.filled(text.length, false);
+    bool quoteState = false;
+    
+    for (int i = 0; i < text.length; i++) {
+      final char = text[i];
+      final code = char.codeUnitAt(0);
+      
+      // ONLY „ (German opening quotation mark) opens quotes
+      if (code == 0x201E) { // „
+        quoteState = true;
+        isInQuote[i] = true;
+      }
+      // Any of these close the quote (if one was opened with „)
+      else if (quoteState && (code == 0x201D ||  // " Right double
+                               code == 0x201C ||  // " Left double (used as closing in story)
+                               code == 0x2019)) { // ' Right single
+        isInQuote[i] = true;
+        quoteState = false;
+      }
+      // Regular character - inherit state
+      else {
+        isInQuote[i] = quoteState;
+      }
+    }
+    
+    // Build rich text with glow spans AND quote styling
     final spans = <TextSpan>[];
     int lastEnd = 0;
     
     for (final glow in _glowWords) {
       if (glow.endIndex > text.length) continue;
       
+      // Add non-glow text before this glow
       if (glow.startIndex > lastEnd) {
-        spans.add(TextSpan(
-          text: text.substring(lastEnd, glow.startIndex),
-          style: baseStyle,
-        ));
+        _addTextWithQuoteColors(
+          spans,
+          text,
+          lastEnd,
+          glow.startIndex,
+          baseStyle,
+          isInQuote,
+        );
       }
       
+      // Calculate glow intensity
       final elapsed = now - glow.revealTime;
       final t = (elapsed / _AnimConfig.glowDurationMs).clamp(0.0, 1.0);
       final intensity = (1.0 - t) * (1.0 - t);
       
-      spans.add(TextSpan(
-        text: text.substring(glow.startIndex, glow.endIndex),
-        style: baseStyle.copyWith(
-          shadows: intensity > 0.05 ? [
-            Shadow(
-              color: _AnimConfig.glowColor.withOpacity(intensity * 0.8),
-              blurRadius: intensity * 12,
-            ),
-          ] : null,
+      // Add glow text with proper styling
+      final isQuoted = _isAnyCharInQuotes(glow.startIndex, glow.endIndex, isInQuote);
+      
+      _addTextWithQuoteColors(
+        spans,
+        text,
+        glow.startIndex,
+        glow.endIndex,
+        baseStyle.copyWith(
+          shadows: [
+            // Animation glow (yellow/gold)
+            if (intensity > 0.05)
+              Shadow(
+                color: _AnimConfig.glowColor.withOpacity(intensity * 0.8),
+                blurRadius: intensity * 12,
+              ),
+            // White glow for quoted text (stronger)
+            if (isQuoted) ...[
+              Shadow(
+                color: const Color(0xFFFFFFFF).withOpacity(0.6),
+                blurRadius: 12,
+              ),
+              Shadow(
+                color: const Color(0xFFFEFFE9).withOpacity(0.3),
+                blurRadius: 20,
+              ),
+            ],
+          ],
         ),
-      ));
+        isInQuote,
+      );
       
       lastEnd = glow.endIndex;
     }
     
+    // Add remaining text
     if (lastEnd < text.length) {
-      spans.add(TextSpan(
-        text: text.substring(lastEnd),
-        style: baseStyle,
-      ));
+      _addTextWithQuoteColors(
+        spans,
+        text,
+        lastEnd,
+        text.length,
+        baseStyle,
+        isInQuote,
+      );
     }
     
     return RichText(
       text: TextSpan(children: spans.isEmpty ? [TextSpan(text: text, style: baseStyle)] : spans),
     );
   }
+
+  bool _isAnyCharInQuotes(int start, int end, List<bool> isInQuote) {
+    for (int i = start; i < end && i < isInQuote.length; i++) {
+      if (isInQuote[i]) return true;
+    }
+    return false;
+  }
+
+  void _addTextWithQuoteColors(
+    List<TextSpan> spans,
+    String text,
+    int start,
+    int end,
+    TextStyle baseStyle,
+    List<bool> isInQuote,
+  ) {
+    int segmentStart = start;
+    bool? lastQuoteState;
+    
+    for (int i = start; i < end; i++) {
+      final currentQuoteState = isInQuote[i];
+      
+      if (lastQuoteState != null && currentQuoteState != lastQuoteState) {
+        // State changed - add the previous segment
+        spans.add(TextSpan(
+          text: text.substring(segmentStart, i),
+          style: baseStyle.copyWith(
+            color: lastQuoteState ? const Color(0xFFFFFFFF) : baseStyle.color,
+            shadows: lastQuoteState ? [
+              Shadow(
+                color: const Color(0xFFFFFFFF).withOpacity(0.6),
+                blurRadius: 12,
+              ),
+              Shadow(
+                color: const Color(0xFFFEFFE9).withOpacity(0.3),
+                blurRadius: 20,
+              ),
+            ] : baseStyle.shadows,
+          ),
+        ));
+        segmentStart = i;
+      }
+      
+      lastQuoteState = currentQuoteState;
+    }
+    
+    // Add the final segment
+    if (segmentStart < end) {
+      spans.add(TextSpan(
+        text: text.substring(segmentStart, end),
+        style: baseStyle.copyWith(
+          color: (lastQuoteState ?? false) ? const Color(0xFFFFFFFF) : baseStyle.color,
+          shadows: (lastQuoteState ?? false) ? [
+            Shadow(
+              color: const Color(0xFFFFFFFF).withOpacity(0.6),
+              blurRadius: 12,
+            ),
+            Shadow(
+              color: const Color(0xFFFEFFE9).withOpacity(0.3),
+              blurRadius: 20,
+            ),
+          ] : baseStyle.shadows,
+        ),
+      ));
+    }
+  }
+
 
   Widget _buildImage() {
     return AnimatedBuilder(
@@ -398,7 +523,7 @@ class _PageViewWidgetState extends State<PageViewWidget>
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Colors.white54,
+            color: Color(0xFFBB86FC),
             letterSpacing: 1.0,
           ),
           textAlign: TextAlign.center,
