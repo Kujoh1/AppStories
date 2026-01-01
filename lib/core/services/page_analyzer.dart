@@ -35,12 +35,12 @@ class PageLayoutConfig {
     this.fontFamily = 'Mynerve',
     this.imageHeight = 180.0,
     this.imageSpacing = 20.0,
-    this.choiceButtonHeight = 56.0, // Match PageViewWidget
+    this.choiceButtonHeight = 56.0,
     this.choiceSpacing = 8.0,
-    this.choiceHeaderHeight = 40.0, // Match PageViewWidget
+    this.choiceHeaderHeight = 40.0,
     this.topPadding = 16.0,
-    this.bottomPadding = 16.0,
-    this.safetyBuffer = 48.0, // Increased for safety
+    this.bottomPadding = 40.0,  // Match PageViewWidget bottom padding
+    this.safetyBuffer = 8.0,    // Minimal safety margin - maximize text space
   });
 
   TextStyle get textStyle => TextStyle(
@@ -77,9 +77,9 @@ class PageAnalyzer {
       fixedHeight += config.choiceHeaderHeight +
                      (choiceCount * config.choiceButtonHeight) +
                      ((choiceCount - 1) * config.choiceSpacing) +
-                     config.imageSpacing; // spacing before choices
+                     16.0; // spacing before choices
     } else if (hasContinueButton) {
-      // Reserve space for "Weiter" button (80px)
+      // Reserve space for "Weiter" button + spacing (16px spacing + ~48px button + 16px)
       fixedHeight += 80.0;
     }
     
@@ -88,7 +88,8 @@ class PageAnalyzer {
 
   /// Calculate how many lines fit in available height
   int _calculateLinesPerPage(double availableHeight) {
-    return ((availableHeight / config.lineHeightPixels).floor() - 1).clamp(1, 100);
+    // Use ALL available space - no artificial reduction
+    return (availableHeight / config.lineHeightPixels).floor().clamp(1, 100);
   }
 
   /// Find how much text fits in available space using TextPainter
@@ -120,25 +121,114 @@ class PageAnalyzer {
     return low;
   }
 
-  /// Find the last sentence boundary (., !, ?, or newline) within range
-  int _findSentenceEnd(String text, int startIndex, int endIndex) {
-    int lastEnd = startIndex;
+  /// Check if position i is a sentence end
+  /// Handles: . ! ? ... and quotes after punctuation
+  bool _isSentenceEnd(String text, int i) {
+    if (i < 0 || i >= text.length) return false;
+    final char = text[i];
     
-    for (int i = endIndex - 1; i > startIndex; i--) {
-      final char = text[i];
-      if (char == '.' || char == '!' || char == '?' || char == '\n') {
-        // Check if it's end of sentence (next char is space or end)
-        if (i + 1 >= text.length || text[i + 1] == ' ' || text[i + 1] == '\n') {
-          lastEnd = i + 1;
-          break;
+    // At end of text
+    if (i + 1 >= text.length) {
+      return char == '.' || char == '!' || char == '?';
+    }
+    
+    final next = text[i + 1];
+    
+    // Standard: . ! ? followed by space or newline
+    if ((char == '.' || char == '!' || char == '?') && 
+        (next == ' ' || next == '\n')) {
+      // Avoid breaking on abbreviations like "z.B." or "Dr."
+      if (char == '.' && i > 0) {
+        final prev = text[i - 1];
+        // Single letter before dot = likely abbreviation
+        if (i >= 2 && text[i - 2] == ' ' && prev.toUpperCase() == prev) {
+          return false; // Skip single capital letter abbreviations
         }
+      }
+      return true;
+    }
+    
+    // Ellipsis: ... followed by space
+    if (char == '.' && i >= 2 && 
+        text[i - 1] == '.' && text[i - 2] == '.' &&
+        (next == ' ' || next == '\n')) {
+      return true;
+    }
+    
+    // After closing quote: ." or !" or ?" or »" 
+    if ((char == '"' || char == '»' || char == '"' || char == '\'') && 
+        i > 0 && (next == ' ' || next == '\n')) {
+      final prev = text[i - 1];
+      if (prev == '.' || prev == '!' || prev == '?') return true;
+    }
+    
+    return false;
+  }
+
+  /// Check if position i is a clause end (good secondary break point)
+  bool _isClauseEnd(String text, int i) {
+    if (i < 0 || i >= text.length - 1) return false;
+    final char = text[i];
+    final next = text[i + 1];
+    
+    // Semicolon or colon followed by space
+    if ((char == ';' || char == ':') && next == ' ') return true;
+    
+    // En-dash or em-dash with spaces
+    if ((char == '–' || char == '—') && next == ' ') return true;
+    
+    return false;
+  }
+
+  /// Find the BEST break point - NEVER breaks in the middle of a sentence
+  /// Priority: Sentence end > Paragraph > Clause > Comma > Word > Hard cut
+  int _findBestBreakPoint(String text, int startIndex, int endIndex) {
+    // Minimum break point: at least 40% of the page should be filled
+    final minBreak = startIndex + ((endIndex - startIndex) * 0.4).round();
+    
+    // 1. HIGHEST PRIORITY: Sentence end (. ! ? ...)
+    for (int i = endIndex - 1; i >= minBreak; i--) {
+      if (_isSentenceEnd(text, i)) {
+        return i + 1;
       }
     }
     
-    return lastEnd;
+    // 2. Paragraph break (newline)
+    for (int i = endIndex - 1; i >= minBreak; i--) {
+      if (text[i] == '\n') {
+        return i + 1;
+      }
+    }
+    
+    // 3. Clause end (; : –)
+    for (int i = endIndex - 1; i >= minBreak; i--) {
+      if (_isClauseEnd(text, i)) {
+        return i + 1;
+      }
+    }
+    
+    // 4. Comma (last resort before word boundary)
+    for (int i = endIndex - 1; i >= minBreak; i--) {
+      if (text[i] == ',' && i + 1 < text.length && text[i + 1] == ' ') {
+        return i + 2; // After the space
+      }
+    }
+    
+    // 5. Word boundary (space)
+    int wordEnd = endIndex;
+    while (wordEnd > startIndex && text[wordEnd - 1] != ' ' && text[wordEnd - 1] != '\n') {
+      wordEnd--;
+    }
+    if (wordEnd > minBreak) {
+      return wordEnd;
+    }
+    
+    // 6. Hard cut (should rarely happen - very long words)
+    return endIndex;
   }
 
   /// Paginate text into pages that fit the viewport
+  /// PRINCIPLE: Fill each page as much as possible, NEVER break mid-sentence
   List<String> _paginateText({
     required String text,
     required double viewportWidth,
@@ -151,36 +241,33 @@ class PageAnalyzer {
     int startCharIndex = 0;
     
     while (startCharIndex < text.length) {
-      // Find how much text fits
+      // Find MAXIMUM text that fits visually
       int endCharIndex = _findTextThatFits(
         text, startCharIndex, textWidth, textAreaHeight);
       
-      // Try to break at sentence boundary
-      if (endCharIndex < text.length) {
-        final sentenceEnd = _findSentenceEnd(text, startCharIndex, endCharIndex);
-        if (sentenceEnd > startCharIndex) {
-          endCharIndex = sentenceEnd;
-        } else {
-          // Try word boundary
-          int wordEnd = endCharIndex;
-          while (wordEnd > startCharIndex && 
-                 text[wordEnd - 1] != ' ' && 
-                 text[wordEnd - 1] != '\n') {
-            wordEnd--;
-          }
-          if (wordEnd > startCharIndex) {
-            endCharIndex = wordEnd;
-          }
+      // If we can fit ALL remaining text, do it - no break needed
+      if (endCharIndex >= text.length) {
+        final remaining = text.substring(startCharIndex).trim();
+        if (remaining.isNotEmpty) {
+          pages.add(remaining);
         }
+        break;
       }
       
-      // Safety: ensure progress
-      if (endCharIndex <= startCharIndex) {
-        endCharIndex = (startCharIndex + 50).clamp(0, text.length);
+      // We need to break - use hierarchical break point search
+      // This ensures we NEVER break in the middle of a sentence
+      int breakPoint = _findBestBreakPoint(text, startCharIndex, endCharIndex);
+      
+      // Safety: ensure progress (should never happen with proper break logic)
+      if (breakPoint <= startCharIndex) {
+        breakPoint = (startCharIndex + 50).clamp(0, text.length);
       }
       
-      pages.add(text.substring(startCharIndex, endCharIndex).trim());
-      startCharIndex = endCharIndex;
+      final pageText = text.substring(startCharIndex, breakPoint).trim();
+      if (pageText.isNotEmpty) {
+        pages.add(pageText);
+      }
+      startCharIndex = breakPoint;
       
       // Skip leading whitespace for next page
       while (startCharIndex < text.length && 

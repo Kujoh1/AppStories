@@ -510,13 +510,14 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
 
   void _showSceneOverview(PagedBook pagedBook) {
     final currentIndex = ref.read(currentPageIndexProvider);
-    final currentPage = pagedBook.pages[currentIndex.clamp(0, pagedBook.pages.length - 1)];
     
-    ChapterOverviewDialog.show(
+    PageOverviewDialog.show(
       context,
-      isInkStory: true,
-      currentChapterName: currentPage.sceneId,
-      currentChapterIndex: currentIndex,
+      pagedBook: pagedBook,
+      currentPageIndex: currentIndex.clamp(0, pagedBook.pages.length - 1),
+      onNavigate: (pageIndex) {
+        ref.read(currentPageIndexProvider.notifier).state = pageIndex;
+      },
     );
   }
 }

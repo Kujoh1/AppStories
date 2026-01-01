@@ -239,7 +239,7 @@ class _PageViewWidgetState extends State<PageViewWidget>
                   top: 16,
                   left: 16,
                   right: 16,
-                  bottom: 80, // Extra space for page indicator
+                  bottom: 40, // Space for page indicator
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -254,7 +254,7 @@ class _PageViewWidgetState extends State<PageViewWidget>
                     ],
                     
                     // Spacing before buttons
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                     
                     // Choices or Continue button
                     if (_textComplete) ...[
@@ -265,7 +265,7 @@ class _PageViewWidgetState extends State<PageViewWidget>
                     ],
                     
                     // Bottom spacing
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),

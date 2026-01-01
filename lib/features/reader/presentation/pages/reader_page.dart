@@ -422,13 +422,14 @@ class _ReaderPageState extends ConsumerState<ReaderPage> {
 
   void _showChapterOverview(PagedBook pagedBook) {
     final currentIndex = ref.read(currentPageIndexProvider);
-    final currentPage = pagedBook.pages[currentIndex.clamp(0, pagedBook.pages.length - 1)];
     
-    ChapterOverviewDialog.show(
+    PageOverviewDialog.show(
       context,
-      isInkStory: false,
-      currentChapterName: currentPage.sceneTitle ?? 'Seite ${currentPage.id}',
-      currentChapterIndex: currentIndex,
+      pagedBook: pagedBook,
+      currentPageIndex: currentIndex.clamp(0, pagedBook.pages.length - 1),
+      onNavigate: (pageIndex) {
+        ref.read(currentPageIndexProvider.notifier).state = pageIndex;
+      },
     );
   }
 }

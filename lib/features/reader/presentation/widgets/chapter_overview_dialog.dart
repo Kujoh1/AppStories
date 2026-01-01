@@ -1,48 +1,190 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../domain/models/chapter_info.dart';
-import '../../providers/book_provider.dart';
-import '../../providers/chapter_provider.dart';
+import '../../../../domain/models/story_page.dart';
 
-/// Beautiful chapter/scene overview dialog for navigation
-class ChapterOverviewDialog extends ConsumerWidget {
-  final bool isInkStory;
-  final String currentChapterName;
-  final int currentChapterIndex;
-  final VoidCallback? onClose;
+/// Hierarchical page/scene navigation dialog
+/// Shows scenes with their pages, allowing navigation to any page
+class PageOverviewDialog extends ConsumerStatefulWidget {
+  final PagedBook pagedBook;
+  final int currentPageIndex;
+  final void Function(int pageIndex) onNavigate;
 
-  const ChapterOverviewDialog({
+  const PageOverviewDialog({
     super.key,
-    required this.isInkStory,
-    required this.currentChapterName,
-    required this.currentChapterIndex,
-    this.onClose,
+    required this.pagedBook,
+    required this.currentPageIndex,
+    required this.onNavigate,
   });
 
   static Future<void> show(
     BuildContext context, {
-    required bool isInkStory,
-    required String currentChapterName,
-    required int currentChapterIndex,
+    required PagedBook pagedBook,
+    required int currentPageIndex,
+    required void Function(int pageIndex) onNavigate,
   }) {
+    // Clamp the index to valid range
+    final safeIndex = currentPageIndex.clamp(0, pagedBook.pages.length - 1);
+    
     return showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (context) => ChapterOverviewDialog(
-        isInkStory: isInkStory,
-        currentChapterName: currentChapterName,
-        currentChapterIndex: currentChapterIndex,
-        onClose: () => Navigator.of(context).pop(),
+      builder: (context) => PageOverviewDialog(
+        pagedBook: pagedBook,
+        currentPageIndex: safeIndex,
+        onNavigate: onNavigate,
       ),
     );
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final bookId = ref.watch(selectedBookIdProvider);
-    final bookIndexAsync = ref.watch(bookIndexProvider(bookId));
+  ConsumerState<PageOverviewDialog> createState() => _PageOverviewDialogState();
+}
+
+class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
+  // Track which scenes are expanded
+  final Set<String> _expandedScenes = {};
+  final ScrollController _scrollController = ScrollController();
+  late List<_SceneInfo> _scenes;
+  late int _safeCurrentIndex;
+  late StoryPage _currentPage;
+  late int _totalPages;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeState();
+    
+    // Scroll to current scene after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToCurrentScene();
+    });
+  }
+
+  void _initializeState() {
+    // Ensure all values are valid
+    _totalPages = widget.pagedBook.pages.length;
+    _safeCurrentIndex = widget.currentPageIndex.clamp(0, _totalPages - 1);
+    _currentPage = widget.pagedBook.pages[_safeCurrentIndex];
+    _scenes = _buildSceneList();
+    
+    // Auto-expand current scene
+    _expandedScenes.add(_currentPage.sceneId);
+  }
+
+  /// Build the scene list once, with all information
+  List<_SceneInfo> _buildSceneList() {
+    final scenes = <_SceneInfo>[];
+    
+    if (widget.pagedBook.pages.isEmpty) return scenes;
+    
+    String? currentSceneId;
+    int sceneStartIndex = 0;
+    List<StoryPage> scenePagesBuffer = [];
+    
+    for (int i = 0; i < widget.pagedBook.pages.length; i++) {
+      final page = widget.pagedBook.pages[i];
+      
+      if (page.sceneId != currentSceneId) {
+        // Save previous scene if exists
+        if (currentSceneId != null && scenePagesBuffer.isNotEmpty) {
+          scenes.add(_createSceneInfo(
+            sceneId: currentSceneId,
+            startIndex: sceneStartIndex,
+            pages: scenePagesBuffer,
+            sceneNumber: scenes.length + 1,
+          ));
+        }
+        
+        // Start new scene
+        currentSceneId = page.sceneId;
+        sceneStartIndex = i;
+        scenePagesBuffer = [page];
+      } else {
+        scenePagesBuffer.add(page);
+      }
+    }
+    
+    // Add last scene
+    if (currentSceneId != null && scenePagesBuffer.isNotEmpty) {
+      scenes.add(_createSceneInfo(
+        sceneId: currentSceneId,
+        startIndex: sceneStartIndex,
+        pages: scenePagesBuffer,
+        sceneNumber: scenes.length + 1,
+      ));
+    }
+    
+    return scenes;
+  }
+
+  _SceneInfo _createSceneInfo({
+    required String sceneId,
+    required int startIndex,
+    required List<StoryPage> pages,
+    required int sceneNumber,
+  }) {
+    return _SceneInfo(
+      sceneId: sceneId,
+      sceneNumber: sceneNumber,
+      startPageIndex: startIndex,
+      endPageIndex: startIndex + pages.length - 1,
+      pageCount: pages.length,
+      title: pages.first.sceneTitle,
+      hasChoices: pages.any((p) => p.hasChoices),
+      hasImage: pages.any((p) => p.hasImage),
+      // First page ID (1-based) for display
+      firstPageId: pages.first.id,
+      lastPageId: pages.last.id,
+    );
+  }
+
+  void _scrollToCurrentScene() {
+    final sceneIndex = _scenes.indexWhere((s) => s.sceneId == _currentPage.sceneId);
+    
+    if (sceneIndex > 0 && _scrollController.hasClients) {
+      // Approximate scroll position (each scene tile is ~70px)
+      final offset = (sceneIndex * 70.0).clamp(0.0, _scrollController.position.maxScrollExtent);
+      _scrollController.animateTo(
+        offset,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  // Calculate how many scenes are completed
+  int get _completedSceneCount {
+    int count = 0;
+    for (final scene in _scenes) {
+      if (scene.endPageIndex < _safeCurrentIndex) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  // Current scene number (1-based)
+  int get _currentSceneNumber {
+    for (int i = 0; i < _scenes.length; i++) {
+      if (_scenes[i].sceneId == _currentPage.sceneId) {
+        return i + 1;
+      }
+    }
+    return 1;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Progress based on 0-indexed position / total (clamped to 0-1)
+    final progress = ((_safeCurrentIndex + 1) / _totalPages).clamp(0.0, 1.0);
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
@@ -71,402 +213,514 @@ class ChapterOverviewDialog extends ConsumerWidget {
             ),
           ),
 
-          // Header
-          _buildHeader(context, ref),
+          // Header with progress
+          _buildHeader(context, progress),
 
-          // Content
+          // Scene/Page list
           Expanded(
-            child: bookIndexAsync.when(
-              loading: () => const Center(
-                child: CircularProgressIndicator(
-                  color: Color(0xFFE8DCC0),
-                ),
-              ),
-              error: (error, stack) => Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      color: Colors.red,
-                      size: 48,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Fehler beim Laden: $error',
-                      style: const TextStyle(color: Colors.white70),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-              data: (bookIndex) => _buildChapterList(context, ref, bookIndex),
-            ),
+            child: _scenes.isEmpty
+                ? const Center(child: Text('Keine Szenen', style: TextStyle(color: Colors.white54)))
+                : ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    itemCount: _scenes.length,
+                    itemBuilder: (context, index) => _buildSceneTile(context, _scenes[index]),
+                  ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context, WidgetRef ref) {
-    final bookId = ref.watch(selectedBookIdProvider);
-    final bookIndexAsync = ref.watch(bookIndexProvider(bookId));
-    
+  Widget _buildHeader(BuildContext context, double progress) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          // Title
+          // Title row
           Row(
             children: [
-              Icon(
-                isInkStory ? Icons.account_tree : Icons.menu_book,
-                color: const Color(0xFFE8DCC0),
+              const Icon(
+                Icons.menu_book_rounded,
+                color: Color(0xFFE8DCC0),
                 size: 24,
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  isInkStory ? 'Szenen-Übersicht' : 'Kapitel-Übersicht',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFE8DCC0),
-                    fontFamily: 'Mynerve',
-                    letterSpacing: 1.5,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.pagedBook.title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFE8DCC0),
+                        fontFamily: 'Mynerve',
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
               ),
               IconButton(
-                onPressed: onClose,
-                icon: const Icon(
-                  Icons.close,
-                  color: Colors.white38,
-                  size: 20,
-                ),
-                tooltip: 'Schließen',
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.close, color: Colors.white38, size: 20),
               ),
             ],
           ),
           
           const SizedBox(height: 16),
           
-          // Progress info
-          bookIndexAsync.when(
-            loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
-            data: (bookIndex) {
-              final progress = (currentChapterIndex + 1) / bookIndex.chapterCount;
-              return Column(
-                children: [
-                  // Progress bar
-                  Container(
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: Colors.white10,
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                    child: FractionallySizedBox(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: progress,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFE8DCC0), Color(0xFFFEFFE9)],
-                          ),
-                          borderRadius: BorderRadius.circular(3),
+          // Stats row - clear and logical
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                // Current page / total pages
+                _buildStatItem(
+                  icon: Icons.article_outlined,
+                  label: 'Seite',
+                  value: '${_currentPage.id} / $_totalPages',
+                ),
+                Container(width: 1, height: 30, color: Colors.white12),
+                // Current scene / total scenes
+                _buildStatItem(
+                  icon: Icons.folder_outlined,
+                  label: 'Szene',
+                  value: '$_currentSceneNumber / ${_scenes.length}',
+                ),
+                Container(width: 1, height: 30, color: Colors.white12),
+                // Progress percentage
+                _buildStatItem(
+                  icon: Icons.trending_up_rounded,
+                  label: 'Fortschritt',
+                  value: '${(progress * 100).round()}%',
+                  highlight: true,
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // Progress bar
+          Container(
+            height: 6,
+            decoration: BoxDecoration(
+              color: Colors.white10,
+              borderRadius: BorderRadius.circular(3),
+            ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Stack(
+                  children: [
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      width: constraints.maxWidth * progress,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFE8DCC0), Color(0xFFFEFFE9)],
                         ),
+                        borderRadius: BorderRadius.circular(3),
                       ),
                     ),
-                  ),
-                  
-                  const SizedBox(height: 12),
-                  
-                  // Progress text
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '${currentChapterIndex + 1} von ${bookIndex.chapterCount}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.white54,
-                          fontFamily: 'Mynerve',
-                        ),
-                      ),
-                      Text(
-                        '${(progress * 100).round()}% abgeschlossen',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.white54,
-                          fontFamily: 'Mynerve',
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              );
-            },
+                  ],
+                );
+              },
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildChapterList(BuildContext context, WidgetRef ref, BookIndex bookIndex) {
-    // For Ink stories, get choice information
-    final runtime = isInkStory ? ref.watch(inkRuntimeProvider) : null;
-    
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: bookIndex.chapterCount,
-      itemBuilder: (context, index) {
-        final chapter = bookIndex.chapters[index];
-        final isCurrent = index == currentChapterIndex;
-        final isCompleted = index < currentChapterIndex;
-        final isLocked = index > currentChapterIndex;
-
-        // Get choice information for Ink stories
-        String? choiceText;
-        if (isInkStory && runtime != null) {
-          final choice = runtime.getChoiceToKnot(chapter.title);
-          choiceText = choice?.choiceText;
-        }
-
-        return _buildChapterTile(
-          context,
-          ref,
-          chapter,
-          index,
-          isCurrent: isCurrent,
-          isCompleted: isCompleted,
-          isLocked: isLocked,
-          choiceText: choiceText,
-        );
-      },
+  Widget _buildStatItem({
+    required IconData icon,
+    required String label,
+    required String value,
+    bool highlight = false,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          size: 16,
+          color: highlight ? const Color(0xFFE8DCC0) : Colors.white38,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: highlight ? const Color(0xFFE8DCC0) : Colors.white.withOpacity(0.87),
+            fontFamily: 'Mynerve',
+          ),
+        ),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 10,
+            color: Colors.white38,
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildChapterTile(
-    BuildContext context,
-    WidgetRef ref,
-    ChapterInfo chapter,
-    int index, {
-    required bool isCurrent,
-    required bool isCompleted,
-    required bool isLocked,
-    String? choiceText,
-  }) {
+  Widget _buildSceneTile(BuildContext context, _SceneInfo scene) {
+    final isExpanded = _expandedScenes.contains(scene.sceneId);
+    final isCurrentScene = _currentPage.sceneId == scene.sceneId;
+    final isCompleted = scene.endPageIndex < _safeCurrentIndex;
+    final isLocked = scene.startPageIndex > _safeCurrentIndex;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: isLocked ? null : () => _navigateToChapter(context, ref, index),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: isCurrent
-                  ? const LinearGradient(
-                      colors: [Color(0x40E8DCC0), Color(0x20E8DCC0)],
-                    )
-                  : null,
-              color: isCurrent ? null : Colors.white.withOpacity(0.03),
+      decoration: BoxDecoration(
+        color: isCurrentScene 
+            ? const Color(0xFFE8DCC0).withOpacity(0.08)
+            : Colors.white.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isCurrentScene
+              ? const Color(0xFFE8DCC0).withOpacity(0.3)
+              : Colors.white.withOpacity(0.08),
+          width: isCurrentScene ? 1.5 : 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          // Scene header (always visible)
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isCurrent
-                    ? const Color(0xFFE8DCC0).withOpacity(0.3)
-                    : Colors.white.withOpacity(0.1),
-                width: isCurrent ? 2 : 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                // Status icon
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(isCurrent, isCompleted, isLocked, choiceText),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Icon(
-                    _getStatusIcon(isCurrent, isCompleted, isLocked, choiceText),
-                    color: _getStatusIconColor(isCurrent, isCompleted, isLocked, choiceText),
-                    size: 20,
-                  ),
-                ),
-                
-                const SizedBox(width: 16),
-                
-                // Chapter info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Chapter number/name
-                      Text(
-                        isInkStory 
-                            ? chapter.title
-                            : 'Kapitel ${index + 1}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
-                          color: isLocked 
-                              ? Colors.white38
-                              : isCurrent 
-                                  ? const Color(0xFFE8DCC0)
-                                  : Colors.white.withOpacity(0.87),
-                          fontFamily: 'Mynerve',
-                        ),
-                      ),
-                      
-                      if (!isInkStory && chapter.title.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          chapter.title,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: isLocked ? Colors.white24 : Colors.white54,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                      
-                      // Choice text (if available)
-                      if (choiceText != null && choiceText.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE8DCC0).withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: const Color(0xFFE8DCC0).withOpacity(0.3),
-                              width: 1,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
+              onTap: () {
+                setState(() {
+                  if (isExpanded) {
+                    _expandedScenes.remove(scene.sceneId);
+                  } else {
+                    _expandedScenes.add(scene.sceneId);
+                  }
+                });
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  children: [
+                    // Scene number badge
+                    _buildSceneNumberBadge(scene.sceneNumber, isCurrentScene, isCompleted, isLocked),
+                    const SizedBox(width: 12),
+                    
+                    // Scene info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
                             children: [
-                              Icon(
-                                Icons.arrow_forward_rounded,
-                                size: 12,
-                                color: const Color(0xFFE8DCC0).withOpacity(0.8),
-                              ),
-                              const SizedBox(width: 4),
-                              Flexible(
+                              Expanded(
                                 child: Text(
-                                  choiceText,
+                                  scene.title ?? 'Szene ${scene.sceneNumber}',
                                   style: TextStyle(
-                                    fontSize: 10,
-                                    color: const Color(0xFFE8DCC0).withOpacity(0.9),
-                                    fontWeight: FontWeight.w500,
+                                    fontSize: 14,
+                                    fontWeight: isCurrentScene ? FontWeight.w600 : FontWeight.w500,
+                                    color: isLocked 
+                                        ? Colors.white38 
+                                        : isCurrentScene 
+                                            ? const Color(0xFFE8DCC0)
+                                            : Colors.white.withOpacity(0.87),
+                                    fontFamily: 'Mynerve',
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
+                              // Badges
+                              if (scene.hasImage) ...[
+                                const SizedBox(width: 6),
+                                Icon(Icons.image_rounded, size: 14, 
+                                     color: Colors.white.withOpacity(0.4)),
+                              ],
+                              if (scene.hasChoices) ...[
+                                const SizedBox(width: 6),
+                                Icon(Icons.call_split_rounded, size: 14,
+                                     color: const Color(0xFFE8DCC0).withOpacity(0.6)),
+                              ],
                             ],
                           ),
-                        ),
-                      ],
-                      
-                      // Status text
-                      const SizedBox(height: 4),
-                      Text(
-                        _getStatusText(isCurrent, isCompleted, isLocked, choiceText),
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: isLocked ? Colors.white24 : Colors.white38,
-                          fontStyle: FontStyle.italic,
-                        ),
+                          const SizedBox(height: 4),
+                          // Page info
+                          Text(
+                            scene.pageCount == 1 
+                                ? '1 Seite (S. ${scene.firstPageId})'
+                                : '${scene.pageCount} Seiten (S. ${scene.firstPageId}–${scene.lastPageId})',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isLocked ? Colors.white24 : Colors.white38,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                    
+                    // Status indicator
+                    _buildSceneStatus(isCurrentScene, isCompleted, isLocked),
+                    
+                    const SizedBox(width: 8),
+                    
+                    // Expand/collapse arrow
+                    AnimatedRotation(
+                      turns: isExpanded ? 0.25 : 0,
+                      duration: const Duration(milliseconds: 200),
+                      child: Icon(
+                        Icons.chevron_right_rounded,
+                        color: isLocked ? Colors.white24 : Colors.white38,
+                        size: 20,
+                      ),
+                    ),
+                  ],
                 ),
-                
-                // Arrow or lock
-                Icon(
-                  isLocked 
-                      ? Icons.lock_outline
-                      : Icons.arrow_forward_ios,
-                  color: isLocked 
-                      ? Colors.white24
-                      : Colors.white38,
-                  size: 16,
-                ),
-              ],
+              ),
             ),
           ),
-        ),
+          
+          // Expanded page list
+          if (isExpanded) ...[
+            Container(
+              height: 1,
+              margin: const EdgeInsets.symmetric(horizontal: 14),
+              color: Colors.white.withOpacity(0.08),
+            ),
+            _buildPageList(scene),
+          ],
+        ],
       ),
     );
   }
 
-  Color _getStatusColor(bool isCurrent, bool isCompleted, bool isLocked, String? choiceText) {
-    if (isLocked) return Colors.white10;
-    if (isCurrent) return const Color(0xFFE8DCC0).withOpacity(0.2);
-    if (isCompleted) {
-      return choiceText != null 
-          ? const Color(0xFFE8DCC0).withOpacity(0.15) // Golden for choices
-          : Colors.green.withOpacity(0.2); // Green for regular completion
-    }
-    return Colors.white10;
-  }
+  Widget _buildSceneNumberBadge(int number, bool isCurrent, bool isCompleted, bool isLocked) {
+    Color bgColor;
+    Color textColor;
 
-  IconData _getStatusIcon(bool isCurrent, bool isCompleted, bool isLocked, String? choiceText) {
-    if (isLocked) return Icons.lock_outline;
-    if (isCurrent) return Icons.play_circle_outline;
-    if (isCompleted) {
-      return choiceText != null 
-          ? Icons.call_split_rounded // Branch icon for choices
-          : Icons.check_circle_outline; // Check for regular completion
-    }
-    return Icons.radio_button_unchecked;
-  }
-
-  Color _getStatusIconColor(bool isCurrent, bool isCompleted, bool isLocked, String? choiceText) {
-    if (isLocked) return Colors.white24;
-    if (isCurrent) return const Color(0xFFE8DCC0);
-    if (isCompleted) {
-      return choiceText != null 
-          ? const Color(0xFFE8DCC0) // Golden for choices
-          : Colors.green; // Green for regular completion
-    }
-    return Colors.white38;
-  }
-
-  String _getStatusText(bool isCurrent, bool isCompleted, bool isLocked, String? choiceText) {
-    if (isLocked) return 'Gesperrt';
-    if (isCurrent) return 'Aktuell';
-    if (isCompleted) {
-      return choiceText != null ? 'Entscheidung getroffen' : 'Abgeschlossen';
-    }
-    return 'Verfügbar';
-  }
-
-  void _navigateToChapter(BuildContext context, WidgetRef ref, int chapterIndex) {
-    if (isInkStory) {
-      // For Ink stories, navigate to specific knot
-      final bookId = ref.read(selectedBookIdProvider);
-      final bookIndexAsync = ref.read(bookIndexProvider(bookId));
-      
-      bookIndexAsync.whenData((bookIndex) {
-        if (chapterIndex < bookIndex.chapters.length) {
-          final targetKnot = bookIndex.chapters[chapterIndex].title;
-          // Navigate to specific knot in Ink story
-          ref.read(inkRuntimeProvider.notifier).navigateToKnot(targetKnot);
-        }
-      });
+    if (isLocked) {
+      bgColor = Colors.white.withOpacity(0.05);
+      textColor = Colors.white24;
+    } else if (isCurrent) {
+      bgColor = const Color(0xFFE8DCC0);
+      textColor = Colors.black;
+    } else if (isCompleted) {
+      bgColor = Colors.green.withOpacity(0.2);
+      textColor = Colors.green;
     } else {
-      // For regular books, update chapter index
-      ref.read(currentChapterIndexProvider.notifier).state = chapterIndex;
+      bgColor = Colors.white.withOpacity(0.08);
+      textColor = Colors.white54;
     }
-    
-    // Close dialog
-    Navigator.of(context).pop();
+
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Center(
+        child: isCompleted && !isCurrent
+            ? Icon(Icons.check, size: 16, color: textColor)
+            : Text(
+                '$number',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                ),
+              ),
+      ),
+    );
   }
+
+  Widget _buildSceneStatus(bool isCurrent, bool isCompleted, bool isLocked) {
+    if (isLocked) {
+      return const Icon(Icons.lock_outline, size: 14, color: Colors.white24);
+    }
+    if (isCurrent) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE8DCC0).withOpacity(0.2),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: const Text(
+          'AKTUELL',
+          style: TextStyle(
+            fontSize: 8,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFFE8DCC0),
+            letterSpacing: 0.5,
+          ),
+        ),
+      );
+    }
+    if (isCompleted) {
+      return const Icon(Icons.check_circle, size: 14, color: Colors.green);
+    }
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildPageList(_SceneInfo scene) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 14, right: 14, bottom: 10, top: 6),
+      child: Column(
+        children: List.generate(scene.pageCount, (index) {
+          final pageIndex = scene.startPageIndex + index;
+          final page = widget.pagedBook.pages[pageIndex];
+          final isCurrent = pageIndex == _safeCurrentIndex;
+          final isCompleted = pageIndex < _safeCurrentIndex;
+          final isLocked = pageIndex > _safeCurrentIndex;
+
+          return Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: isLocked ? null : () {
+                Navigator.of(context).pop();
+                widget.onNavigate(pageIndex);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                margin: const EdgeInsets.only(bottom: 2),
+                decoration: BoxDecoration(
+                  color: isCurrent 
+                      ? const Color(0xFFE8DCC0).withOpacity(0.12)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    // Page number (1-based page.id)
+                    Container(
+                      width: 28,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: isCurrent 
+                            ? const Color(0xFFE8DCC0)
+                            : isCompleted
+                                ? Colors.green.withOpacity(0.2)
+                                : Colors.white.withOpacity(0.06),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${page.id}',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: isCurrent 
+                                ? Colors.black
+                                : isCompleted
+                                    ? Colors.green
+                                    : isLocked
+                                        ? Colors.white24
+                                        : Colors.white54,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    
+                    // Page info with local page number
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Text(
+                            'Seite ${index + 1}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isLocked 
+                                  ? Colors.white24 
+                                  : isCurrent
+                                      ? const Color(0xFFE8DCC0)
+                                      : Colors.white54,
+                            ),
+                          ),
+                          if (page.hasImage) ...[
+                            const SizedBox(width: 6),
+                            Icon(Icons.image_rounded, size: 12, 
+                                 color: Colors.white.withOpacity(0.3)),
+                          ],
+                          if (page.hasChoices) ...[
+                            const SizedBox(width: 6),
+                            Icon(Icons.call_split_rounded, size: 12,
+                                 color: const Color(0xFFE8DCC0).withOpacity(0.5)),
+                          ],
+                        ],
+                      ),
+                    ),
+                    
+                    // Status
+                    if (isCurrent)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8DCC0).withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'HIER',
+                          style: TextStyle(
+                            fontSize: 8,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFE8DCC0),
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      )
+                    else if (isCompleted)
+                      const Icon(Icons.check, size: 14, color: Colors.green)
+                    else if (isLocked)
+                      Icon(Icons.lock_outline, size: 12, color: Colors.white.withOpacity(0.2)),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+}
+
+/// Internal helper class for scene information
+class _SceneInfo {
+  final String sceneId;
+  final int sceneNumber;
+  final int startPageIndex;
+  final int endPageIndex;
+  final int pageCount;
+  final String? title;
+  final bool hasChoices;
+  final bool hasImage;
+  final int firstPageId;
+  final int lastPageId;
+
+  const _SceneInfo({
+    required this.sceneId,
+    required this.sceneNumber,
+    required this.startPageIndex,
+    required this.endPageIndex,
+    required this.pageCount,
+    required this.firstPageId,
+    required this.lastPageId,
+    this.title,
+    this.hasChoices = false,
+    this.hasImage = false,
+  });
 }
