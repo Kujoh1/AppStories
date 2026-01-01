@@ -171,8 +171,8 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
     if (currentIndex < pagedBook.pages.length - 1) {
       final newIndex = currentIndex + 1;
       ref.read(currentPageIndexProvider.notifier).state = newIndex;
-      // Save progress
-      _saveProgress(newIndex);
+      // Save progress with total pages
+      _saveProgress(newIndex, pagedBook.totalPages);
     } else {
       // End of book
       _showEndScreen();
@@ -199,15 +199,15 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
     final targetPageIndex = pagedBook.getPageIndexForScene(choice.targetSceneId);
     if (targetPageIndex != null) {
       ref.read(currentPageIndexProvider.notifier).state = targetPageIndex;
-      // Save progress
-      _saveProgress(targetPageIndex);
+      // Save progress with total pages
+      _saveProgress(targetPageIndex, pagedBook.totalPages);
     }
   }
   
-  void _saveProgress(int pageIndex) {
+  void _saveProgress(int pageIndex, int totalPages) {
     if (pageIndex > 0) {
       final bookId = ref.read(selectedBookIdProvider);
-      ref.read(readingProgressServiceProvider).saveProgress(bookId, pageIndex);
+      ref.read(readingProgressServiceProvider).saveProgress(bookId, pageIndex, totalPages);
     }
   }
 
@@ -526,6 +526,7 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
       context,
       pagedBook: pagedBook,
       currentPageIndex: currentIndex.clamp(0, pagedBook.pages.length - 1),
+      isInkStory: true,
       onNavigate: (pageIndex) {
         ref.read(currentPageIndexProvider.notifier).state = pageIndex;
       },

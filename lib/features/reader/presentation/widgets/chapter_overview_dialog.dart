@@ -2,18 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../domain/models/story_page.dart';
 
-/// Hierarchical page/scene navigation dialog
-/// Shows scenes with their pages, allowing navigation to any page
+/// Hierarchical page/chapter navigation dialog
+/// Shows chapters/scenes with their pages, allowing navigation to any page
 class PageOverviewDialog extends ConsumerStatefulWidget {
   final PagedBook pagedBook;
   final int currentPageIndex;
   final void Function(int pageIndex) onNavigate;
+  final bool isInkStory;
 
   const PageOverviewDialog({
     super.key,
     required this.pagedBook,
     required this.currentPageIndex,
     required this.onNavigate,
+    this.isInkStory = false,
   });
 
   static Future<void> show(
@@ -21,6 +23,7 @@ class PageOverviewDialog extends ConsumerStatefulWidget {
     required PagedBook pagedBook,
     required int currentPageIndex,
     required void Function(int pageIndex) onNavigate,
+    bool isInkStory = false,
   }) {
     // Clamp the index to valid range
     final safeIndex = currentPageIndex.clamp(0, pagedBook.pages.length - 1);
@@ -34,6 +37,7 @@ class PageOverviewDialog extends ConsumerStatefulWidget {
         pagedBook: pagedBook,
         currentPageIndex: safeIndex,
         onNavigate: onNavigate,
+        isInkStory: isInkStory,
       ),
     );
   }
@@ -50,6 +54,10 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
   late int _safeCurrentIndex;
   late StoryPage _currentPage;
   late int _totalPages;
+  
+  // Terminology helpers
+  String get _chapterLabel => widget.isInkStory ? 'Szene' : 'Kapitel';
+  String get _chapterLabelPlural => widget.isInkStory ? 'Szenen' : 'Kapitel';
 
   @override
   void initState() {
@@ -219,7 +227,7 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
           // Scene/Page list
           Expanded(
             child: _scenes.isEmpty
-                ? const Center(child: Text('Keine Szenen', style: TextStyle(color: Colors.white54)))
+                ? Center(child: Text('Keine $_chapterLabelPlural', style: const TextStyle(color: Colors.white54)))
                 : ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -293,7 +301,7 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
                 // Current scene / total scenes
                 _buildStatItem(
                   icon: Icons.folder_outlined,
-                  label: 'Szene',
+                  label: _chapterLabel,
                   value: '$_currentSceneNumber / ${_scenes.length}',
                 ),
                 Container(width: 1, height: 30, color: Colors.white12),
@@ -429,7 +437,7 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
                             children: [
                               Expanded(
                                 child: Text(
-                                  scene.title ?? 'Szene ${scene.sceneNumber}',
+                                  scene.title ?? '$_chapterLabel ${scene.sceneNumber}',
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: isCurrentScene ? FontWeight.w600 : FontWeight.w500,

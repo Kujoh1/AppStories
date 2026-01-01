@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 
-/// Elegant preloader animation for app startup
+/// Minimal preloader - only shows a progress bar
 class AppPreloader extends StatefulWidget {
   final String? loadingText;
   final double progress;
@@ -17,10 +16,8 @@ class AppPreloader extends StatefulWidget {
 }
 
 class _AppPreloaderState extends State<AppPreloader>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
-  late AnimationController _rotateController;
-  late Animation<double> _pulseAnimation;
   late Animation<double> _glowAnimation;
 
   @override
@@ -29,17 +26,8 @@ class _AppPreloaderState extends State<AppPreloader>
     
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
-    
-    _rotateController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 8000),
-    )..repeat();
-    
-    _pulseAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
     
     _glowAnimation = Tween<double>(begin: 0.3, end: 0.8).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
@@ -49,7 +37,6 @@ class _AppPreloaderState extends State<AppPreloader>
   @override
   void dispose() {
     _pulseController.dispose();
-    _rotateController.dispose();
     super.dispose();
   }
 
@@ -59,124 +46,33 @@ class _AppPreloaderState extends State<AppPreloader>
     final backgroundColor = isDark 
         ? const Color(0xFF0A0806) 
         : const Color(0xFFF8F4EC);
+    // Lila passend zum App-Design
     final primaryColor = isDark 
-        ? const Color(0xFFD4AF37) 
-        : const Color(0xFF8B4513);
-    final textColor = isDark 
-        ? const Color(0xFFE8DCC0) 
-        : const Color(0xFF2C1810);
+        ? const Color(0xFFBB86FC)  // Material Purple accent
+        : const Color(0xFF7C4DFF); // Deep Purple
 
     return Container(
       width: double.infinity,
       height: double.infinity,
       color: backgroundColor,
       child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Animated book icon
-            AnimatedBuilder(
-              animation: Listenable.merge([_pulseAnimation, _rotateController]),
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _pulseAnimation.value,
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          primaryColor.withOpacity(_glowAnimation.value * 0.3),
-                          Colors.transparent,
-                        ],
-                      ),
-                    ),
-                    child: Center(
-                      child: _buildAnimatedBook(primaryColor),
-                    ),
-                  ),
-                );
-              },
-            ),
-            
-            const SizedBox(height: 48),
-            
-            // App name
-            Text(
-              'AppStories',
-              style: TextStyle(
-                fontFamily: 'Mynerve',
-                fontSize: 28,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 4,
-                color: textColor,
-              ),
-            ),
-            
-            const SizedBox(height: 24),
-            
-            // Loading text
-            if (widget.loadingText != null)
-              AnimatedBuilder(
-                animation: _pulseAnimation,
-                builder: (context, child) {
-                  return Opacity(
-                    opacity: 0.5 + (_pulseAnimation.value - 0.8) * 2.5,
-                    child: Text(
-                      widget.loadingText!,
-                      style: TextStyle(
-                        fontFamily: 'Mynerve',
-                        fontSize: 14,
-                        letterSpacing: 2,
-                        color: textColor.withOpacity(0.7),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            
-            const SizedBox(height: 32),
-            
-            // Progress indicator
-            SizedBox(
-              width: 200,
-              child: AnimatedBuilder(
-                animation: _pulseAnimation,
-                builder: (context, child) {
-                  return CustomPaint(
-                    size: const Size(200, 3),
-                    painter: _ProgressPainter(
-                      progress: widget.progress,
-                      color: primaryColor,
-                      glowIntensity: _glowAnimation.value,
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
+        child: SizedBox(
+          width: 200,
+          child: AnimatedBuilder(
+            animation: _glowAnimation,
+            builder: (context, child) {
+              return CustomPaint(
+                size: const Size(200, 3),
+                painter: _ProgressPainter(
+                  progress: widget.progress,
+                  color: primaryColor,
+                  glowIntensity: _glowAnimation.value,
+                ),
+              );
+            },
+          ),
         ),
       ),
-    );
-  }
-  
-  Widget _buildAnimatedBook(Color color) {
-    return AnimatedBuilder(
-      animation: _rotateController,
-      builder: (context, child) {
-        // Subtle floating animation
-        final floatOffset = math.sin(_rotateController.value * math.pi * 2) * 4;
-        
-        return Transform.translate(
-          offset: Offset(0, floatOffset),
-          child: Icon(
-            Icons.auto_stories,
-            size: 64,
-            color: color,
-          ),
-        );
-      },
     );
   }
 }
@@ -235,11 +131,11 @@ class _ProgressPainter extends CustomPainter {
         progressPaint,
       );
       
-      // End dot
+      // End dot (pulsing)
       if (progress < 1.0) {
         canvas.drawCircle(
           Offset(progressWidth, size.height / 2),
-          4,
+          3 + glowIntensity,
           Paint()..color = color,
         );
       }
@@ -251,7 +147,3 @@ class _ProgressPainter extends CustomPainter {
       oldDelegate.progress != progress ||
       oldDelegate.glowIntensity != glowIntensity;
 }
-
-
-
-

@@ -271,11 +271,18 @@ class _PageViewWidgetState extends State<PageViewWidget>
               ),
             ),
             
-            // Page indicator (fixed at bottom left)
+            // Chapter/Page indicator (fixed at bottom left)
             Positioned(
               left: 8,
               bottom: 8,
-              child: _buildPageIndicator(),
+              child: _buildChapterPageIndicator(),
+            ),
+            
+            // Copyright (fixed at bottom right)
+            Positioned(
+              right: 8,
+              bottom: 8,
+              child: _buildCopyright(),
             ),
           ],
         ),
@@ -471,20 +478,48 @@ class _PageViewWidgetState extends State<PageViewWidget>
     );
   }
 
-  Widget _buildPageIndicator() {
+  Widget _buildChapterPageIndicator() {
+    // Extract chapter number from sceneId (e.g., "chapter_2" -> 3, "s01_a" -> 1)
+    final sceneId = widget.page.sceneId;
+    String chapterText;
+    
+    if (sceneId.startsWith('chapter_')) {
+      // DOCX format: chapter_0, chapter_1, etc.
+      final chapterNum = int.tryParse(sceneId.replaceFirst('chapter_', '')) ?? 0;
+      chapterText = 'Kapitel ${chapterNum + 1}';
+    } else {
+      // Ink format: use sceneTitle or sceneId
+      chapterText = widget.page.sceneTitle ?? sceneId;
+    }
+    
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.6),
+        color: Colors.black.withOpacity(0.5),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
-        widget.page.pageIndicator(widget.totalPages),
+        '$chapterText, Seite ${widget.page.pageInScene}',
         style: TextStyle(
-          fontFamily: 'monospace',
+          fontFamily: 'Mynerve',
           fontSize: 10,
-          color: Colors.white.withOpacity(0.5),
-          letterSpacing: 1,
+          color: Colors.white.withOpacity(0.4),
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildCopyright() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Text(
+        '© AppStories 2025',
+        style: TextStyle(
+          fontFamily: 'Mynerve',
+          fontSize: 9,
+          color: Colors.white.withOpacity(0.25),
+          letterSpacing: 0.5,
         ),
       ),
     );

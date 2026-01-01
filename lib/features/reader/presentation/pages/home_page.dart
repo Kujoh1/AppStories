@@ -30,20 +30,19 @@ class _HomePageState extends ConsumerState<HomePage> {
     // Check for saved progress
     final savedProgress = await progressService.getProgress(selectedBookId);
     
-    if (savedProgress != null && savedProgress > 0 && mounted) {
+    if (savedProgress != null && savedProgress.pageIndex > 0 && mounted) {
       // Get book info for the sheet
-      final bookIndex = await ref.read(bookIndexProvider(selectedBookId).future);
       final books = await ref.read(booksProvider.future);
       final book = books.firstWhere((b) => b.id == selectedBookId);
       
       if (!mounted) return;
       
-      // Show continue reading sheet
+      // Show continue reading sheet with saved total pages
       final shouldContinue = await ContinueReadingSheet.show(
         context,
         bookTitle: book.title,
-        savedPageIndex: savedProgress,
-        totalPages: bookIndex.totalLength > 0 ? bookIndex.totalLength : bookIndex.chapterCount * 10, // Estimate if not available
+        savedPageIndex: savedProgress.pageIndex,
+        totalPages: savedProgress.totalPages,
       );
       
       if (!mounted) return;
@@ -55,7 +54,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       
       if (shouldContinue) {
         // Continue from saved position
-        _loadBook(startFromPage: savedProgress);
+        _loadBook(startFromPage: savedProgress.pageIndex);
       } else {
         // Start from beginning - clear progress
         await progressService.clearProgress(selectedBookId);
