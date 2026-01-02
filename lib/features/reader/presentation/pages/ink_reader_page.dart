@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/services/ink_parser.dart';
 import '../../../../core/services/page_analyzer.dart';
 import '../../../../core/widgets/smart_image.dart';
 import '../../../../data/repositories/book_repository.dart';
@@ -834,20 +835,7 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
             onPressed: () async {
               final needsRecalc = await SettingsDialog.show(context);
               if (needsRecalc == true && _viewportSize != null) {
-                final settings = ref.read(settingsProvider);
-                final episodeInfo = ref.read(currentEpisodeInfoProvider);
-                final selectedBookId = ref.read(selectedBookIdProvider);
-                final effectiveBookId = episodeInfo != null
-                    ? '${episodeInfo.seriesId}_episode_${episodeInfo.episodeNumber}'
-                    : selectedBookId;
-                final mq = MediaQuery.of(context);
-                ref.invalidate(pagedBookProvider(PageAnalysisParams(
-                  bookId: effectiveBookId,
-                  viewportWidth: _viewportSize!.width,
-                  viewportHeight: _viewportSize!.height - 56 - mq.padding.top - mq.padding.bottom,
-                  fontFamily: settings.fontFamily,
-                  fontSize: settings.fontSizeValue,
-                )));
+                await _recalculateLayoutWithAnimation();
               }
             },
             tooltip: 'Einstellungen',
@@ -1211,6 +1199,154 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
     });
     ref.read(currentPageIndexProvider.notifier).state = 0;
     ref.read(readingStateProvider.notifier).reset();
+  }
+
+  /// Recalculate layout with loading animation after settings change
+  Future<void> _recalculateLayoutWithAnimation() async {
+    final repository = ref.read(bookRepositoryProvider);
+    final settings = ref.read(settingsProvider);
+    final episodeInfo = ref.read(currentEpisodeInfoProvider);
+    final selectedBookId = ref.read(selectedBookIdProvider);
+    final currentPageIndex = ref.read(currentPageIndexProvider);
+    
+    // Show loading overlay
+    setState(() {
+      _isLoadingNextEpisode = true;
+      _episodeLoadingMessage = 'Berechne neues Layout...';
+      _episodeLoadingProgress = 0.0;
+    });
+    
+    // Wait for UI to render
+    await Future.delayed(const Duration(milliseconds: 50));
+    if (!mounted) return;
+    
+    try {
+      // Step 1: Load story (0% -> 15%)
+      setState(() {
+        _episodeLoadingProgress = 0.05;
+      });
+      
+      InkStory story;
+      String effectiveBookId;
+      
+      if (episodeInfo != null) {
+        // Episode mode
+        story = await repository.getEpisodeStory(episodeInfo.seriesId, episodeInfo.episodeNumber);
+        effectiveBookId = '${episodeInfo.seriesId}_episode_${episodeInfo.episodeNumber}';
+      } else {
+        // Regular book mode
+        story = await repository.getInkStory(selectedBookId);
+        effectiveBookId = selectedBookId;
+      }
+      
+      if (!mounted) return;
+      
+      setState(() {
+        _episodeLoadingProgress = 0.15;
+        _episodeLoadingMessage = 'Optimiere Text...';
+      });
+      
+      // Step 2: Get viewport size
+      final mediaQuery = MediaQuery.of(context);
+      final screenSize = mediaQuery.size;
+      final contentHeight = screenSize.height 
+          - mediaQuery.padding.top
+          - 56
+          - mediaQuery.padding.bottom;
+      
+      // Step 3: Start progress animation (15% -> 85%)
+      final estimatedTime = Duration(milliseconds: story.knots.length * 15);
+      final updateInterval = estimatedTime.inMilliseconds ~/ 70;
+      
+      _episodeProgressTimer?.cancel();
+      _episodeProgressTimer = Timer.periodic(
+        Duration(milliseconds: updateInterval.clamp(50, 200)),
+        (timer) {
+          if (!mounted) {
+            timer.cancel();
+            return;
+          }
+          setState(() {
+            _episodeLoadingProgress = (_episodeLoadingProgress + 0.01).clamp(0.15, 0.85);
+            if (_episodeLoadingProgress > 0.5 && _episodeLoadingProgress < 0.7) {
+              _episodeLoadingMessage = 'Passe Schrift an...';
+            } else if (_episodeLoadingProgress >= 0.7) {
+              _episodeLoadingMessage = 'Fast fertig...';
+            }
+          });
+        },
+      );
+      
+      // Step 4: Calculate pages with new settings
+      final hyphenator = ref.read(hyphenatorServiceProvider);
+      if (!hyphenator.isInitialized) {
+        await hyphenator.initialize();
+      }
+      
+      final analyzer = PageAnalyzer(config: PageLayoutConfig(
+        fontFamily: settings.fontFamily,
+        fontSize: settings.fontSizeValue,
+      ));
+      
+      final pagedBook = await analyzer.analyzeInkStory(
+        story: story,
+        bookId: effectiveBookId,
+        viewportWidth: screenSize.width,
+        viewportHeight: contentHeight,
+        hyphenator: hyphenator,
+      );
+      
+      _episodeProgressTimer?.cancel();
+      
+      if (!mounted) return;
+      
+      // Step 5: Update providers
+      final params = PageAnalysisParams(
+        bookId: effectiveBookId,
+        viewportWidth: screenSize.width,
+        viewportHeight: contentHeight,
+        fontFamily: settings.fontFamily,
+        fontSize: settings.fontSizeValue,
+      );
+      
+      // Store in pre-calculated provider
+      ref.read(preCalculatedBookProvider.notifier).state = PreCalculatedBook(
+        book: pagedBook,
+        params: params,
+      );
+      
+      // Keep current page position (clamped to new page count)
+      final newPageIndex = currentPageIndex.clamp(0, pagedBook.pages.length - 1);
+      ref.read(currentPageIndexProvider.notifier).state = newPageIndex;
+      
+      setState(() {
+        _episodeLoadingMessage = 'Bereit!';
+        _episodeLoadingProgress = 1.0;
+      });
+      
+      await Future.delayed(const Duration(milliseconds: 300));
+      
+      if (!mounted) return;
+      
+      setState(() {
+        _isLoadingNextEpisode = false;
+      });
+      
+    } catch (e) {
+      _episodeProgressTimer?.cancel();
+      if (!mounted) return;
+      
+      setState(() {
+        _isLoadingNextEpisode = false;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Fehler beim Neuberechnen: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _showSceneOverview(PagedBook pagedBook) {

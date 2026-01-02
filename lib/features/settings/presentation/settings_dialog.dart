@@ -11,14 +11,7 @@ class SettingsDialog extends ConsumerStatefulWidget {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      useSafeArea: true,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.65,
-        minChildSize: 0.5,
-        maxChildSize: 0.85,
-        expand: false,
-        builder: (context, scrollController) => const SettingsDialog(),
-      ),
+      builder: (context) => const SettingsDialog(),
     );
   }
 
@@ -117,60 +110,76 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
         Container(
           decoration: const BoxDecoration(
             color: Color(0xFF1A1A1A),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: SafeArea(
-            child: ListView(
-              padding: const EdgeInsets.all(24),
-              shrinkWrap: true,
-              children: [
-                // Handle bar
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.white24,
-                      borderRadius: BorderRadius.circular(2),
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Handle bar
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ),
-                ),
-                
-                const SizedBox(height: 24),
-                
-                // Title
-                Text(
-                  'Einstellungen',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Mynerve',
+                  
+                  const SizedBox(height: 20),
+                  
+                  // Title
+                  Text(
+                    'Einstellungen',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Mynerve',
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                
-                const SizedBox(height: 32),
-                
-                // Font Selection
-                _buildFontSection(context, primaryColor),
-                
-                const SizedBox(height: 24),
-                
-                // Font Size Selection
-                _buildFontSizeSection(context, primaryColor),
-                
-                const SizedBox(height: 24),
-                
-                // Text Animation Speed
-                _buildTextSpeedSection(context, primaryColor),
-                
-                const SizedBox(height: 32),
-                
-                // Save Button
-                _buildSaveButton(context, primaryColor),
-                
-                const SizedBox(height: 24),
-              ],
+                  
+                  const SizedBox(height: 28),
+                  
+                  // Text Animation Speed
+                  _buildSettingSection(
+                    icon: Icons.speed_rounded,
+                    label: 'Text-Animation',
+                    primaryColor: primaryColor,
+                    child: _buildSpeedOptions(primaryColor),
+                  ),
+                  
+                  const SizedBox(height: 20),
+                  
+                  // Font Size Selection
+                  _buildSettingSection(
+                    icon: Icons.format_size_rounded,
+                    label: 'Schriftgröße',
+                    primaryColor: primaryColor,
+                    child: _buildFontSizeOptionsHorizontal(primaryColor),
+                  ),
+                  
+                  const SizedBox(height: 20),
+                  
+                  // Font Selection
+                  _buildSettingSection(
+                    icon: Icons.font_download_rounded,
+                    label: 'Schriftart',
+                    primaryColor: primaryColor,
+                    child: _buildFontOptionsHorizontal(primaryColor),
+                  ),
+                  
+                  const SizedBox(height: 28),
+                  
+                  // Save Button
+                  _buildSaveButton(context, primaryColor),
+                ],
+              ),
             ),
           ),
         ),
@@ -428,9 +437,9 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
   /// Build the text animation speed selection section
   Widget _buildTextSpeedSection(BuildContext context, Color primaryColor) {
     final speedOptions = [
-      (speed: TextAnimationSpeed.slow, label: 'Langsam'),
       (speed: TextAnimationSpeed.normal, label: 'Normal'),
       (speed: TextAnimationSpeed.fast, label: 'Schnell'),
+      (speed: TextAnimationSpeed.faster, label: 'Schneller'),
       (speed: TextAnimationSpeed.instant, label: 'Sofort'),
     ];
 
@@ -567,6 +576,171 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
           ],
         ),
       ),
+    );
+  }
+  
+  /// Settings section with label above options
+  Widget _buildSettingSection({
+    required IconData icon,
+    required String label,
+    required Color primaryColor,
+    required Widget child,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, color: primaryColor, size: 16),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Colors.white.withOpacity(0.7),
+                letterSpacing: 0.3,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        child,
+      ],
+    );
+  }
+  
+  /// Speed options as pill buttons
+  Widget _buildSpeedOptions(Color primaryColor) {
+    final speedOptions = [
+      (speed: TextAnimationSpeed.normal, label: 'Normal'),
+      (speed: TextAnimationSpeed.fast, label: 'Schnell'),
+      (speed: TextAnimationSpeed.faster, label: '2x'),
+      (speed: TextAnimationSpeed.instant, label: 'Sofort'),
+    ];
+
+    return Row(
+      children: speedOptions.map((option) {
+        final isSelected = _pendingSpeed == option.speed;
+        final isLast = option.speed == TextAnimationSpeed.instant;
+        return Expanded(
+          child: GestureDetector(
+            onTap: () => _updatePendingSpeed(option.speed),
+            child: Container(
+              margin: EdgeInsets.only(right: isLast ? 0 : 8),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: isSelected 
+                    ? primaryColor.withOpacity(0.2)
+                    : Colors.white.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isSelected ? primaryColor : Colors.white12,
+                  width: 1.5,
+                ),
+              ),
+              child: Text(
+                option.label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  color: isSelected ? Colors.white : Colors.white60,
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+  
+  /// Font size options - horizontal layout
+  Widget _buildFontSizeOptionsHorizontal(Color primaryColor) {
+    return Row(
+      children: StoryFontSize.values.map((size) {
+        final isSelected = _pendingFontSize == size;
+        final isLast = size == StoryFontSize.large;
+        return Expanded(
+          child: GestureDetector(
+            onTap: () => _updatePendingFontSize(size),
+            child: Container(
+              margin: EdgeInsets.only(right: isLast ? 0 : 8),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: isSelected 
+                    ? primaryColor.withOpacity(0.2)
+                    : Colors.white.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isSelected ? primaryColor : Colors.white12,
+                  width: 1.5,
+                ),
+              ),
+              child: Text(
+                AppSettings.getFontSizeName(size),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  color: isSelected ? Colors.white : Colors.white60,
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+  
+  /// Font options with preview - horizontal layout
+  Widget _buildFontOptionsHorizontal(Color primaryColor) {
+    return Row(
+      children: StoryFont.values.map((font) {
+        final isSelected = _pendingFont == font;
+        final fontFamily = font == StoryFont.mynerve ? 'Mynerve' : 'EBGaramond';
+        final isLast = font == StoryFont.garamond;
+        return Expanded(
+          child: GestureDetector(
+            onTap: () => _updatePendingFont(font),
+            child: Container(
+              margin: EdgeInsets.only(right: isLast ? 0 : 8),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: isSelected 
+                    ? primaryColor.withOpacity(0.2)
+                    : Colors.white.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isSelected ? primaryColor : Colors.white12,
+                  width: 1.5,
+                ),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    'Aa',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      color: isSelected ? Colors.white : Colors.white60,
+                      fontFamily: fontFamily,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    AppSettings.getFontName(font),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isSelected ? primaryColor : Colors.white38,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }

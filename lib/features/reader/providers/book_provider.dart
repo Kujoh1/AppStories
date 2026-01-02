@@ -136,8 +136,9 @@ final sortedBooksProvider = FutureProvider<List<BookGraph>>((ref) async {
 });
 
 /// Provider for the currently selected book ID
+/// Empty string means no book is selected
 final selectedBookIdProvider = StateProvider<String>((ref) {
-  return 'zwischen_den_gleisen'; // Default book
+  return ''; // No book selected by default
 });
 
 /// Provider for the current book

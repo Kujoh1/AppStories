@@ -7,6 +7,12 @@ import '../../../../core/widgets/smart_image.dart';
 
 /// Configuration for text animation
 class _AnimConfig {
+  // Base delay per character in milliseconds
+  // This is divided by speedMultiplier:
+  // - Normal (1x): 12ms per char (~6 sec for 500 chars)
+  // - Schnell (3x): 4ms per char (~2 sec for 500 chars)
+  // - Schneller (10x): 1.2ms per char (~0.6 sec for 500 chars)
+  // - Sofort: skipAnimation=true, kein delay
   static const int charDelayMs = 12;
   static const int glowDurationMs = 1200;
   static const double lineHeight = 1.9;

@@ -555,9 +555,9 @@ class _HomePageState extends ConsumerState<HomePage> {
 
                       Text(
                         booksAsync.when(
-                          data: (books) => 'Verfügbare Bücher (${books.length})',
-                          loading: () => 'Verfügbare Bücher',
-                          error: (_, __) => 'Verfügbare Bücher',
+                          data: (books) => 'Verfügbare Stories (${books.length})',
+                          loading: () => 'Verfügbare Stories',
+                          error: (_, __) => 'Verfügbare Stories',
                         ),
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
@@ -736,11 +736,11 @@ class _HomePageState extends ConsumerState<HomePage> {
 
                       const SizedBox(height: AppConstants.paddingLarge),
 
-                      // Start button
+                      // Start button - only enabled when a story is selected
                       FilledButton.icon(
-                        onPressed: _isLoading ? null : _startBook,
+                        onPressed: (_isLoading || selectedBookId.isEmpty) ? null : _startBook,
                         icon: const Icon(Icons.play_arrow),
-                        label: const Text('Ausgewähltes Buch starten'),
+                        label: const Text('Story starten'),
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
                             vertical: AppConstants.paddingMedium,

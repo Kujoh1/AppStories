@@ -3,10 +3,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Text animation speed options
 enum TextAnimationSpeed {
-  slow,    // Langsam
   normal,  // Normal
   fast,    // Schnell
-  faster,  // Schneller (2x schneller als fast)
+  faster,  // Schneller
   instant, // Sofort (keine Animation)
 }
 
@@ -101,18 +100,21 @@ class AppSettings {
   }
   
   /// Get speed multiplier (higher = faster animation)
+  /// Base delay is 12ms per char, divided by multiplier:
+  /// - Normal: 12ms / 1 = 12ms per char (~6 sec for 500 chars)
+  /// - Schnell: 12ms / 3 = 4ms per char (~2 sec for 500 chars)
+  /// - Schneller: 12ms / 10 = 1.2ms per char (~0.6 sec for 500 chars)
+  /// - Sofort: Animation wird übersprungen
   double get speedMultiplier {
     switch (textSpeed) {
-      case TextAnimationSpeed.slow:
-        return 0.5;   // Halb so schnell wie normal
       case TextAnimationSpeed.normal:
-        return 1.0;   // Basis-Geschwindigkeit
+        return 1.0;   // Normal (~6 Sekunden pro Seite)
       case TextAnimationSpeed.fast:
-        return 2.0;   // Doppelt so schnell
+        return 3.0;   // Schnell (~2 Sekunden pro Seite)
       case TextAnimationSpeed.faster:
-        return 4.0;   // 4x so schnell
+        return 10.0;  // Schneller (<1 Sekunde pro Seite)
       case TextAnimationSpeed.instant:
-        return 0.0;   // Keine Animation
+        return 1000.0; // Wird nicht verwendet, da skipAnimation=true
     }
   }
   
@@ -122,8 +124,6 @@ class AppSettings {
   /// Get display name for speed
   static String getSpeedName(TextAnimationSpeed speed) {
     switch (speed) {
-      case TextAnimationSpeed.slow:
-        return 'Langsam';
       case TextAnimationSpeed.normal:
         return 'Normal';
       case TextAnimationSpeed.fast:
@@ -149,13 +149,16 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
   
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    final speedIndex = prefs.getInt('textSpeed') ?? 1;
+    final speedIndex = prefs.getInt('textSpeed') ?? 0; // Default to normal
     final soundEnabled = prefs.getBool('soundEnabled') ?? true;
     final fontIndex = prefs.getInt('storyFont') ?? 1; // Default to Garamond
     final fontSizeIndex = prefs.getInt('fontSize') ?? 1; // Default to large (18)
     
+    final clampedSpeedIndex = speedIndex.clamp(0, TextAnimationSpeed.values.length - 1);
+    final loadedSpeed = TextAnimationSpeed.values[clampedSpeedIndex];
+    
     state = AppSettings(
-      textSpeed: TextAnimationSpeed.values[speedIndex.clamp(0, 4)],
+      textSpeed: loadedSpeed,
       soundEnabled: soundEnabled,
       storyFont: StoryFont.values[fontIndex.clamp(0, StoryFont.values.length - 1)],
       fontSize: StoryFontSize.values[fontSizeIndex.clamp(0, StoryFontSize.values.length - 1)],
