@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'dart:ui' as ui;
 import '../../../../domain/models/story_page.dart';
 import '../../../../core/widgets/smart_image.dart';
@@ -690,157 +692,9 @@ class _PageViewWidgetState extends State<PageViewWidget>
   }
 
   Widget _buildChoices() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Header with icon
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: const Color(0xFFBB86FC).withOpacity(0.15),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.psychology_rounded,
-                size: 16,
-                color: Color(0xFFBB86FC),
-              ),
-            ),
-            const SizedBox(width: 10),
-            const Text(
-              'Was tust du?',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFFBB86FC),
-                letterSpacing: 1.2,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
-        // Choice buttons with animation
-        ...widget.page.choices.asMap().entries.map((entry) {
-          final index = entry.key;
-          final choice = entry.value;
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: TweenAnimationBuilder<double>(
-              duration: Duration(milliseconds: 300 + (index * 100)),
-              tween: Tween(begin: 0.0, end: 1.0),
-              curve: Curves.easeOutCubic,
-              builder: (context, value, child) {
-                return Opacity(
-                  opacity: value,
-                  child: Transform.translate(
-                    offset: Offset(0, 20 * (1 - value)),
-                    child: child,
-                  ),
-                );
-              },
-              child: _buildChoiceButton(choice, index),
-            ),
-          );
-        }),
-      ],
-    );
-  }
-
-  Widget _buildChoiceButton(PageChoice choice, int index) {
-    // Different accent colors for variety
-    final accentColors = [
-      const Color(0xFFBB86FC), // Purple
-      const Color(0xFF03DAC6), // Teal
-      const Color(0xFFCF6679), // Pink
-    ];
-    final accentColor = accentColors[index % accentColors.length];
-    
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => widget.onChoiceSelected?.call(choice),
-        borderRadius: BorderRadius.circular(16),
-        splashColor: accentColor.withOpacity(0.2),
-        highlightColor: accentColor.withOpacity(0.1),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.black.withOpacity(0.4),
-                Colors.black.withOpacity(0.2),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            border: Border.all(
-              color: accentColor.withOpacity(0.4),
-              width: 1.5,
-            ),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: accentColor.withOpacity(0.2),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              // Choice number badge
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: accentColor.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: accentColor.withOpacity(0.5),
-                    width: 1,
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    '${index + 1}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: accentColor,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 14),
-              // Choice text
-              Expanded(
-                child: Text(
-                  choice.text,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    color: Color(0xFFFDF0FF),
-                    fontFamily: 'Mynerve',
-                    height: 1.4,
-                    letterSpacing: 0.3,
-                  ),
-                  textAlign: TextAlign.justify,
-                ),
-              ),
-              const SizedBox(width: 10),
-              // Arrow icon
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: 16,
-                color: accentColor.withOpacity(0.6),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return _AnimatedChoicesBox(
+      choices: widget.page.choices,
+      onChoiceSelected: widget.onChoiceSelected,
     );
   }
 
@@ -902,4 +756,419 @@ class _GlowWord {
     required this.endIndex,
     required this.revealTime,
   });
+}
+
+/// Animated choices container with header
+class _AnimatedChoicesBox extends StatefulWidget {
+  final List<PageChoice> choices;
+  final void Function(PageChoice choice)? onChoiceSelected;
+
+  const _AnimatedChoicesBox({
+    required this.choices,
+    this.onChoiceSelected,
+  });
+
+  @override
+  State<_AnimatedChoicesBox> createState() => _AnimatedChoicesBoxState();
+}
+
+class _AnimatedChoicesBoxState extends State<_AnimatedChoicesBox> 
+    with SingleTickerProviderStateMixin {
+  late AnimationController _headerController;
+  late Animation<double> _headerFade;
+  late Animation<double> _headerSlide;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    _headerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    
+    _headerFade = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _headerController, curve: Curves.easeOut),
+    );
+    
+    _headerSlide = Tween<double>(begin: -20.0, end: 0.0).animate(
+      CurvedAnimation(parent: _headerController, curve: Curves.easeOutCubic),
+    );
+    
+    _headerController.forward();
+  }
+
+  @override
+  void dispose() {
+    _headerController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const primaryColor = Color(0xFFBB86FC);
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Animated header
+        AnimatedBuilder(
+          animation: _headerController,
+          builder: (context, child) {
+            return Transform.translate(
+              offset: Offset(0, _headerSlide.value),
+              child: Opacity(
+                opacity: _headerFade.value,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: primaryColor.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: primaryColor.withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.alt_route_rounded,
+                        color: primaryColor,
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Was tust du?',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: primaryColor,
+                        letterSpacing: 0.8,
+                        fontFamily: 'Mynerve',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 20),
+        
+        // Choice buttons
+        ...widget.choices.asMap().entries.map((entry) {
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: entry.key < widget.choices.length - 1 ? 14 : 0,
+            ),
+            child: _AnimatedChoiceButton(
+              choice: entry.value,
+              index: entry.key,
+              totalChoices: widget.choices.length,
+              onTap: () => widget.onChoiceSelected?.call(entry.value),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+}
+
+/// Animated individual choice button with micro-animations
+class _AnimatedChoiceButton extends StatefulWidget {
+  final PageChoice choice;
+  final int index;
+  final int totalChoices;
+  final VoidCallback onTap;
+
+  const _AnimatedChoiceButton({
+    required this.choice,
+    required this.index,
+    required this.totalChoices,
+    required this.onTap,
+  });
+
+  @override
+  State<_AnimatedChoiceButton> createState() => _AnimatedChoiceButtonState();
+}
+
+class _AnimatedChoiceButtonState extends State<_AnimatedChoiceButton> 
+    with TickerProviderStateMixin {
+  late AnimationController _entryController;
+  late AnimationController _shimmerController;
+  late AnimationController _pulseController;
+  
+  late Animation<double> _slideAnimation;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _shimmerAnimation;
+  late Animation<double> _pulseAnimation;
+  
+  bool _isPressed = false;
+  
+  // Different accent colors for variety
+  static const _accentColors = [
+    Color(0xFFBB86FC), // Purple
+    Color(0xFF03DAC6), // Teal  
+    Color(0xFFCF6679), // Pink
+    Color(0xFFFFB74D), // Amber
+  ];
+
+  Color get _accentColor => _accentColors[widget.index % _accentColors.length];
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Entry animation with stagger
+    _entryController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    
+    // Shimmer animation
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2500),
+    );
+    
+    // Pulse animation
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    );
+    
+    // Setup animations
+    _slideAnimation = Tween<double>(begin: 60.0, end: 0.0).animate(
+      CurvedAnimation(parent: _entryController, curve: Curves.easeOutCubic),
+    );
+    
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _entryController,
+        curve: const Interval(0.0, 0.7, curve: Curves.easeOut),
+      ),
+    );
+    
+    _scaleAnimation = Tween<double>(begin: 0.85, end: 1.0).animate(
+      CurvedAnimation(parent: _entryController, curve: Curves.easeOutBack),
+    );
+    
+    _shimmerAnimation = Tween<double>(begin: -1.0, end: 2.0).animate(
+      CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOut),
+    );
+    
+    _pulseAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+    
+    // Start entry with stagger
+    Future.delayed(Duration(milliseconds: 80 + (widget.index * 150)), () {
+      if (mounted) _entryController.forward();
+    });
+    
+    // Start shimmer and pulse after entry
+    Future.delayed(Duration(milliseconds: 700 + (widget.index * 150)), () {
+      if (mounted) {
+        _shimmerController.repeat();
+        _pulseController.repeat(reverse: true);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _entryController.dispose();
+    _shimmerController.dispose();
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    setState(() => _isPressed = true);
+    HapticFeedback.lightImpact();
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    setState(() => _isPressed = false);
+  }
+
+  void _onTapCancel() {
+    setState(() => _isPressed = false);
+  }
+
+  void _handleTap() {
+    HapticFeedback.mediumImpact();
+    widget.onTap();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: Listenable.merge([
+        _entryController,
+        _shimmerController,
+        _pulseController,
+      ]),
+      builder: (context, child) {
+        final pulseGlow = 0.2 + (_pulseAnimation.value * 0.15);
+        
+        return Transform.translate(
+          offset: Offset(_slideAnimation.value, 0),
+          child: Transform.scale(
+            scale: _scaleAnimation.value * (_isPressed ? 0.96 : 1.0),
+            child: Opacity(
+              opacity: _fadeAnimation.value,
+              child: GestureDetector(
+                onTapDown: _onTapDown,
+                onTapUp: _onTapUp,
+                onTapCancel: _onTapCancel,
+                onTap: _handleTap,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF151520), // Fallback dark color
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        const Color(0xFF1E1E2A),
+                        const Color(0xFF151520),
+                        Color.lerp(const Color(0xFF151520), _accentColor, 0.1)!,
+                      ],
+                      stops: const [0.0, 0.6, 1.0],
+                    ),
+                    border: Border.all(
+                      color: _accentColor.withOpacity(
+                        _isPressed ? 0.9 : 0.35 + (_pulseAnimation.value * 0.15)
+                      ),
+                      width: _isPressed ? 2 : 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                      BoxShadow(
+                        color: _accentColor.withOpacity(_isPressed ? 0.4 : pulseGlow),
+                        blurRadius: _isPressed ? 20 : 15,
+                        spreadRadius: _isPressed ? 2 : 0,
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 14,
+                    ),
+                    child: Row(
+                      children: [
+                        // Number indicator
+                        _buildNumberIndicator(),
+                        const SizedBox(width: 14),
+                        
+                        // Choice text
+                        Expanded(
+                          child: Text(
+                            widget.choice.text,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFFFDF0FF),
+                              fontFamily: 'Mynerve',
+                              height: 1.4,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        
+                        // Arrow
+                        _buildArrowIcon(),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildNumberIndicator() {
+    return AnimatedBuilder(
+      animation: _pulseController,
+      builder: (context, child) {
+        return Container(
+          width: 30,
+          height: 30,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                _accentColor.withOpacity(0.9),
+                _accentColor.withOpacity(0.5),
+              ],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: _accentColor.withOpacity(0.3 + _pulseAnimation.value * 0.25),
+                blurRadius: 10,
+                spreadRadius: _pulseAnimation.value * 3,
+              ),
+            ],
+          ),
+          child: Center(
+            child: Text(
+              '${widget.index + 1}',
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildArrowIcon() {
+    return AnimatedBuilder(
+      animation: _pulseController,
+      builder: (context, child) {
+        final offset = math.sin(_pulseAnimation.value * math.pi) * 4;
+        return Transform.translate(
+          offset: Offset(offset, 0),
+          child: Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _isPressed 
+                  ? _accentColor.withOpacity(0.5)
+                  : _accentColor.withOpacity(0.2),
+              border: Border.all(
+                color: _accentColor.withOpacity(0.4),
+                width: 1,
+              ),
+            ),
+            child: Icon(
+              Icons.chevron_right_rounded,
+              size: 18,
+              color: _isPressed ? Colors.white : _accentColor,
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
