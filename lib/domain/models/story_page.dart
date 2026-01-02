@@ -32,6 +32,9 @@ class StoryPage {
   
   /// Scene/chapter title (optional, shown on first page)
   final String? sceneTitle;
+  
+  /// Whether this page starts inside an open quote (for cross-page quote styling)
+  final bool startsInQuote;
 
   const StoryPage({
     required this.id,
@@ -44,6 +47,7 @@ class StoryPage {
     this.isLastPageOfScene = false,
     this.canContinue = true,
     this.sceneTitle,
+    this.startsInQuote = false,
   });
 
   /// Whether this page has an image to display

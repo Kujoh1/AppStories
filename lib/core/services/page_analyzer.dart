@@ -58,6 +58,30 @@ class PageAnalyzer {
   final PageLayoutConfig config;
   
   const PageAnalyzer({this.config = const PageLayoutConfig()});
+  
+  /// Calculate the quote state at the end of a text
+  /// Returns true if the text ends with an open quote (started with „ but not closed)
+  bool _endsWithOpenQuote(String text) {
+    bool inQuote = false;
+    
+    for (int i = 0; i < text.length; i++) {
+      final code = text.codeUnitAt(i);
+      
+      // German opening quote „ (U+201E) - opens
+      if (code == 0x201E) {
+        inQuote = true;
+      }
+      // Closing quotes - closes
+      // ONLY double quotes - no apostrophes/single quotes!
+      else if (inQuote && (code == 0x201D ||  // " Right double quotation mark
+                           code == 0x201C ||  // " Left double quotation mark
+                           code == 0x0022)) { // " ASCII straight double quote
+        inQuote = false;
+      }
+    }
+    
+    return inQuote;
+  }
 
   /// Calculate the actual height needed for a single choice button
   /// MUST match PageViewWidget._buildChoiceButton EXACTLY
@@ -161,41 +185,25 @@ class PageAnalyzer {
     required double viewportWidth,
     required bool hasImage,
     required List<PageChoice> choices,
-    bool hasContinueButton = true, // Default: always reserve space for button
     String? debugPageId, // For logging
   }) {
     double fixedHeight = config.topPadding + config.bottomPadding + config.safetyBuffer;
-    final breakdown = <String, double>{
-      'topPadding': config.topPadding,
-      'bottomPadding': config.bottomPadding,
-      'safetyBuffer': config.safetyBuffer,
-    };
     
     if (hasImage) {
-      final imageTotal = config.imageHeight + config.imageSpacing;
-      fixedHeight += imageTotal;
-      breakdown['image'] = imageTotal;
+      fixedHeight += config.imageHeight + config.imageSpacing;
     }
     
     if (choices.isNotEmpty) {
       // Dynamic height calculation based on actual choice text
-      final choicesHeight = _calculateTotalChoicesHeight(choices, viewportWidth);
-      fixedHeight += choicesHeight;
-      breakdown['choices'] = choicesHeight;
-    } else if (hasContinueButton) {
-      // Reserve space for "Weiter" button + spacing (16px spacing + ~48px button + 16px)
-      fixedHeight += 80.0;
-      breakdown['continueButton'] = 80.0;
+      // Also add spacing before choices (16px in PageViewWidget)
+      fixedHeight += 16.0; // SizedBox before choices
+      fixedHeight += _calculateTotalChoicesHeight(choices, viewportWidth);
     }
     
     final availableHeight = (viewportHeight - fixedHeight).clamp(100.0, double.infinity);
     
     if (debugPageId != null) {
-      print('   📏 [Page $debugPageId] Layout calculation:');
-      print('      Viewport height: ${viewportHeight.toInt()}px');
-      print('      Fixed heights: ${breakdown.map((k, v) => MapEntry(k, "${v.toInt()}px"))}');
-      print('      Total fixed: ${fixedHeight.toInt()}px');
-      print('      ✅ Available for text: ${availableHeight.toInt()}px');
+      print('   📏 [Page $debugPageId] Available for text: ${availableHeight.toInt()}px (viewport: ${viewportHeight.toInt()}, fixed: ${fixedHeight.toInt()})');
     }
     
     return availableHeight;
@@ -478,33 +486,43 @@ class PageAnalyzer {
         viewportHeight: viewportHeight,
         hasImage: hasImage,
         choices: choices,
-        hasContinueButton: choices.isEmpty && canContinue,
         debugSceneId: hasChoices ? knotName : null,
       );
       
       final totalPagesInScene = textPages.length;
       
+      // Track quote state across pages within this scene
+      bool currentQuoteState = false;
+      
       // Create StoryPage objects
       for (int i = 0; i < textPages.length; i++) {
         final isLast = i == textPages.length - 1;
         final currentPageId = pageId;
+        final pageText = textPages[i];
+        
+        // This page starts with the quote state from the previous page
+        final startsInQuote = currentQuoteState;
+        
+        // Calculate quote state at the end of this page for the next page
+        currentQuoteState = _endsWithOpenQuote(pageText);
         
         pages.add(StoryPage(
           id: pageId++,
           sceneId: knotName,
           pageInScene: i + 1,
           totalPagesInScene: totalPagesInScene,
-          text: textPages[i],
+          text: pageText,
           imagePath: isLast ? imagePath : null,
           choices: isLast ? choices : const [],
           isLastPageOfScene: isLast,
           canContinue: isLast ? canContinue : true,
           sceneTitle: i == 0 ? _formatSceneTitle(knotName) : null,
+          startsInQuote: startsInQuote,
         ));
         
         // Log pages with choices for debugging
         if (isLast && choices.isNotEmpty) {
-          print('   🎯 Page $currentPageId ($knotName): ${choices.length} choices, text: ${textPages[i].length} chars');
+          print('   🎯 Page $currentPageId ($knotName): ${choices.length} choices, text: ${pageText.length} chars');
         }
       }
     }
@@ -531,7 +549,6 @@ class PageAnalyzer {
     required double viewportHeight,
     required bool hasImage,
     required List<PageChoice> choices,
-    required bool hasContinueButton,
     String? debugSceneId,
   }) {
     if (text.trim().isEmpty) return [''];
@@ -545,7 +562,6 @@ class PageAnalyzer {
       viewportWidth: viewportWidth,
       hasImage: hasImage,
       choices: choices,
-      hasContinueButton: hasContinueButton,
       debugPageId: debugSceneId != null ? '$debugSceneId-LAST' : null,
     );
     
@@ -555,7 +571,6 @@ class PageAnalyzer {
       viewportWidth: viewportWidth,
       hasImage: false,
       choices: const [],
-      hasContinueButton: true,
     );
     
     // STEP 1: Find how much text fits on the LAST page
@@ -737,7 +752,6 @@ class PageAnalyzer {
         viewportWidth: viewportWidth,
         hasImage: false,
         choices: const [],
-        hasContinueButton: true,
       );
       
       // Paginate the chapter
@@ -749,20 +763,28 @@ class PageAnalyzer {
       
       final totalPagesInScene = textPages.length;
       
+      // Track quote state across pages
+      bool currentQuoteState = false;
+      
       // Create StoryPage objects
       for (int i = 0; i < textPages.length; i++) {
         final isLast = i == textPages.length - 1;
         final isLastChapter = chapterIndex == chapters.length - 1;
+        final pageText = textPages[i];
+        
+        final startsInQuote = currentQuoteState;
+        currentQuoteState = _endsWithOpenQuote(pageText);
         
         pages.add(StoryPage(
           id: pageId++,
           sceneId: chapterId,
           pageInScene: i + 1,
           totalPagesInScene: totalPagesInScene,
-          text: textPages[i],
+          text: pageText,
           isLastPageOfScene: isLast,
           canContinue: !(isLast && isLastChapter),
           sceneTitle: i == 0 ? chapter.title : null,
+          startsInQuote: startsInQuote,
         ));
       }
     }

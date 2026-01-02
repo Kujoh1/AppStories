@@ -257,15 +257,10 @@ class _PageViewWidgetState extends State<PageViewWidget>
                           _buildImage(),
                         ],
                         
-                        // Spacing before buttons
-                        const SizedBox(height: 16),
-                        
-                        // Choices or Continue button
-                        if (_textComplete) ...[
-                          if (widget.page.hasChoices)
-                            _buildChoices()
-                          else if (widget.page.canContinue)
-                            _buildContinueButton(),
+                        // Choices (if present and text complete)
+                        if (_textComplete && widget.page.hasChoices) ...[
+                          const SizedBox(height: 16),
+                          _buildChoices(),
                         ],
                       ],
                     ),
@@ -316,8 +311,9 @@ class _PageViewWidgetState extends State<PageViewWidget>
     
     // Determine which characters are in quotes
     // ONLY highlight text between „ (German opening, U+201E) and closing quotes
+    // Use startsInQuote from the page to handle cross-page quotes
     final isInQuote = List<bool>.filled(text.length, false);
-    bool quoteState = false;
+    bool quoteState = widget.page.startsInQuote; // Start with inherited state!
     
     for (int i = 0; i < text.length; i++) {
       final char = text[i];
@@ -329,9 +325,10 @@ class _PageViewWidgetState extends State<PageViewWidget>
         isInQuote[i] = true;
       }
       // Any of these close the quote (if one was opened with „)
-      else if (quoteState && (code == 0x201D ||  // " Right double
-                               code == 0x201C ||  // " Left double (used as closing in story)
-                               code == 0x2019)) { // ' Right single
+      // ONLY double quotes - no apostrophes/single quotes!
+      else if (quoteState && (code == 0x201D ||  // " Right double quotation mark
+                               code == 0x201C ||  // " Left double quotation mark
+                               code == 0x0022)) { // " ASCII straight double quote
         isInQuote[i] = true;
         quoteState = false;
       }
@@ -664,44 +661,6 @@ class _PageViewWidgetState extends State<PageViewWidget>
                 color: accentColor.withOpacity(0.6),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildContinueButton() {
-    return Center(
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: _goNext,
-          borderRadius: BorderRadius.circular(30),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.4),
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(
-                color: const Color(0xFFE8DCC0).withOpacity(0.5),
-              ),
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.arrow_forward_rounded, color: Color(0xFFE8DCC0), size: 18),
-                SizedBox(width: 8),
-                Text(
-                  'Weiter',
-                  style: TextStyle(
-                    color: Color(0xFFE8DCC0),
-                    fontSize: 15,
-                    fontFamily: 'Mynerve',
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
           ),
         ),
       ),
