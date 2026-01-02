@@ -151,7 +151,8 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final booksAsync = ref.watch(booksProvider);
+    // Use sorted books: new books first, then by last read time
+    final booksAsync = ref.watch(sortedBooksProvider);
     final selectedBookId = ref.watch(selectedBookIdProvider);
     final repository = ref.watch(bookRepositoryProvider);
     final theme = Theme.of(context);

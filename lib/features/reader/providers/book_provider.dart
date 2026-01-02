@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/book_repository.dart';
 import '../../../domain/models/book_graph.dart';
 import '../../../core/services/ink_parser.dart';
+import 'reading_progress_provider.dart';
 
 /// Provider for the book repository
 /// Using DocxBookRepository to load from Word documents
@@ -88,10 +89,50 @@ class InkRuntimeNotifier extends StateNotifier<InkRuntime?> {
   }
 }
 
-/// Provider for the list of all available books
+/// Provider for the list of all available books (unsorted)
 final booksProvider = FutureProvider<List<BookGraph>>((ref) async {
   final repository = ref.watch(bookRepositoryProvider);
   return repository.getBooks();
+});
+
+/// Provider for sorted books list
+/// Order: 1. New books (never started) first, 2. Recently read books by lastReadAt descending
+final sortedBooksProvider = FutureProvider<List<BookGraph>>((ref) async {
+  final books = await ref.watch(booksProvider.future);
+  final progressService = ref.watch(readingProgressServiceProvider);
+  final allProgress = await progressService.getAllProgress();
+  
+  // Create a copy to sort
+  final sortedBooks = List<BookGraph>.from(books);
+  
+  sortedBooks.sort((a, b) {
+    final progressA = allProgress[a.id];
+    final progressB = allProgress[b.id];
+    
+    // Check if book has ANY progress (was ever started)
+    final hasProgressA = progressA != null;
+    final hasProgressB = progressB != null;
+    
+    // New books (never started - no progress at all) come first
+    if (!hasProgressA && hasProgressB) return -1;
+    if (hasProgressA && !hasProgressB) return 1;
+    
+    // Both new (no progress): keep original order
+    if (!hasProgressA && !hasProgressB) return 0;
+    
+    // Both have progress: sort by lastReadAt descending (most recent first)
+    // Books without timestamp (old progress) are treated as oldest
+    final lastReadA = progressA!.lastReadAt;
+    final lastReadB = progressB!.lastReadAt;
+    
+    if (lastReadA == null && lastReadB == null) return 0;
+    if (lastReadA == null) return 1; // A is older, goes after B
+    if (lastReadB == null) return -1; // B is older, goes after A
+    
+    return lastReadB.compareTo(lastReadA); // Most recent first
+  });
+  
+  return sortedBooks;
 });
 
 /// Provider for the currently selected book ID
