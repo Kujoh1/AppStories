@@ -1209,6 +1209,10 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
     final selectedBookId = ref.read(selectedBookIdProvider);
     final currentPageIndex = ref.read(currentPageIndexProvider);
     
+    // Short delay to let settings dialog close smoothly
+    await Future.delayed(const Duration(milliseconds: 120));
+    if (!mounted) return;
+    
     // Show loading overlay
     setState(() {
       _isLoadingNextEpisode = true;
@@ -1216,7 +1220,7 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
       _episodeLoadingProgress = 0.0;
     });
     
-    // Wait for UI to render
+    // Wait for UI to render properly
     await Future.delayed(const Duration(milliseconds: 50));
     if (!mounted) return;
     

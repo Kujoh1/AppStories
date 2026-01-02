@@ -106,8 +106,8 @@ class _HomePageState extends ConsumerState<HomePage> {
         _loadingProgress = 0.0;
       });
       
-      // Wait for UI to render
-      await Future.delayed(const Duration(milliseconds: 16));
+      // Wait for UI to render properly
+      await Future.delayed(const Duration(milliseconds: 120));
       if (!mounted) return;
       
       if (shouldContinue) {
@@ -180,21 +180,21 @@ class _HomePageState extends ConsumerState<HomePage> {
         _loadingProgress = 0.0;
       });
       
-      // Wait for UI to render
-      await Future.delayed(const Duration(milliseconds: 16));
+      // Wait for UI to render properly
+      await Future.delayed(const Duration(milliseconds: 120));
       if (!mounted) return;
       
       if (shouldContinue) {
         // Continue from saved position
-        _loadBook(startFromPage: savedProgress.pageIndex);
+        await _loadBook(startFromPage: savedProgress.pageIndex);
       } else {
         // Start from beginning - clear progress async
         progressService.clearProgress(selectedBookId);
-        _loadBook(startFromPage: 0);
+        await _loadBook(startFromPage: 0);
       }
     } else {
       // No saved progress - loading UI already shown, start loading
-      _loadBook(startFromPage: 0);
+      await _loadBook(startFromPage: 0);
     }
   }
   
