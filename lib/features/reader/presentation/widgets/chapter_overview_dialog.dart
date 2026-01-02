@@ -250,7 +250,7 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
             children: [
               const Icon(
                 Icons.menu_book_rounded,
-                color: Color(0xFFE8DCC0),
+                color: Color(0xFFFDF0FF),
                 size: 24,
               ),
               const SizedBox(width: 12),
@@ -263,7 +263,7 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFFE8DCC0),
+                        color: Color(0xFFFDF0FF),
                         fontFamily: 'Mynerve',
                       ),
                       maxLines: 1,
@@ -334,7 +334,7 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
                       width: constraints.maxWidth * progress,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFFE8DCC0), Color(0xFFFEFFE9)],
+                          colors: [Color(0xFFFDF0FF), Color(0xFFFEFFE9)],
                         ),
                         borderRadius: BorderRadius.circular(3),
                       ),
@@ -361,7 +361,7 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
         Icon(
           icon,
           size: 16,
-          color: highlight ? const Color(0xFFE8DCC0) : Colors.white38,
+          color: highlight ? const Color(0xFFFDF0FF) : Colors.white38,
         ),
         const SizedBox(height: 4),
         Text(
@@ -369,7 +369,7 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: highlight ? const Color(0xFFE8DCC0) : Colors.white.withOpacity(0.87),
+            color: highlight ? const Color(0xFFFDF0FF) : Colors.white.withOpacity(0.87),
             fontFamily: 'Mynerve',
           ),
         ),
@@ -394,12 +394,12 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: isCurrentScene 
-            ? const Color(0xFFE8DCC0).withOpacity(0.08)
+            ? const Color(0xFFFDF0FF).withOpacity(0.08)
             : Colors.white.withOpacity(0.03),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isCurrentScene
-              ? const Color(0xFFE8DCC0).withOpacity(0.3)
+              ? const Color(0xFFFDF0FF).withOpacity(0.3)
               : Colors.white.withOpacity(0.08),
           width: isCurrentScene ? 1.5 : 1,
         ),
@@ -444,7 +444,7 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
                                     color: isLocked 
                                         ? Colors.white38 
                                         : isCurrentScene 
-                                            ? const Color(0xFFE8DCC0)
+                                            ? const Color(0xFFFDF0FF)
                                             : Colors.white.withOpacity(0.87),
                                     fontFamily: 'Mynerve',
                                   ),
@@ -461,7 +461,7 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
                               if (scene.hasChoices) ...[
                                 const SizedBox(width: 6),
                                 Icon(Icons.call_split_rounded, size: 14,
-                                     color: const Color(0xFFE8DCC0).withOpacity(0.6)),
+                                     color: const Color(0xFFFDF0FF).withOpacity(0.6)),
                               ],
                             ],
                           ),
@@ -523,7 +523,7 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
       bgColor = Colors.white.withOpacity(0.05);
       textColor = Colors.white24;
     } else if (isCurrent) {
-      bgColor = const Color(0xFFE8DCC0);
+      bgColor = const Color(0xFFFDF0FF);
       textColor = Colors.black;
     } else if (isCompleted) {
       bgColor = Colors.green.withOpacity(0.2);
@@ -563,7 +563,7 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
-          color: const Color(0xFFE8DCC0).withOpacity(0.2),
+          color: const Color(0xFFFDF0FF).withOpacity(0.2),
           borderRadius: BorderRadius.circular(4),
         ),
         child: const Text(
@@ -571,7 +571,7 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
           style: TextStyle(
             fontSize: 8,
             fontWeight: FontWeight.bold,
-            color: Color(0xFFE8DCC0),
+            color: Color(0xFFFDF0FF),
             letterSpacing: 0.5,
           ),
         ),
@@ -607,7 +607,7 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
                 margin: const EdgeInsets.only(bottom: 2),
                 decoration: BoxDecoration(
                   color: isCurrent 
-                      ? const Color(0xFFE8DCC0).withOpacity(0.12)
+                      ? const Color(0xFFFDF0FF).withOpacity(0.12)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -619,7 +619,7 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
                       height: 24,
                       decoration: BoxDecoration(
                         color: isCurrent 
-                            ? const Color(0xFFE8DCC0)
+                            ? const Color(0xFFFDF0FF)
                             : isCompleted
                                 ? Colors.green.withOpacity(0.2)
                                 : Colors.white.withOpacity(0.06),
@@ -655,7 +655,7 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
                               color: isLocked 
                                   ? Colors.white24 
                                   : isCurrent
-                                      ? const Color(0xFFE8DCC0)
+                                      ? const Color(0xFFFDF0FF)
                                       : Colors.white54,
                             ),
                           ),
@@ -667,7 +667,7 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
                           if (page.hasChoices) ...[
                             const SizedBox(width: 6),
                             Icon(Icons.call_split_rounded, size: 12,
-                                 color: const Color(0xFFE8DCC0).withOpacity(0.5)),
+                                 color: const Color(0xFFFDF0FF).withOpacity(0.5)),
                           ],
                         ],
                       ),
@@ -678,7 +678,7 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE8DCC0).withOpacity(0.2),
+                          color: const Color(0xFFFDF0FF).withOpacity(0.2),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: const Text(
@@ -686,7 +686,7 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
                           style: TextStyle(
                             fontSize: 8,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFFE8DCC0),
+                            color: Color(0xFFFDF0FF),
                             letterSpacing: 0.5,
                           ),
                         ),

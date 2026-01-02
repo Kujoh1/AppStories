@@ -132,7 +132,7 @@ class _SimpleTypewriterTextState extends State<SimpleTypewriterText>
     final isDark = theme.brightness == Brightness.dark;
     
     final textColor = isDark 
-        ? const Color(0xFFE8DCC0)
+        ? const Color(0xFFFDF0FF)
         : const Color(0xFF2C1810);
     
     final cursorColor = isDark 

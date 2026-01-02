@@ -12,8 +12,8 @@ class _AnimConfig {
   static const double fontSize = 16.0;
   static const double lineHeight = 1.9;
   static const double letterSpacing = 0.5;
-  static const Color glowColor = Color(0xFFFEFFE9);
-  static const Color darkTextColor = Color(0xFFE8DCC0);
+  static const Color glowColor = Color(0xFFFDF0FF);
+  static const Color darkTextColor = Color(0xFFFDF0FF);
 }
 
 /// Unified page display widget
@@ -381,11 +381,11 @@ class _PageViewWidgetState extends State<PageViewWidget>
             // White glow for quoted text (stronger)
             if (isQuoted) ...[
               Shadow(
-                color: const Color(0xFFFFFFFF).withOpacity(0.6),
+                color: const Color(0xFFFDF0FF).withOpacity(0.6),
                 blurRadius: 12,
               ),
               Shadow(
-                color: const Color(0xFFFEFFE9).withOpacity(0.3),
+                color: const Color(0xFFFDF0FF).withOpacity(0.3),
                 blurRadius: 20,
               ),
             ],
@@ -440,14 +440,14 @@ class _PageViewWidgetState extends State<PageViewWidget>
         spans.add(TextSpan(
           text: text.substring(segmentStart, i),
           style: baseStyle.copyWith(
-            color: lastQuoteState ? const Color(0xFFFFFFFF) : baseStyle.color,
+            color: lastQuoteState ? const Color(0xFFFDF0FF) : baseStyle.color,
             shadows: lastQuoteState ? [
               Shadow(
-                color: const Color(0xFFFFFFFF).withOpacity(0.6),
+                color: const Color(0xFFFDF0FF).withOpacity(0.6),
                 blurRadius: 12,
               ),
               Shadow(
-                color: const Color(0xFFFEFFE9).withOpacity(0.3),
+                color: const Color(0xFFFDF0FF).withOpacity(0.3),
                 blurRadius: 20,
               ),
             ] : baseStyle.shadows,
@@ -464,14 +464,14 @@ class _PageViewWidgetState extends State<PageViewWidget>
       spans.add(TextSpan(
         text: text.substring(segmentStart, end),
         style: baseStyle.copyWith(
-          color: (lastQuoteState ?? false) ? const Color(0xFFFFFFFF) : baseStyle.color,
+          color: (lastQuoteState ?? false) ? const Color(0xFFFDF0FF) : baseStyle.color,
           shadows: (lastQuoteState ?? false) ? [
             Shadow(
-              color: const Color(0xFFFFFFFF).withOpacity(0.6),
+              color: const Color(0xFFFDF0FF).withOpacity(0.6),
               blurRadius: 12,
             ),
             Shadow(
-              color: const Color(0xFFFEFFE9).withOpacity(0.3),
+              color: const Color(0xFFFDF0FF).withOpacity(0.3),
               blurRadius: 20,
             ),
           ] : baseStyle.shadows,
@@ -645,7 +645,7 @@ class _PageViewWidgetState extends State<PageViewWidget>
                   choice.text,
                   style: const TextStyle(
                     fontSize: 15,
-                    color: Color(0xFFE8DCC0),
+                    color: Color(0xFFFDF0FF),
                     fontFamily: 'Mynerve',
                     height: 1.4,
                     letterSpacing: 0.3,

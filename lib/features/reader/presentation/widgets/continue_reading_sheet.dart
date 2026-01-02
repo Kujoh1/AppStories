@@ -79,12 +79,12 @@ class ContinueReadingSheet extends StatelessWidget {
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8DCC0).withOpacity(0.15),
+                  color: const Color(0xFFFDF0FF).withOpacity(0.15),
                   borderRadius: BorderRadius.circular(32),
                 ),
                 child: const Icon(
                   Icons.bookmark_rounded,
-                  color: Color(0xFFE8DCC0),
+                  color: Color(0xFFFDF0FF),
                   size: 32,
                 ),
               ),
@@ -97,7 +97,7 @@ class ContinueReadingSheet extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFE8DCC0),
+                  color: Color(0xFFFDF0FF),
                   fontFamily: 'Mynerve',
                   letterSpacing: 0.5,
                 ),
@@ -144,7 +144,7 @@ class ContinueReadingSheet extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFFE8DCC0),
+                            color: Color(0xFFFDF0FF),
                           ),
                         ),
                       ],
@@ -167,7 +167,7 @@ class ContinueReadingSheet extends StatelessWidget {
                                 width: constraints.maxWidth * (savedPageIndex + 1) / totalPages,
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
-                                    colors: [Color(0xFFE8DCC0), Color(0xFFFEFFE9)],
+                                    colors: [Color(0xFFFDF0FF), Color(0xFFFEFFE9)],
                                   ),
                                   borderRadius: BorderRadius.circular(3),
                                 ),
@@ -222,7 +222,7 @@ class ContinueReadingSheet extends StatelessWidget {
                       icon: const Icon(Icons.play_arrow_rounded, size: 20),
                       label: const Text('Weiterlesen'),
                       style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFFE8DCC0),
+                        backgroundColor: const Color(0xFFFDF0FF),
                         foregroundColor: Colors.black,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(

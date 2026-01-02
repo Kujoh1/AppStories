@@ -175,7 +175,7 @@ class _ReaderPageState extends ConsumerState<ReaderPage> {
           children: [
             CircularProgressIndicator(
               strokeWidth: 2,
-              color: Color(0xFFE8DCC0),
+              color: Color(0xFFFDF0FF),
             ),
             SizedBox(height: 16),
             Text(
@@ -206,13 +206,13 @@ class _ReaderPageState extends ConsumerState<ReaderPage> {
               const Icon(
                 Icons.error_outline_rounded,
                 size: 64,
-                color: Color(0xFFE8DCC0),
+                color: Color(0xFFFDF0FF),
               ),
               const SizedBox(height: 24),
               Text(
                 'Fehler beim Laden',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: const Color(0xFFE8DCC0),
+                  color: const Color(0xFFFDF0FF),
                   fontFamily: 'Mynerve',
                 ),
               ),
@@ -360,7 +360,7 @@ class _ReaderPageState extends ConsumerState<ReaderPage> {
               Text(
                 'Ende des Buches',
                 style: TextStyle(
-                  color: const Color(0xFFE8DCC0),
+                  color: const Color(0xFFFDF0FF),
                   fontSize: 26,
                   fontFamily: 'Mynerve',
                   fontWeight: FontWeight.w500,
