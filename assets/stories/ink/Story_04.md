@@ -28,7 +28,7 @@ Du bist Elias Kortig. Ein Name, der in den gläsernen Etagen des Main Towers wie
 #IMG:ffm_skyline_distorted
 // Wirkung: Die glitzernde Skyline von Frankfurt bei Nacht, gesehen durch das Fenster eines Luxusclubs. Es soll Reichtum, Distanz und eine fast göttliche Perspektive auf die Stadt vermitteln.
 
-Du betrachtest dein Spiegelbild in einer der hochglanzpolierten Chromsäulen. Dein Anzug – ein nachtblauer Dreiteiler von Tom Ford aus feinster Merinowolle – sitzt so perfekt, dass er fast wie eine zweite Haut wirkt. Kein Fältchen, kein Fussel stört die Symmetrie. Dein Haar ist mit einer Präzision gegelt, die an Besessenheit grenzt, jede Strähne an ihrem mathematisch korrekten Platz. Frauen nennen dich den „Engel der Finanzen“, weil dein Lächeln Türen öffnet, die für andere für immer verschlossen bleiben. Du nennst es: Optimierte Selbstpräsentation.
+Du betrachtest dein Spiegelbild in einer der hochglanzpolierten Chromsäulen. Dein Anzug – ein nachtblauer Dreiteiler von Tom Ford aus feinster Merinowolle – sitzt so perfekt, dass er fast wie eine zweite Haut wirkt. Kein Fältchen, kein Fussel stört die Symmetrie. Dein Haar ist mit einer Präzision gegelt, die an Besessenheit grenzt, jede Strähne an ihrem mathematisch korrekten Platz. Frauen nennen dich den »Engel der Finanzen«, weil dein Lächeln Türen öffnet, die für andere für immer verschlossen bleiben. Du nennst es: Optimierte Selbstpräsentation.
 
 Doch während du in deine eigenen eisblauen Augen starrst, verschwimmt das grelle Neonlicht des Gibson. Die Musik wird zu einem fernen Echo, und die Kälte des Chroms unter deinen Fingern erinnert dich an etwas, das du längst vergessen haben wolltest.
 
@@ -44,11 +44,11 @@ Plötzlich ist da kein Bass mehr, sondern nur noch das unerbittliche, metronomis
 
 Dein Vater steht direkt hinter dir. Er ist eine Wand aus dunklem Tuch, die nach altem Scotch und dem rauchigen Aroma von teurem Tabak riecht. Sein Schatten fällt wie ein drohendes, schwarzes Gebirge über die Notenblätter, löscht das Licht der Kerzen aus.
 
-„Nochmal, Elias“, sagt er mit einer Stimme, die so trocken und hart ist wie vertrocknetes Leder. „Takt 24. Das Es war unsauber. In dieser Familie gibt es kein ‚gut genug‘. Es gibt nur die Perfektion oder das Nichts.“
+»Nochmal, Elias«, sagt er mit einer Stimme, die so trocken und hart ist wie vertrocknetes Leder. »Takt 24. Das Es war unsauber. In dieser Familie gibt es kein ‚gut genug‘. Es gibt nur die Perfektion oder das Nichts.«
 
 Du spielst den Takt erneut. Deine Handflächen sind feucht, deine Muskeln im Unterarm verkrampfen sich. Du machst einen Fehler. Wieder.
 
-Ein plötzlicher, brennender Schmerz explodiert an deinem Hinterkopf. Dein Vater hat dich mit seinem schweren Siegelring getroffen, die Kante des Goldes hat deine Haut geritzt. „Gefühle sind Ballast, Elias. Mitleid mit dir selbst ist der Anfang vom Untergang. Wenn du weinst, gibst du dem Schmerz die Erlaubnis, dich zu beherrschen. Hast du verstanden?“
+Ein plötzlicher, brennender Schmerz explodiert an deinem Hinterkopf. Dein Vater hat dich mit seinem schweren Siegelring getroffen, die Kante des Goldes hat deine Haut geritzt. »Gefühle sind Ballast, Elias. Mitleid mit dir selbst ist der Anfang vom Untergang. Wenn du weinst, gibst du dem Schmerz die Erlaubnis, dich zu beherrschen. Hast du verstanden?«
 
 Du hast an diesem Tag nicht geweint. Du hast zugesehen, wie ein Tropfen Blut auf die weiße Taste fiel und ihn später heimlich mit dem Ärmel weggewischt. Du hast aufgehört zu fühlen. Du hast nur noch funktioniert. Wie eine gut geölte Maschine.
 
@@ -62,7 +62,7 @@ Das flackernde Licht des Gibson kehrt mit einem Schlag zurück. Du blinzelst geg
 
 === prolog_sarah_ansprache ===
 Du drückst die Erinnerung zurück hinter Glas und Zähne – zurück in die Rolle, die du so gut spielst, dass sie sich manchmal wie du selbst anfühlt.
-„Elias? Du bist schon wieder in deiner eigenen Welt, oder?“, fragt eine Stimme neben dir, scharf wie eine Glasscherbe.
+»Elias? Du bist schon wieder in deiner eigenen Welt, oder?«, fragt eine Stimme neben dir, scharf wie eine Glasscherbe.
 
 Du wendest du um. Es ist Sarah.
 
@@ -75,9 +75,9 @@ Sarah ist hier, weil sie den Aufstieg will. Sie liebt den Glanz, den du ausstrah
 
 === prolog_sarah_kompliment ===
 ~ trust_group += 1
-Du legst ihr eine hand auf die Schulter, spürst die kühle Seide ihres Kleides und die darunter liegende Anspannung. Es ist ein kurzes, kalkuliertes Zeichen von Nähe. „Du siehst heute Abend makellos aus, Sarah. Der Deal mit der Asian Development Group wäre ohne deine nächtliche Vorarbeit nie durchgegangen. Du weißt, was das für uns bedeutet. Wir besitzen jetzt ein weiteres Stück dieser Stadt.“
+Du legst ihr eine hand auf die Schulter, spürst die kühle Seide ihres Kleides und die darunter liegende Anspannung. Es ist ein kurzes, kalkuliertes Zeichen von Nähe. »Du siehst heute Abend makellos aus, Sarah. Der Deal mit der Asian Development Group wäre ohne deine nächtliche Vorarbeit nie durchgegangen. Du weißt, was das für uns bedeutet. Wir besitzen jetzt ein weiteres Stück dieser Stadt.«
 
-Ein kurzes Lächeln huscht über ihre Lippen, eine perfekte Maske aus Professionalität. „Ich weiß, was es für *dich* bedeutet, Elias. Ich sorge nur dafür, dass der Boden unter deinen Füßen nicht nachgibt.“
+Ein kurzes Lächeln huscht über ihre Lippen, eine perfekte Maske aus Professionalität. »Ich weiß, was es für *dich* bedeutet, Elias. Ich sorge nur dafür, dass der Boden unter deinen Füßen nicht nachgibt.«
 
 -> prolog_marc_intro
 
@@ -91,28 +91,28 @@ Du blickst stumm über sie hinweg auf die tanzende Menge unter euch, die im Stro
 Ob du Sarah eben mit einem Kompliment an dich gebunden hast oder sie kalt hast auflaufen lassen – der Moment hängt zwischen euch, unausgesprochen, wie Rauch unter einer Decke.
 Hinter euch, fast unbeweglich wie eine Statue aus Granit, steht Marc.
 
-Marc ist dein „Executive Security Specialist“. Inoffiziell: Der Mann für die Momente, in denen Lächeln nicht mehr ausreicht. Er ist ein ehemaliger KSK-Soldat, dessen Körper eine Landkarte aus Narben, Tätowierungen und eiserner Disziplin ist. Er spricht selten mehr als drei Wörter am Stück, und jedes davon klingt wie ein Urteil. Sein Blick ruht niemals auf einer Person, sondern scannt ununterbrochen die Umgebung – die Fluchtwege, die Hände der Gäste, die Schatten, die sich in den Ecken des VIP-Bereichs sammeln.
+Marc ist dein »Executive Security Specialist«. Inoffiziell: Der Mann für die Momente, in denen Lächeln nicht mehr ausreicht. Er ist ein ehemaliger KSK-Soldat, dessen Körper eine Landkarte aus Narben, Tätowierungen und eiserner Disziplin ist. Er spricht selten mehr als drei Wörter am Stück, und jedes davon klingt wie ein Urteil. Sein Blick ruht niemals auf einer Person, sondern scannt ununterbrochen die Umgebung – die Fluchtwege, die Hände der Gäste, die Schatten, die sich in den Ecken des VIP-Bereichs sammeln.
 
 Marc ist nicht wegen des Geldes hier – obwohl du ihn besser bezahlst als die meisten Vorstände. Er ist hier, weil er eine Welt braucht, die in Schwarz und Weiß unterteilt ist. Freund oder Feind. Ziel oder Hindernis. Und du bist derjenige, der die Ordnung schafft, indem du die Regeln vorgibst. Er ist der Schild, während du das Schwert führst.
 
-„Wagen steht bereit, Herr Kortig“, sagt Marc. Seine Stimme ist ein tiefes, kehliges Grollen, das selbst den hämmernden Bass des Clubs mühelos durchdringt.
+»Wagen steht bereit, Herr Kortig«, sagt Marc. Seine Stimme ist ein tiefes, kehliges Grollen, das selbst den hämmernden Bass des Clubs mühelos durchdringt.
 
-* [„Noch einen Drink, Marc. Entspann dich mal.“] -> prolog_marc_entspannen
-* [„Gut. Wir gehen. Ich habe morgen früh um acht das Meeting im Westend.“] -> prolog_abgang_start
+* [»Noch einen Drink, Marc. Entspann dich mal.«] -> prolog_marc_entspannen
+* [»Gut. Wir gehen. Ich habe morgen früh um acht das Meeting im Westend.«] -> prolog_abgang_start
 
 === prolog_marc_entspannen ===
 ~ mental_stability -= 1
-Marc rührt sich nicht um einen Millimeter. Sein Blick fixiert die Tür zum Hinterausgang. „Trinken ist ein Luxus, den ich mir im Dienst nicht leiste. Und Frankfurt ist heute Nacht... unruhig. Die Luft riecht nach Gewitter, auch wenn keine Wolke am Himmel steht.“
+Marc rührt sich nicht um einen Millimeter. Sein Blick fixiert die Tür zum Hinterausgang. »Trinken ist ein Luxus, den ich mir im Dienst nicht leiste. Und Frankfurt ist heute Nacht... unruhig. Die Luft riecht nach Gewitter, auch wenn keine Wolke am Himmel steht.«
 
-Du lachst leise, ein Geräusch ohne echte Fröhlichkeit. „Du siehst überall Gespenster, Marc. Das hier ist Frankfurt, die Stadt der Banken, nicht Kabul.“
+Du lachst leise, ein Geräusch ohne echte Fröhlichkeit. »Du siehst überall Gespenster, Marc. Das hier ist Frankfurt, die Stadt der Banken, nicht Kabul.«
 
-„Die Geister hier tragen Krawatten und teure Uhren, Herr Kortig. Das macht sie präziser in ihrem Hass“, antwortet er trocken.
+»Die Geister hier tragen Krawatten und teure Uhren, Herr Kortig. Das macht sie präziser in ihrem Hass«, antwortet er trocken.
 
 -> prolog_abgang_start
 
 === prolog_abgang_start ===
 #MOOD:still
-Egal ob du Marc eben noch „entspannen“ lassen wolltest oder sofort auf Abbruch geschaltet hast: Du beendest den Abend, bevor er dich beenden kann.
+Egal ob du Marc eben noch »entspannen« lassen wolltest oder sofort auf Abbruch geschaltet hast: Du beendest den Abend, bevor er dich beenden kann.
 Ihr verlasst die VIP-Area. Der Weg nach draußen ist ein Spießrutenlauf aus Bewunderung und Neid. Die Leute machen Platz, als Marc vorangeht, eine menschliche Schneepflughälfte. Sarah folgt dir dicht auf den Fersen, ihr Tablet bereits wieder in der Hand, die ersten Termine für morgen koordinierend.
 
 Ihr tretet durch den Hinterausgang in die kühle Nachtluft der Frankfurter Innenstadt. 
@@ -123,14 +123,14 @@ Dein schwarzer Audi A8 L, gepanzert und mit getönten Scheiben, wartet am Ende d
 
 Marc öffnet die Tür für dich. Sarah steigt auf der anderen Seite ein.
 
-„Etwas stimmt nicht“, sagt Marc plötzlich und hält inne. Seine Hand wandert instinktiv zu seinem Gürtel.
+»Etwas stimmt nicht«, sagt Marc plötzlich und hält inne. Seine Hand wandert instinktiv zu seinem Gürtel.
 
-* [„Was denn jetzt schon wieder? Steig ein!“] -> prolog_ignoranz
+* [»Was denn jetzt schon wieder? Steig ein!«] -> prolog_ignoranz
 * [Innezuhalten und ebenfalls zu lauschen.] -> prolog_aufmerksamkeit
 
 === prolog_ignoranz ===
 ~ ego += 1
-Du schüttelst den Kopf und steigst in das weiche Leder der Rückbank. Der Luxus umhüllt dich wie ein Kokon. „Marc, deine Paranoia nervt. Wir sind in einer gesicherten Zone.“
+Du schüttelst den Kopf und steigst in das weiche Leder der Rückbank. Der Luxus umhüllt dich wie ein Kokon. »Marc, deine Paranoia nervt. Wir sind in einer gesicherten Zone.«
 
 Marc zögert, sein Blick scannt die Dächer der umliegenden Gebäude. Dann schließt er die Tür. 
 
@@ -144,7 +144,7 @@ Die Welt kippt. Dein Körper wird schwer, als würde die Schwerkraft dich versch
 ~ mental_stability += 1
 Du bleibst stehen. Die Stille in der Gasse ist plötzlich unnatürlich. Kein Wind, kein fernes Autogeräusch. Nur das rhythmische Ticken der großen Uhr an der Fassade gegenüber.
 
-Sarah blickt vom Tablet auf. „Marc? Was ist los?“
+Sarah blickt vom Tablet auf. »Marc? Was ist los?«
 
 In diesem Moment bricht die Hölle los.
 
@@ -152,7 +152,7 @@ Ein dunkler Schatten löst sich von der Wand. Marc reagiert mit der Schnelligkei
 
 Du spürst einen kleinen Einstich an deiner Halsschlagader. Die Welt beginnt sich zu drehen. Die Skyline von Frankfurt, die eben noch so fest und unerschütterlich wirkte, beginnt zu schmelzen wie flüssiges Wachs.
 
-„Gute Nacht, Elias", flüstert eine Stimme, die nicht von Marc oder Sarah stammt.
+»Gute Nacht, Elias«, flüstert eine Stimme, die nicht von Marc oder Sarah stammt.
 
 Deine Beine geben nach. Du fällst, aber der Boden kommt nicht. Es ist, als würde Frankfurt selbst dich verschlucken – Schicht für Schicht, tiefer und tiefer, bis die Lichter der Stadt nur noch ferne Sterne sind.
 
@@ -175,18 +175,18 @@ Du liegst auf etwas Hartem. Kaltem. Beton. Er ist feucht, und die Kälte kriecht
 
 Du tastest mit den Fingern über den Boden. Kein Teppich, kein Parkett. Rauher, poröser Stein, der nach Urin und altem Eisen riecht. Deine Maßschuhe sind weg. Deine Socken sind feucht. Du trägst etwas, das sich wie grobes Leinen anfühlt. Ein Gefängiskittel?
 
-„Elias? Oh Gott... Elias, bist du wach?“
+»Elias? Oh Gott... Elias, bist du wach?«
 
 Die Stimme schneidet durch die Stille wie ein Skalpell. Sie ist zittrig, am Rande der Hysterie. Es ist Sarah. 
 
-* [„Wer ist da? Zeig dich!“] -> wer_da
+* [»Wer ist da? Zeig dich!«] -> wer_da
 * [Schweigen und die Umgebung mit den Sinnen erfassen.] -> sinne_nutzen
 
 === wer_da ===
 ~ mental_stability -= 1
 Deine eigene Stimme klingt fremd. Heiser, als hättest du Sand geschluckt. Ein tiefes Grollen in deiner Brust.
 
-„Ich bin’s... Sarah. Elias, wir sind... ich weiß nicht, wo wir sind. Ich kann nichts sehen.“
+»Ich bin’s... Sarah. Elias, wir sind... ich weiß nicht, wo wir sind. Ich kann nichts sehen.«
 
 Sarah. Dein Anker in der Realität oben. Hier unten klingt sie nur noch wie ein verängstigtes Kind.
 
@@ -209,9 +209,9 @@ Und da ist noch jemand. Marc. Der unbesiegbare Marc. Er steht da, die Fäuste ge
 Ob du eben geschrien hast oder geschwiegen: Jetzt zählt nur noch, was du siehst – und was du nicht siehst.
 Ihr seid in einem quadratischen Raum, vielleicht sechs mal sechs Meter. Keine Fenster. Keine Türen. Nur nackter Beton. In der Mitte des Raumes stehen drei einfache Holzstühle, verschraubt mit dem Boden. Über jedem Stuhl hängt ein Monitor von der Decke, die Kabel wirken wie herabhängende Eingeweide einer mechanischen Bestie.
 
-„Wo zum Teufel sind wir hier?“, brüllt Marc. Er tritt gegen die Wand. Ein dumpfes, unnachgiebiges Geräusch. „Das ist kein Keller. Das fühlt sich an wie ein Bunker unter der Erde!“
+»Wo zum Teufel sind wir hier?«, brüllt Marc. Er tritt gegen die Wand. Ein dumpfes, unnachgiebiges Geräusch. »Das ist kein Keller. Das fühlt sich an wie ein Bunker unter der Erde!«
 
-„Elias, sag doch was!“, fleht Sarah. Sie klammert sich an ihre eigenen Oberarme. „Du hast doch immer einen Plan. Du kennst doch jeden in dieser Stadt! Ruf jemanden an! Wo ist dein Handy?“
+»Elias, sag doch was!«, fleht Sarah. Sie klammert sich an ihre eigenen Oberarme. »Du hast doch immer einen Plan. Du kennst doch jeden in dieser Stadt! Ruf jemanden an! Wo ist dein Handy?«
 
 Du tastest deine Taschen ab. Leer. Nichts als der grobe Stoff des Kittel.
 
@@ -220,15 +220,15 @@ In diesem Moment leuchten die Monitore auf. Das Licht ist grell, fast schmerzhaf
 #MOOD:danger
 Ein Bild flackert über die Bildschirme. Es ist eine digitale Maske. Ein Gesicht, das nur aus Binärcode besteht, der sich ständig neu zusammensetzt. Nullen und Einsen, die wie Insekten über ein simuliertes Gesicht krabbeln.
 
-„Guten Abend, Elias. Guten Abend, Sarah. Guten Abend, Marc.“
+»Guten Abend, Elias. Guten Abend, Sarah. Guten Abend, Marc.«
 
 Die Stimme ist eine Beleidigung für das menschliche Gehör. Sie ist mechanisch, ohne jede Intonation, aber mit einer bösartigen Präzision.
 
-„Willkommen im Frankfurt-Komplex. Ihr habt euer Leben damit verbracht, oben zu glänzen. Ihr habt Menschen benutzt wie Spielfiguren auf einem Schachbrett aus Gier und Hochmut. Heute werdet ihr selbst zu Figuren. Und das Spiel beginnt... jetzt.“
+»Willkommen im Frankfurt-Komplex. Ihr habt euer Leben damit verbracht, oben zu glänzen. Ihr habt Menschen benutzt wie Spielfiguren auf einem Schachbrett aus Gier und Hochmut. Heute werdet ihr selbst zu Figuren. Und das Spiel beginnt... jetzt.«
 
 Ein roter Timer erscheint unter der Maske: **02:00**.
 
-„In diesem Raum befinden sich zwei Atemmasken. Sie sind unter den Stühlen befestigt. Der Sauerstoffgehalt im Raum wird in 120 Sekunden auf ein Niveau gesenkt, das für drei Personen nicht ausreicht. Trefft eine Entscheidung. Wer von euch ist wertvoll genug, um weiterzuspielen?“
+»In diesem Raum befinden sich zwei Atemmasken. Sie sind unter den Stühlen befestigt. Der Sauerstoffgehalt im Raum wird in 120 Sekunden auf ein Niveau gesenkt, das für drei Personen nicht ausreicht. Trefft eine Entscheidung. Wer von euch ist wertvoll genug, um weiterzuspielen?«
 
 Während die anderen in Panik verfallen, spürst du eine seltsame, kalte Distanz. Es ist das gleiche Gefühl wie damals im Garten des Internats.
 
@@ -240,7 +240,7 @@ Während die anderen in Panik verfallen, spürst du eine seltsame, kalte Distanz
 Du erinnerst dich an den Vogel, weil dein Körper sich an die Kälte der Entscheidung erinnert.
 Du bist zehn Jahre alt. Im Garten eures Ferienhauses in Kronberg hast du eine junge Amsel gefunden, die aus dem Nest gefallen ist. Sie liegt in deiner hohlen Hand, ein kleines, zitterndes Bündel aus Federn und Angst. Ihr Herz schlägt so schnell, dass es deine Fingerspitzen kitzelt.
 
-Dein Vater beobachtet dich von der Terrasse aus. „Was wirst du tun, Elias? Es ist schwach. Es kann nicht fliegen. In der Natur gibt es keine Gnade für die Schwachen.“
+Dein Vater beobachtet dich von der Terrasse aus. »Was wirst du tun, Elias? Es ist schwach. Es kann nicht fliegen. In der Natur gibt es keine Gnade für die Schwachen.«
 
 Du starrst den Vogel an. Du verspürst kein Mitleid. Nur eine kalte, analytische Neugier. Du fragst dich, wie lange es dauern wird, bis das Herz aufhört zu schlagen.
 
@@ -258,7 +258,7 @@ Zurück im Betonraum. Der Timer zeigt **01:30**. Sarahs Atem geht flach. Marc st
 
 === raum_entscheidung_direkt ===
 Du zwingst dich zurück ins Jetzt: zwei Masken, drei Menschen, ein Timer. Keine Metaphern – nur Mathematik.
-* [„Marc, Sarah, nehmt die Masken! Ich finde einen anderen Weg!“] -> opfer_entscheidung
+* [»Marc, Sarah, nehmt die Masken! Ich finde einen anderen Weg!«] -> opfer_entscheidung
 * [Sofort zum Stuhl stürzen und sich eine Maske sichern.] -> ego_entscheidung
 * [Die Monitore anschreien und die Person dahinter provozieren.] -> provozieren_start
 
@@ -267,7 +267,7 @@ Du zwingst dich zurück ins Jetzt: zwei Masken, drei Menschen, ein Timer. Keine 
 ~ ego -= 5
 Du trittst einen Schritt zurück. Deine Beine fühlen sich an wie Wackelpudding, aber du zwingst dich, Haltung zu bewahren. Das ist dein Charme, deine Führungsrolle. Wenn du sie jetzt rettest, werden sie dir später folgen. Es ist eine Investition.
 
-„Nehmt sie!“, sagst du, und deine Stimme wird fester. „Marc, hilf ihr!“
+»Nehmt sie!«, sagst du, und deine Stimme wird fester. »Marc, hilf ihr!«
 
 Sarah starrt dich fassungslos an. Marc zögert, seine Augen wandern zwischen dir und dem Timer hin und her. Dann, mit einem animalischen Laut, greift er unter den Stuhl. Er reißt eine Maske hervor und drückt sie Sarah ins Gesicht, bevor er sich die zweite selbst überzieht.
 
@@ -277,7 +277,7 @@ Die Luft wird dünn. Jeder Atemzug fühlt sich an, als würdest du glühendes Ga
 
 Schwarz zieht sich wie ein Vorhang von den Rändern deines Sichtfeldes zur Mitte. Dein Körper gibt nach. Du sackst auf die Knie.
 
-„Gute Wahl, Elias", flüstert die Stimme. „Selbstlosigkeit... oder Kalkül? Wir werden sehen."
+»Gute Wahl, Elias«, flüstert die Stimme. »Selbstlosigkeit... oder Kalkül? Wir werden sehen.«
 
 Ein Teil des Bodens gibt nach. Eine Falltür. Du fällst ins Leere. Der Fall ist endlos, ein freier Sturz durch absolute Dunkelheit. Du hörst das Echo deines eigenen Atems, gespiegelt von unsichtbaren Wänden. Dann – ein brutaler Aufprall.
 
@@ -299,7 +299,7 @@ Die Luft im Raum wird abgesaugt. Ein schreckliches, pfeifendes Geräusch. Sarahs
 
 Marc starrt dich über seine Maske hinweg an. Sein Blick ist pures Gift. Das Vertrauen ist tot, noch bevor das Spiel richtig begonnen hat.
 
-„Pragmatisch, Elias", sagt die Stimme. „Ein echter Frankfurter. Nur der Stärkste frisst, nicht wahr?"
+»Pragmatisch, Elias«, sagt die Stimme. »Ein echter Frankfurter. Nur der Stärkste frisst, nicht wahr?«
 
 Plötzlich klappt der Boden unter euch weg. Du fällst in eine unendliche Tiefe. Der Wind der Dunkelheit rauscht in deinen Ohren, kälter als jede Winternacht im Bankenviertel. Du siehst Marcs Silhouette neben dir, aber ihr fallt zu schnell, um euch festzuhalten. Die Schwärze verschluckt euch.
 
@@ -307,19 +307,19 @@ Plötzlich klappt der Boden unter euch weg. Du fällst in eine unendliche Tiefe.
 
 === provozieren_start ===
 ~ mental_stability -= 3
-„Hör auf mit diesem Mist!“, schreist du. Du rennst zum Monitor und schlägst mit der flachen Hand gegen das Glas. „Weißt du, wer ich bin? Ich ziehe dir das Fell über die Ohren, wenn ich hier rauskomme! Wer bezahlt dich? Ist es die Konkurrenz? Die Russen? Sag es!“
+»Hör auf mit diesem Mist!«, schreist du. Du rennst zum Monitor und schlägst mit der flachen Hand gegen das Glas. »Weißt du, wer ich bin? Ich ziehe dir das Fell über die Ohren, wenn ich hier rauskomme! Wer bezahlt dich? Ist es die Konkurrenz? Die Russen? Sag es!«
 
 Die Maske auf dem Bildschirm verzieht sich zu einer hässlichen Fratze.
 
-„Namen. Titel. Geld. Alles nur Schatten an der Wand eines brennenden Hauses, Elias. Du hast noch 30 Sekunden. Und du verschwendest sie mit Geschrei.“
+»Namen. Titel. Geld. Alles nur Schatten an der Wand eines brennenden Hauses, Elias. Du hast noch 30 Sekunden. Und du verschwendest sie mit Geschrei.«
 
 Sarah bricht zusammen. Sie bekommt keine Luft mehr. Marc starrt wie gelähmt auf den Timer.
 
-„Elias... bitte...“, keucht Sarah.
+»Elias... bitte...«, keucht Sarah.
 
 In letzter Sekunde greift Marc nach beiden Masken. Er gibt Sarah eine und behält die andere. Du stehst da, mit leeren Händen, während die Luft aus dem Raum gesaugt wird. Deine Lungen fühlen sich an, als würden sie kollabieren. Du fällst auf den Boden, dein Gesicht presst sich gegen den kalten Beton.
 
-„Arroganz stirbt zuletzt", sagt die Stimme kühl.
+»Arroganz stirbt zuletzt«, sagt die Stimme kühl.
 
 Der Boden unter dir öffnet sich. Schwärze verschlingt dich. Du fühlst, wie dein Körper durch Schichten aus Kälte und Angst fällt, jede Sekunde ein Meter tiefer in den Bauch der Stadt. Du versuchst zu schreien, aber deine Lunge findet keine Luft. Der Fall endet in einem brutalen, wasserspritzenden Aufprall.
 
@@ -348,17 +348,17 @@ Du blickst nach oben. Wo du gerade noch hergefallen bist, ist jetzt nur noch ein
 
 Ihr seid in einem Tunnel. Aber es ist nicht irgendein Tunnel. Du erkennst die Architektur. Die runden Bögen, die Beschilderung.
 
-„Das ist die Hauptwache“, flüstert Sarah. Sie zittert so stark, dass ihre Zähne klappern. „Aber... das ist unmöglich. Wir sind unter der Stadt? Mitten im Zentrum?“
+»Das ist die Hauptwache«, flüstert Sarah. Sie zittert so stark, dass ihre Zähne klappern. »Aber... das ist unmöglich. Wir sind unter der Stadt? Mitten im Zentrum?«
 
-„Nicht die Hauptwache, die wir kennen“, sagt Marc. Er hält sich den Arm, den er sich beim Sturz geprellt hat. Er deutet auf ein Schild. Es ist verrostet, aber man kann es noch lesen: *GLEIS 4 – RICHTUNG ABGRUND*.
+»Nicht die Hauptwache, die wir kennen«, sagt Marc. Er hält sich den Arm, den er sich beim Sturz geprellt hat. Er deutet auf ein Schild. Es ist verrostet, aber man kann es noch lesen: *GLEIS 4 – RICHTUNG ABGRUND*.
 
-„Das ist ein stillgelegter Teil“, sagst du. Deine Stimme hallt unheimlich von den Wänden wider. „Die alten Tunnel aus den 70ern. Man sagt, es gäbe hier unten eine ganze Stadt, die nie fertiggestellt wurde.“
+»Das ist ein stillgelegter Teil«, sagst du. Deine Stimme hallt unheimlich von den Wänden wider. »Die alten Tunnel aus den 70ern. Man sagt, es gäbe hier unten eine ganze Stadt, die nie fertiggestellt wurde.«
 
 #MOOD:paranoia
 In der Ferne hörst du ein Geräusch. Ein rhythmisches Scharren. Metall auf Stein.
 
-* [„Wir müssen uns verstecken. Sofort!“] -> verstecken
-* [„Wer ist da? Kommen Sie raus!“] -> konfrontation_tunnel
+* [»Wir müssen uns verstecken. Sofort!«] -> verstecken
+* [»Wer ist da? Kommen Sie raus!«] -> konfrontation_tunnel
 * [Die Wände nach einem Ausgang absuchen.] -> suchen_ausgang
 
 === verstecken ===
@@ -367,16 +367,16 @@ Du ziehst Sarah hinter eine rostige Schaltkonsole. Marc zögert, folgt euch dann
 
 Das Geräusch kommt näher. Ein Schatten schiebt sich über die gegenüberliegende Wand. Er ist groß. Unförmig. Er zieht etwas hinter sich her.
 
-„Oh mein Gott...“, haucht Sarah in dein Ohr.
+»Oh mein Gott...«, haucht Sarah in dein Ohr.
 
 Ein Wesen – oder ein Mensch in einem grotesken Schutzanzug – schlurft vorbei. Er trägt eine Maske, die an einen Schweinskopf erinnert, aber aus verrostetem Blech gefertigt ist. Er zieht eine schwere Kette hinter sich her, an deren Ende ein Fleischhaken über den Boden kratzt. *Krrr-tsch. Krrr-tsch.*
 
 #IMG:butcher_shadow
-// Wirkung: Ein langer Schatten auf der gekachelten Tunnelwand. Die Silhouette zeigt eine unförmige Gestalt mit Schweinemaske und Fleischhaken, der Funken schlägt. Im Vordergrund: drei verängstigte Gestalten, die sich ducken. Der "Schlächter" des Komplexes – ein Symbol für die unmenschliche Jagd.
+// Wirkung: Ein langer Schatten auf der gekachelten Tunnelwand. Die Silhouette zeigt eine unförmige Gestalt mit Schweinemaske und Fleischhaken, der Funken schlägt. Im Vordergrund: drei verängstigte Gestalten, die sich ducken. Der »Schlächter« des Komplexes – ein Symbol für die unmenschliche Jagd.
 
 Der Schatten verschwindet in einem Seitentunnel. Die Stille, die folgt, ist noch schlimmer als das Geräusch.
 
-„Das war kein Wärter“, flüstert Marc. Sein Gesicht ist schweißgebadet. „Das war... eine Drohung.“
+»Das war kein Wärter«, flüstert Marc. Sein Gesicht ist schweißgebadet. »Das war... eine Drohung.«
 
 -> weg_wahl
 
@@ -384,15 +384,15 @@ Der Schatten verschwindet in einem Seitentunnel. Die Stille, die folgt, ist noch
 ~ mental_stability -= 2
 Du trittst vor ins fahle Licht. Du bist Elias. Du lässt dich nicht von Schatten einschüchtern.
 
-„Hören Sie auf mit dem Theater!“, rufst du in die Dunkelheit.
+»Hören Sie auf mit dem Theater!«, rufst du in die Dunkelheit.
 
 Das Scharren stoppt sofort. Eine Sekunde lang herrscht absolute Stille. Dann ein Lachen. Es kommt nicht von einer Person, sondern aus den Lautsprechern, die überall an der Decke hängen.
 
-„Mut, Elias? Oder einfach nur Dummheit? Du hast die Aufmerksamkeit eines Jägers geweckt. Lauf. Wenn du kannst.“
+»Mut, Elias? Oder einfach nur Dummheit? Du hast die Aufmerksamkeit eines Jägers geweckt. Lauf. Wenn du kannst.«
 
 Aus der Dunkelheit schießt etwas hervor. Ein Bolzen aus einer Armbrust verfehlt deinen Kopf nur um Millimeter und schlägt mit einem hässlichen Funkenflug in die Betonwand hinter dir ein.
 
-„Lauft!“, schreit Marc.
+»Lauft!«, schreit Marc.
 
 Ihr rennt. Eure Füße klatschen in das modrige Wasser. Sarah stolpert, du packst sie am Arm und reißt sie hoch. Hinter euch hört ihr wieder das Scharren. Schneller jetzt. Aggressiver.
 
@@ -404,11 +404,11 @@ Du ignorierst das Geräusch und konzentrierst dich auf die Umgebung. Dein analyt
 
 Du reißt den Kasten auf. Darin liegt ein Plan. Ein vergilbtes Stück Papier, das die Tunnel zeigt.
 
-„Elias, wir müssen weg!“, fleht Sarah.
+»Elias, wir müssen weg!«, fleht Sarah.
 
-„Sekunde noch...“, murmelst du. Du fährst mit dem Finger über die Linien. Es gibt einen Wartungsschacht, der direkt unter den Römer führt. Aber der Weg dorthin ist rot markiert. *ZONE DER REINIGUNG*.
+»Sekunde noch...«, murmelst du. Du fährst mit dem Finger über die Linien. Es gibt einen Wartungsschacht, der direkt unter den Römer führt. Aber der Weg dorthin ist rot markiert. *ZONE DER REINIGUNG*.
 
-Du steckst den Plan ein. „Hier lang!“, befiehlst du.
+Du steckst den Plan ein. »Hier lang!«, befiehlst du.
 
 -> weg_wahl
 
@@ -420,7 +420,7 @@ Der linke Weg führt tiefer nach unten. Die Wände sind hier mit alten Zeitungen
 
 Der rechte Weg steigt leicht an. Dort brennt ein rötliches Licht, und man hört das ferne Summen von Maschinen. Es riecht nach verbranntem Gummi.
 
-„Elias, wo gehen wir hin?", fragt Marc. Er sieht dich an, als wäre er bereit, dir jeden Moment an die Gurgel zu gehen, wenn du die falsche Entscheidung triffst.
+»Elias, wo gehen wir hin?«, fragt Marc. Er sieht dich an, als wäre er bereit, dir jeden Moment an die Gurgel zu gehen, wenn du die falsche Entscheidung triffst.
 
 * [Nach links. Die Tiefe bietet mehr Verstecke.] -> labyrinth_tief
 * [Nach rechts. Das Summen könnte ein Generator sein – und damit Strom und Licht.] -> labyrinth_strom
@@ -432,7 +432,7 @@ Ihr steigt die schlammigen Stufen hinab. Die Luft wird klamm und kalt. Sarah beg
 
 Der Schacht wirkt wie der vergessene Darm der Stadt. Die Stufen sind ungleich, teils weggebröselt, und in den Ecken sammelt sich schwarzer Schlamm, der nach altem Papier und Abwasser riecht. An einigen Stellen ist die Wand feucht, als würde sie schwitzen.
 
-„Schaut euch das an“, flüstert sie.
+»Schaut euch das an«, flüstert sie.
 
 Die Zeitungen an den Wänden... sie sind nicht nur tapeziert. Sie sind mit schwarzer Tinte korrigiert worden. Überall stehen deine Initialen. *E.K. – SCHULDIG.* *E.K. – GIER.* *E.K. – DER KOMPLEX WARTET.*
 
@@ -440,7 +440,7 @@ Du spürst, wie sich dein Magen zusammenzieht. Das hier ist kein Zufall. Das ist
 
 Plötzlich bleibt Marc stehen. Er starrt auf den Boden. Vor ihm liegt ein Stapel Kleidung. Es ist ein maßgeschneiderter Anzug. Dein Anzug. Den, den du gestern Abend getragen hast. Er ist in Fetzen gerissen und mit etwas Rotem bespritzt.
 
-„Elias...“, sagt Marc langsam. „Was hast du getan, dass uns jemand so sehr hasst?“
+»Elias...«, sagt Marc langsam. »Was hast du getan, dass uns jemand so sehr hasst?«
 
 Bevor du antworten kannst, schließt sich hinter euch ein schweres Eisengitter. *KLACK.*
 
@@ -454,17 +454,17 @@ Ihr folgt dem rötlichen Licht. Das Summen wird lauter, ein vibrierender Bass, d
 
 Der Raum ist heißer als die Gänge davor, ein künstlicher Sommer im Bauch der Stadt. Der Boden vibriert, als würde irgendwo ein Generator im Takt eines riesigen Herzens schlagen. Der Geruch nach verbranntem Gummi ist so dicht, dass du ihn schmeckst.
 
-„Das ist die Belüftung der B-Ebene“, sagst du. „Wenn wir durch diese Ventilatoren kommen, sind wir fast draußen.“
+»Das ist die Belüftung der B-Ebene«, sagst du. »Wenn wir durch diese Ventilatoren kommen, sind wir fast draußen.«
 
 Aber es gibt ein Problem. Die Ventilatoren drehen sich mit mörderischer Geschwindigkeit. Zwischen den Rotorblättern blitzt alle paar Sekunden ein Licht auf.
 
 Ein Bildschirm an der Seite aktiviert sich.
 
-„Geschwindigkeit, Elias. Du liebst schnelle Autos, schnelle Geschäfte, schnelle Frauen. Aber wie schnell sind deine Reflexe, wenn es um das Leben deiner Freunde geht?“
+»Geschwindigkeit, Elias. Du liebst schnelle Autos, schnelle Geschäfte, schnelle Frauen. Aber wie schnell sind deine Reflexe, wenn es um das Leben deiner Freunde geht?«
 
 An der Wand hängen zwei Hebel. Einer ist mit *SARAH* beschriftet, der andere mit *MARC*.
 
-„Ein Hebel verlangsamt den Ventilator für zehn Sekunden. Der andere löst eine elektrische Entladung aus, die denjenigen am Hebel töten könnte. Wähle. Wer darf zuerst gehen?“
+»Ein Hebel verlangsamt den Ventilator für zehn Sekunden. Der andere löst eine elektrische Entladung aus, die denjenigen am Hebel töten könnte. Wähle. Wer darf zuerst gehen?«
 
 * [Sarah den Vortritt lassen und das Risiko am Hebel übernehmen.] -> opfer_ventilator_sarah
 * [Marc befehlen, den Hebel zu ziehen, während du gehst.] -> ego_ventilator
@@ -475,7 +475,7 @@ An der Wand hängen zwei Hebel. Einer ist mit *SARAH* beschriftet, der andere mi
 === opfer_ventilator_sarah ===
 ~ trust_group += 3
 ~ mental_stability -= 1
-„Sarah, geh!“, rufst du. „Ich halte den Hebel!“
+»Sarah, geh!«, rufst du. »Ich halte den Hebel!«
 
 Du greifst nach dem Hebel mit der Aufschrift *SARAH*. Das Metall ist heiß. Du ziehst mit aller Kraft. Funken sprühen aus der Konsole. Ein elektrischer Schlag fährt durch deinen Arm, dein ganzer Körper verkrampft sich. Du schreist vor Schmerz, aber du lässt nicht los.
 
@@ -483,30 +483,30 @@ Der riesige Ventilator verlangsamt sich. Sarah rennt. Sie springt durch die Lüc
 
 Du lässt den Hebel los und brichst zusammen. Dein Arm ist taub, Brandblasen bilden sich auf deiner Handfläche.
 
-„Elias!“, ruft Sarah von der anderen Seite.
+»Elias!«, ruft Sarah von der anderen Seite.
 
 Marc sieht dich an. Er sagt nichts, aber er hilft dir hoch. Für einen Moment ist da wieder Respekt in seinen Augen.
 
-„Jetzt ich“, sagt Marc. Er greift nach dem zweiten Hebel.
+»Jetzt ich«, sagt Marc. Er greift nach dem zweiten Hebel.
 
 -> weiter_nach_ventilator
 
 === ego_ventilator ===
 ~ trust_group -= 5
 ~ ego += 5
-„Marc, du bist der Stärkste. Zieh den Hebel für mich!“, befehlst du.
+»Marc, du bist der Stärkste. Zieh den Hebel für mich!«, befehlst du.
 
-Marc starrt dich an. „Bist du wahnsinnig? Das Ding steht unter Strom!“
+Marc starrt dich an. »Bist du wahnsinnig? Das Ding steht unter Strom!«
 
-„Willst du hier unten verrotten? Zieh ihn!“, schreist du.
+»Willst du hier unten verrotten? Zieh ihn!«, schreist du.
 
 Marc flucht, aber er greift nach dem Hebel. Sobald er zieht, zuckt sein Körper unter der elektrischen Entladung. Er beißt die Zähne zusammen, seine Muskeln treten hervor. Du nutzt die Chance und rennst durch den langsamer werdenden Ventilator.
 
 Auf der anderen Seite bleibst du keuchend stehen. Marc lässt den Hebel los und fällt auf die Knie. Er keucht vor Schmerz.
 
-Sarah sieht dich mit Abscheu an. „Du hättest ihn fast umgebracht, Elias.“
+Sarah sieht dich mit Abscheu an. »Du hättest ihn fast umgebracht, Elias.«
 
-„Aber ich bin durch“, sagst du kühl.
+»Aber ich bin durch«, sagst du kühl.
 
 -> weiter_nach_ventilator
 
@@ -516,7 +516,7 @@ Du suchst den Boden nach Werkzeug ab. Da – ein altes Stemmeisen. Du klemmst es
 
 Der Mechanismus raucht, aber er steht still.
 
-„Schnell, durch da!“, rufst du.
+»Schnell, durch da!«, rufst du.
 
 Ihr klettert durch die verbogenen Rotorblätter. Als du als Letzter durchspringst, explodiert der Motor hinter dir. Eine Druckwelle schleudert dich nach vorn.
 
@@ -547,34 +547,34 @@ Euer Weg hierher war eine Entscheidungskette – links oder rechts, verstecken o
 
 Die Bildschirme im Raum flackern gleichzeitig auf. Die Maske ist wieder da. Diesmal wirkt sie fast... belustigt.
 
-„Habt ihr euch jemals gefragt, warum ihr hier seid? Sarah, die kleine Assistentin, die für einen Aufstieg über Leichen ging. Marc, der Bodyguard, der wegsah, als sein Chef Menschen misshandelte. Und Elias... das Herz der Finsternis.“
+»Habt ihr euch jemals gefragt, warum ihr hier seid? Sarah, die kleine Assistentin, die für einen Aufstieg über Leichen ging. Marc, der Bodyguard, der wegsah, als sein Chef Menschen misshandelte. Und Elias... das Herz der Finsternis.«
 
 Auf den Bildschirmen erscheinen Videos. Überwachungsaufnahmen.
 
 Man sieht dich in einem Hinterzimmer. Du unterschreibst ein Dokument. Du gibst einen Befehl. Ein paar Sekunden später sieht man, wie eine Familie aus ihrer Wohnung im Bahnhofsviertel gewerfen wird. Es ist kalt. Es regnet. Ein Kind weint.
 
-„Du hast dieses Gebäude abreißen lassen, um ein Luxushotel zu bauen, Elias. Die Menschen dort hatten nichts mehr. Einer von ihnen... er hat sich das Leben genommen. Sein Name war Thomas Wagner. Er war mein Bruder."
+»Du hast dieses Gebäude abreißen lassen, um ein Luxushotel zu bauen, Elias. Die Menschen dort hatten nichts mehr. Einer von ihnen... er hat sich das Leben genommen. Sein Name war Thomas Wagner. Er war mein Bruder.«
 
 Das Bild auf dem Monitor wechselt. Du siehst einen Mann, Mitte Vierzig, mit müden Augen und einem freundlichen Lächeln. Er steht vor einem kleinen Kiosk im Bahnhofsviertel. Das Schild über ihm liest: *Wagner's 24h-Späti*.
 
 Die Stimme spricht weiter, aber jetzt zittert sie leicht – als würde dahinter ein Mensch stehen, kein Algorithmus:
 
-„Thomas Wagner. Geboren 1978 in Frankfurt-Fechenheim. Vater von zwei Töchtern: Emma, 12, und Lena, 8. Seine Frau Claudia arbeitete als Krankenschwester im Uni-Klinikum. Sie hatten 40 Jahre lang in diesem Viertel gelebt. Der Kiosk war klein, aber er ernährte die Familie. Die Stammgäste kannten ihn alle. Er hat den Obdachlosen nachts Kaffee umsonst gegeben. Er hat den Kindern Bonbons geschenkt."
+»Thomas Wagner. Geboren 1978 in Frankfurt-Fechenheim. Vater von zwei Töchtern: Emma, 12, und Lena, 8. Seine Frau Claudia arbeitete als Krankenschwester im Uni-Klinikum. Sie hatten 40 Jahre lang in diesem Viertel gelebt. Der Kiosk war klein, aber er ernährte die Familie. Die Stammgäste kannten ihn alle. Er hat den Obdachlosen nachts Kaffee umsonst gegeben. Er hat den Kindern Bonbons geschenkt.«
 
 Ein neues Bild: Thomas mit seinen Töchtern vor dem Römer. Sie lachen. Ein normaler Sonntag.
 
-„Als die Zwangsräumung kam, war es Februar. Es schneite. Deine Anwälte haben ihnen 14 Tage gegeben. Thomas hat um Verlängerung gebettelt – Emma sollte ihr Schuljahr abschließen. Die Antwort war ein Gerichtsvollzieher. Sie mussten mit zwei Koffern in eine Notunterkunft in Gallus ziehen. Der Kiosk wurde am nächsten Tag abgerissen. 40 Jahre Existenz – pulverisiert in vier Stunden."
+»Als die Zwangsräumung kam, war es Februar. Es schneite. Deine Anwälte haben ihnen 14 Tage gegeben. Thomas hat um Verlängerung gebettelt – Emma sollte ihr Schuljahr abschließen. Die Antwort war ein Gerichtsvollzieher. Sie mussten mit zwei Koffern in eine Notunterkunft in Gallus ziehen. Der Kiosk wurde am nächsten Tag abgerissen. 40 Jahre Existenz – pulverisiert in vier Stunden.«
 
 Das Bild zeigt jetzt Thomas auf einer Brücke. Es ist dunkel. Seine Schultern sind nach vorne gesackt.
 
-„Drei Monate später. Er fand keine neue Arbeit. Niemand stellt einen 44-jährigen Kioskbesitzer ein. Die Schulden wuchsen. Claudia arbeitete Doppelschichten, aber es reichte nicht. Die Töchter fragten jeden Tag, wann sie nach Hause dürften."
+»Drei Monate später. Er fand keine neue Arbeit. Niemand stellt einen 44-jährigen Kioskbesitzer ein. Die Schulden wuchsen. Claudia arbeitete Doppelschichten, aber es reichte nicht. Die Töchter fragten jeden Tag, wann sie nach Hause dürften.«
 
 Ein letztes Bild: ein Zeitungsausschnitt. *MANN SPRINGT VON MAIN-BRÜCKE – IDENTITÄT NOCH UNKLAR*.
 
-„Er hat einen Brief hinterlassen. Darin stand: 'Ich bin nur noch eine Last. Vielleicht reicht das Geld jetzt wenigstens für Emma's Gymnasium. Vergebt mir.' Claudia hat ihn zwei Tage später gefunden. Sie war zu der Zeit gerade in deinem neuen Luxushotel – sie putzte dort die Zimmer, um über die Runden zu kommen."
+»Er hat einen Brief hinterlassen. Darin stand: 'Ich bin nur noch eine Last. Vielleicht reicht das Geld jetzt wenigstens für Emma's Gymnasium. Vergebt mir.' Claudia hat ihn zwei Tage später gefunden. Sie war zu der Zeit gerade in deinem neuen Luxushotel – sie putzte dort die Zimmer, um über die Runden zu kommen.«
 
 #IMG:wagner_family_memorial
-// Wirkung: Ein Collage-artiges Bild: Thomas' freundliches Lächeln vor seinem Kiosk, Emma und Lena als Kinder beim Lachen, die Main-Brücke in düsterem Grau, der Zeitungsausschnitt. Alles überlagert von einem roten "SCHULDIG"-Stempel. Die Zerstörung einer Familie, visualisiert.
+// Wirkung: Ein Collage-artiges Bild: Thomas' freundliches Lächeln vor seinem Kiosk, Emma und Lena als Kinder beim Lachen, die Main-Brücke in düsterem Grau, der Zeitungsausschnitt. Alles überlagert von einem roten »SCHULDIG«-Stempel. Die Zerstörung einer Familie, visualisiert.
 
 Stille. Eine erdrückende, schwere Stille.
 
@@ -590,36 +590,36 @@ Ein Teenager mit Schuluniform. *Leon Wagner, 15, Sohn von Thomas. Selbstmordvers
 
 Die Bilder wechseln schneller. Dutzende. Hunderte? Die Gesichter verschwimmen zu einer Masse aus Schmerz und Verzweiflung. Alte und Junge. Familien und Einzelpersonen. Alle verbunden durch einen einzigen Namen: Elias Kortig.
 
-„Das sind nicht alle", sagt die Stimme. „Das sind nur die, die wir dokumentiert haben. Die Kollateralschäden deiner Geschäfte. Die Lebenswege, die du zertrampelt hast, ohne auch nur innezuhalten."
+»Das sind nicht alle«, sagt die Stimme. »Das sind nur die, die wir dokumentiert haben. Die Kollateralschäden deiner Geschäfte. Die Lebenswege, die du zertrampelt hast, ohne auch nur innezuhalten.«
 
 Sarah tritt einen Schritt von dir weg, ihre Hand vor dem Mund. Tränen laufen über ihr Gesicht. Marc ballt die Fäuste, seine Knöchel werden weiß. Sein Kiefer mahlt.
 
-„Ist das wahr?", fragt Marc leise, aber seine Stimme vibriert vor kaum unterdrückter Wut. „Hast du das alles getan?"
+»Ist das wahr?«, fragt Marc leise, aber seine Stimme vibriert vor kaum unterdrückter Wut. »Hast du das alles getan?«
 
-* [„Das war Business. Nichts Persönliches. So funktioniert die Welt.“] -> business_ausrede
-* [„Ich... ich wusste nicht, was die Konsequenzen waren.“] -> unwissenheit_ausrede
+* [»Das war Business. Nichts Persönliches. So funktioniert die Welt.«] -> business_ausrede
+* [»Ich... ich wusste nicht, was die Konsequenzen waren.«] -> unwissenheit_ausrede
 * [Schweigen und die Schuld ertragen.] -> schweigen_schuld
 
 === business_ausrede ===
 ~ trust_group -= 5
 ~ ego += 3
 ~ mental_stability += 1
-Du richtest deinen zerfetzten Kragen. Deine Stimme ist kalt wie das Glas der Hochhäuser über euch. „In Frankfurt gewinnt man nicht, wenn man sich um jeden Einzelnen sorgt. Das war eine strategische Entscheidung. Das Hotel hat hunderte Arbeitsplätze geschaffen.“
+Du richtest deinen zerfetzten Kragen. Deine Stimme ist kalt wie das Glas der Hochhäuser über euch. »In Frankfurt gewinnt man nicht, wenn man sich um jeden Einzelnen sorgt. Das war eine strategische Entscheidung. Das Hotel hat hunderte Arbeitsplätze geschaffen.«
 
-Marc lacht hämisch. „Arbeitsplätze für Leute wie dich, Elias. Nicht für Leute wie uns.“
+Marc lacht hämisch. »Arbeitsplätze für Leute wie dich, Elias. Nicht für Leute wie uns.«
 
-Sarah sieht dich an, als wäre sie zum ersten Mal wirklich aufgewacht. „Du bist ein Monster.“
+Sarah sieht dich an, als wäre sie zum ersten Mal wirklich aufgewacht. »Du bist ein Monster.«
 
 -> weiter_zu_entscheidung
 
 === unwissenheit_ausrede ===
 ~ trust_group -= 2
 ~ mental_stability -= 3
-„Ich... ich unterschreibe hunderte Papiere am Tag!“, sagst du verzweifelt. „Ich kann nicht jedes Schicksal kennen! Ich bin kein Gott!“
+»Ich... ich unterschreibe hunderte Papiere am Tag!«, sagst du verzweifelt. »Ich kann nicht jedes Schicksal kennen! Ich bin kein Gott!«
 
-„Nein“, sagt die Stimme. „Aber du hast dich wie einer aufgeführt. Unwissenheit schützt nicht vor der Reinigung, Elias.“
+»Nein«, sagt die Stimme. »Aber du hast dich wie einer aufgeführt. Unwissenheit schützt nicht vor der Reinigung, Elias.«
 
-Marc schüttelt den Kopf. „Du hast nicht mal den Mut, zu dem zu stehen, was du bist.“
+Marc schüttelt den Kopf. »Du hast nicht mal den Mut, zu dem zu stehen, was du bist.«
 
 -> weiter_zu_entscheidung
 
@@ -628,11 +628,11 @@ Marc schüttelt den Kopf. „Du hast nicht mal den Mut, zu dem zu stehen, was du
 ~ mental_stability -= 5
 Du sagst nichts. Du starrst auf das Bild des weinenden Kindes. In diesem Moment bricht etwas in dir zusammen. All der Glanz, all das Geld... es fühlt sich plötzlich so schwer an wie der Beton über deinem Kopf.
 
-„Rede mit uns, Elias!“, schreit Sarah.
+»Rede mit uns, Elias!«, schreit Sarah.
 
 Du schüttelst nur den Kopf. Die Tränen brennen in deinen Augen, aber du lässt sie nicht fließen. Nicht vor ihnen.
 
-„Einsicht ist der erste Schritt zur Vernichtung“, sagt die Stimme.
+»Einsicht ist der erste Schritt zur Vernichtung«, sagt die Stimme.
 
 -> weiter_zu_entscheidung
 
@@ -658,7 +658,7 @@ Der Boden ist glatter, fast gefliest, aber mit einem dünnen Film bedeckt, der b
 #IMG:hospital_underground
 // Wirkung: Ein steriler, aber verwahrloster Krankenhausgang. Die medizinischen Geräte wirken wie Folterinstrumente. Es soll die Verbindung zwischen Schmerz, Heilung und dem perversen Spiel des Täters verdeutlicht werden.
 
-„Ebene 2“, sagt die Stimme. „Die Ebene der physischen Realität. Elias, du hast immer gesagt, Schmerz sei nur eine Einstellungssache. Lass uns das testen.“
+»Ebene 2«, sagt die Stimme. »Die Ebene der physischen Realität. Elias, du hast immer gesagt, Schmerz sei nur eine Einstellungssache. Lass uns das testen.«
 
 Ihr erreicht eine schwere Stahltür. Darauf steht: **KONTROLLZENTRUM**.
 
@@ -667,47 +667,47 @@ Davor steht ein kleiner Tisch. Darauf liegen zwei Spritzen. Eine ist blau, die a
 #IMG:two_syringes
 // Wirkung: Close-Up: Zwei Spritzen auf einem Metalltisch. Eine blau, eine rot. Beide identisch, beide tödlich schön. Im Hintergrund unscharf: Sarah's zitternde Hände, die sich langsam dem Tisch nähern. Die ultimative Wahl zwischen Leben und Tod.
 
-„Eine Spritze enthält ein Antidot für das Gas, das ihr in Ebene 0 eingeatmet habt. Es wird euch die Kraft geben, weiterzumachen. Die andere enthält ein Nervengift, das innerhalb von 30 Minuten zum qualvollen Tod führt. Ihr wisst nicht, welche welche ist."
+»Eine Spritze enthält ein Antidot für das Gas, das ihr in Ebene 0 eingeatmet habt. Es wird euch die Kraft geben, weiterzumachen. Die andere enthält ein Nervengift, das innerhalb von 30 Minuten zum qualvollen Tod führt. Ihr wisst nicht, welche welche ist.«
 
-„Aber hier ist der Clou: Elias, du musst sie beide nehmen. Eine für dich, eine für Marc. Sarah darf die Wahl treffen, wer welche bekommt. Wenn sie dich hasst, gibt sie dir den Tod. Wenn sie dir vertraut, gibt sie dir das Leben.“
+»Aber hier ist der Clou: Elias, du musst sie beide nehmen. Eine für dich, eine für Marc. Sarah darf die Wahl treffen, wer welche bekommt. Wenn sie dich hasst, gibt sie dir den Tod. Wenn sie dir vertraut, gibt sie dir das Leben.«
 
 Sarah starrt auf die Spritzen. Ihre Hände zittern. Sie sieht dich an, dann Marc.
 
 Du bemerkst in der Ecke eine halb geöffnete Tür, aus der ein chemischer Geruch strömt – Desinfektionsmittel und... verbrannte Elektronik.
 
-* [„Sarah, bitte... du weißt, dass ich Marc brauche, um hier rauszukommen. Gib ihm das Antidot."] -> sarah_wahl_opfer
-* [„Sarah, gib mir die blaue. Ich bin der Einzige, der einen Plan hat."] -> sarah_wahl_ego
+* [»Sarah, bitte... du weißt, dass ich Marc brauche, um hier rauszukommen. Gib ihm das Antidot.«] -> sarah_wahl_opfer
+* [»Sarah, gib mir die blaue. Ich bin der Einzige, der einen Plan hat.«] -> sarah_wahl_ego
 * [Die halb geöffnete Tür untersuchen und in den unbekannten Bereich schlüpfen.] -> nebenstory_2_einstieg
 
 === sarah_wahl_opfer ===
 ~ trust_group += 4
 ~ survivors -= 0.5
-Sarah zögert. Dann nimmt sie die rote Spritze und reicht sie Marc. „Nimm die, Marc. Elias hat gesagt... er will, dass du sicher bist.“
+Sarah zögert. Dann nimmt sie die rote Spritze und reicht sie Marc. »Nimm die, Marc. Elias hat gesagt... er will, dass du sicher bist.«
 
-Marc nimmt die Spritze, sein Blick ist voller Zweifel, aber er injiziert sich die Flüssigkeit. Er atmet tief durch. „Ich fühle mich... stärker.“
+Marc nimmt die Spritze, sein Blick ist voller Zweifel, aber er injiziert sich die Flüssigkeit. Er atmet tief durch. »Ich fühle mich... stärker.«
 
 Dann nimmt Sarah die blaue Spritze und sieht dich an. In ihrem Blick liegt Mitleid. Sie sticht die Nadel in deinen Arm.
 
 Schmerz. Sofortiger, explodierender Schmerz. Dein ganzer Arm fühlt sich an, als würde er in Säure getaucht werden. Du brüllst auf und fällst zu Boden.
 
-„Elias!“, schreit Sarah.
+»Elias!«, schreit Sarah.
 
-„Falsche Wahl, Sarah“, lacht die Stimme. „Oder vielleicht doch die richtige? Elias hat das Gift. Er hat noch 30 Minuten zu leben. Die Uhr tickt.“
+»Falsche Wahl, Sarah«, lacht die Stimme. »Oder vielleicht doch die richtige? Elias hat das Gift. Er hat noch 30 Minuten zu leben. Die Uhr tickt.«
 
 -> kontrollzentrum_eintritt
 
 === sarah_wahl_ego ===
 ~ trust_group -= 8
 ~ ego += 5
-Sarah sieht dich angewidert an. „Du denkst immer nur an dich, oder? Selbst jetzt.“
+Sarah sieht dich angewidert an. »Du denkst immer nur an dich, oder? Selbst jetzt.«
 
 Sie schnappt sich die blaue Spritze und rammt sie dir in den Arm. Du spürst eine kühle Erleichterung, die durch deine Adern fließt. Dein Kopf wird klar, deine Sinne schärfer.
 
 Dann gibt sie Marc die rote Spritze. Marc nimmt sie schweigend. Kurze Zeit später beginnt er zu zittern. Ein dunkler Fleck bildet sich unter seiner Haut.
 
-„Du hast ihn getötet, Elias“, flüstert Sarah. „Du hast ihn getötet, nur damit du dich besser fühlst.“
+»Du hast ihn getötet, Elias«, flüstert Sarah. »Du hast ihn getötet, nur damit du dich besser fühlst.«
 
-„Ich lebe“, sagst du hart. „Das ist alles, was zählt.“
+»Ich lebe«, sagst du hart. »Das ist alles, was zählt.«
 
 ~ survivors -= 1
 -> kontrollzentrum_eintritt
@@ -728,7 +728,7 @@ Die Luft ist trocken und kalt wie in einem Serverraum. Sie riecht nach Staub, Oz
 An den Wänden hängen digitale Laufbänder wie an der echten Börse, nur dass die Zahlen hier nicht Geld bedeuten, sondern Blutdruck, Puls, Stresshormone. Jeder Wert ist eine Wette. Jeder Ausschlag ein Applaus.
 
 #IMG:stock_exchange_underground
-// Wirkung: Eine makabre Version der Frankfurter Börse. Die Kurse zeigen menschliche Leben, "Schuld-Punkte" und "Überlebens-Wahrscheinlichkeiten". Es verdeutlicht, dass im Komplex alles handelbar ist, sogar die Moral.
+// Wirkung: Eine makabre Version der Frankfurter Börse. Die Kurse zeigen menschliche Leben, »Schuld-Punkte« und »Überlebens-Wahrscheinlichkeiten«. Es verdeutlicht, dass im Komplex alles handelbar ist, sogar die Moral.
 
 Dort hängen eure Namen.
 *ELIAS: 12% Überlebenschance.*
@@ -759,19 +759,19 @@ Du erkennst einige:
 Und darunter, in kleiner Schrift, eine Zahl, die ständig weiterzählt:
 *INDIREKTE OPFER (FAMILIENMITGLIEDER, ANGESTELLTE, ABHÄNGIGE): 847*
 
-Marc tritt näher an den Bildschirm. „847 Menschen... deren Leben du indirekt zerstört hast. Die ihre Jobs verloren, weil du ein Gebäude gekauft hast. Die obdachlos wurden, weil du ein Viertel 'entwickelt' hast. Kinder, die ohne Eltern aufwachsen mussten."
+Marc tritt näher an den Bildschirm. »847 Menschen... deren Leben du indirekt zerstört hast. Die ihre Jobs verloren, weil du ein Gebäude gekauft hast. Die obdachlos wurden, weil du ein Viertel 'entwickelt' hast. Kinder, die ohne Eltern aufwachsen mussten.«
 
-Sarah liest leise: „*ANGESTELLTE WAGNER-KIOSK: 3. STATUS: ARBEITSLOS.* *STAMMKUNDEN WAGNER-KIOSK: 34. DURCHSCHNITTLICHES ALTER: 68. VIELE AUF SOZIALHILFE.*"
+Sarah liest leise: »*ANGESTELLTE WAGNER-KIOSK: 3. STATUS: ARBEITSLOS.* *STAMMKUNDEN WAGNER-KIOSK: 34. DURCHSCHNITTLICHES ALTER: 68. VIELE AUF SOZIALHILFE.*«
 
-„Es ist ein Netzwerk", flüstert sie. „Jeder Mensch, den du zerstört hast, war mit dutzenden anderen verbunden. Familien. Freunde. Kollegen. Und sie alle fielen wie Dominosteine."
+»Es ist ein Netzwerk«, flüstert sie. »Jeder Mensch, den du zerstört hast, war mit dutzenden anderen verbunden. Familien. Freunde. Kollegen. Und sie alle fielen wie Dominosteine.«
 
 In der Mitte steht ein Terminal. Dein Handy liegt darauf. Es ist unversehrt. Es sieht so sauber und modern aus, dass es in diesem Dreck fast heilig wirkt. Aber jetzt wirkt es wie ein Grabstein – ein Monument für all die Namen, die über den Bildschirmen scrollen.
 
 Das Handy beginnt zu vibrieren. Ein Anruf. *UNBEKANNT*.
 
-Die Maske auf dem Bildschirm spricht: „Elias. Du liebst Informationen. Du liebst es, Geheimnisse zu kennen und sie zu verkaufen. Hier ist die ultimative Information: In 10 Minuten wird die gesamte Ebene geflutet. Es gibt einen Notausgang, aber er lässt nur zwei Personen durch.“
+Die Maske auf dem Bildschirm spricht: »Elias. Du liebst Informationen. Du liebst es, Geheimnisse zu kennen und sie zu verkaufen. Hier ist die ultimative Information: In 10 Minuten wird die gesamte Ebene geflutet. Es gibt einen Notausgang, aber er lässt nur zwei Personen durch.«
 
-„Der Anruf ist von deinem Anwalt, Mei Qiu. Er hat die Beweise, die dich entlasten könnten – oder die dich für immer hinter Gitter bringen. Wenn du abhebst, stoppt das Fluten, aber die Beweise werden gelöscht. Wenn du nicht abhebst, werden die Beweise veröffentlicht, aber ihr müsst einen Weg finden, die Flutung zu überleben.“
+»Der Anruf ist von deinem Anwalt, Mei Qiu. Er hat die Beweise, die dich entlasten könnten – oder die dich für immer hinter Gitter bringen. Wenn du abhebst, stoppt das Fluten, aber die Beweise werden gelöscht. Wenn du nicht abhebst, werden die Beweise veröffentlicht, aber ihr müsst einen Weg finden, die Flutung zu überleben.«
 
 Sarah und Marc starren auf das Handy. Sie wissen nicht, was auf dem Spiel steht.
 
@@ -797,19 +797,19 @@ Nur ein langer Korridor aus Erinnerung, so schmal, dass du mit den Schultern dar
 #IMG:memory_corridor_pavement
 // Wirkung: Nasses Frankfurter Pflaster mit Spiegelungen von Neon und Blaulicht, surreal verlängert zu einem endlosen Gang. Es soll das Gefühl vermitteln, dass seine Vergangenheit kein Ort ist, sondern ein Tunnel ohne Ausgang.
 
-Sarahs Stimme ist noch da, aber sie klingt weit weg, wie durch eine Wand aus Glas. „Elias… was machst du da?“
+Sarahs Stimme ist noch da, aber sie klingt weit weg, wie durch eine Wand aus Glas. »Elias… was machst du da?«
 
 Du antwortest nicht. Du kannst nicht.
 
 Am Ende des Korridors stehen drei Türen. Auf jeder steht ein Datum.
 
-* [1999 – „Die erste Lektion“] -> erinnerung_1999
-* [2008 – „Das Verschwinden“] -> erinnerung_2008
-* [2016 – „Der erste Deal“] -> erinnerung_2016
+* [1999 – »Die erste Lektion«] -> erinnerung_1999
+* [2008 – »Das Verschwinden«] -> erinnerung_2008
+* [2016 – »Der erste Deal«] -> erinnerung_2016
 
 === erinnerung_1999 ===
 #MOOD:noir
-Du öffnest die Tür „1999“ – und merkst, dass Kindheit bei dir nicht weich war, sondern geschniegelt, kalt und berechnend.
+Du öffnest die Tür »1999« – und merkst, dass Kindheit bei dir nicht weich war, sondern geschniegelt, kalt und berechnend.
 
 Du bist sechs Jahre alt. Frankfurt ist für dich kein Stadtplan, sondern Geräusche: das ferne Dröhnen der A5, das Klacken von Absätzen auf Marmor, das tiefe Summen von Klimaanlagen, die Büros kalt halten, damit Gefühle nicht wachsen.
 
@@ -817,15 +817,15 @@ Du stehst im Foyer eines Bankgebäudes. Hohe Decken. Stein so poliert, dass dein
 
 Dein Vater kommt aus einer Drehtür, als wäre er aus Stahl gemacht. Er küsst deine Mutter nicht. Er küsst nicht. Er nickt nur – und dieses Nicken entscheidet über Räume, Menschen, Leben.
 
-„Elias“, sagt er, „schau dich um.“
+»Elias«, sagt er, »schau dich um.«
 
 Du siehst die Menschen. Anzüge. Ausweise. Blicke, die nach oben gehen, nie nach innen.
 
-„Das hier ist die Welt“, sagt dein Vater. „Und die Welt respektiert nur zwei Dinge: Kontrolle und Ergebnis. Gefühle sind Geräusche. Gewinne sind Sprache.“
+»Das hier ist die Welt«, sagt dein Vater. »Und die Welt respektiert nur zwei Dinge: Kontrolle und Ergebnis. Gefühle sind Geräusche. Gewinne sind Sprache.«
 
 Du willst etwas sagen, irgendetwas Kindliches. Aber dein Vater legt dir zwei Finger an den Hals, dorthin, wo dein Puls schlägt.
 
-„Spürst du das?“, fragt er ruhig. „Das ist das Einzige, was du nie zeigen darfst.“
+»Spürst du das?«, fragt er ruhig. »Das ist das Einzige, was du nie zeigen darfst.«
 
 Du spürst deinen Herzschlag. Und du lernst: Angst ist Information. Und Information gehört dir.
 
@@ -841,7 +841,7 @@ Du ziehst deine Hand zurück. Es ist nur eine kleine Bewegung, aber dein Vater b
 
 Er lächelt nicht. Er wird nur stiller.
 
-„Wenn du dich mir entziehst“, sagt er, „entziehst du dich auch dem Schutz. Dann bist du draußen.“
+»Wenn du dich mir entziehst«, sagt er, »entziehst du dich auch dem Schutz. Dann bist du draußen.«
 
 Draußen heißt: Kälte. Bedeutungslosigkeit. Der Blick der Stadt, der durch dich hindurchgeht.
 
@@ -854,13 +854,13 @@ Du nimmst seine Hand wieder.
 
 === erinnerung_2008 ===
 #MOOD:still
-Du trittst durch „2008“ – und der Korridor wird heller, aber deine Brust wird enger.
+Du trittst durch »2008« – und der Korridor wird heller, aber deine Brust wird enger.
 
 Du bist fünfzehn. Es ist Winter. Frankfurt riecht nach gebrannten Mandeln und Abgas. Der Weihnachtsmarkt auf der Hauptwache leuchtet, als wolle er den Himmel anlügen: Alles sei warm, alles sei sicher.
 
 Du stehst zwischen Menschen, die lachen. Neben dir steht deine Mutter. Sie trägt einen Mantel, der ihr zu groß wirkt, als hätte sie sich in einem fremden Leben versteckt.
 
-„Elias“, sagt sie leise, „wenn du jemals das Gefühl hast, dass du nicht mehr du bist… dann komm zu mir. Versprich es.“
+»Elias«, sagt sie leise, »wenn du jemals das Gefühl hast, dass du nicht mehr du bist… dann komm zu mir. Versprich es.«
 
 Du willst lachen. Du weißt nicht, wie das geht, ohne dass es klingt wie ein Trick.
 
@@ -868,7 +868,7 @@ Dann siehst du deinen Vater am Rand des Marktes. Nicht in einem Mantel. In einem
 
 Deine Mutter schaut zu ihm. Ihr Blick ist eine Entscheidung.
 
-„Ich kann nicht mehr“, flüstert sie.
+»Ich kann nicht mehr«, flüstert sie.
 
 Du willst fragen: Warum? Aber in deinem Kopf ist schon die nächste Rechnung.
 
@@ -903,7 +903,7 @@ Also baust du Türen.
 
 === erinnerung_2016 ===
 #MOOD:noir,focus
-Du wählst „2016“ – den Moment, in dem du gelernt hast, dass Unterschriften lauter sein können als Schreie.
+Du wählst »2016« – den Moment, in dem du gelernt hast, dass Unterschriften lauter sein können als Schreie.
 
 Du bist dreiundzwanzig. Erste eigene Wohnung im Westend. Die Fensterfront zeigt die Skyline wie ein Bild, das dir gehört.
 
@@ -911,13 +911,13 @@ Auf dem Tisch liegt ein Vertrag. Dein erster großer Deal. Eine Unterschrift, di
 
 Dein Vater sitzt dir gegenüber. Er hat keinen Kaffee. Er hat nur Zeit. Und Zeit ist seine Währung.
 
-„Du wirst jemanden zerstören“, sagt er. „Nicht mit Händen. Mit Papier. Und du wirst dabei ruhig bleiben.“
+»Du wirst jemanden zerstören«, sagt er. »Nicht mit Händen. Mit Papier. Und du wirst dabei ruhig bleiben.«
 
-„Und wenn ich es nicht tue?“, fragst du.
+»Und wenn ich es nicht tue?«, fragst du.
 
 Dein Vater hebt den Blick. Seine Augen sind wie die Glasfassaden draußen: schön, kalt, und dahinter nichts, was dich wärmt.
 
-„Dann wirst du zerstört“, sagt er.
+»Dann wirst du zerstört«, sagt er.
 
 Du unterschreibst.
 
@@ -953,11 +953,11 @@ Der Korridor zieht sich zusammen. Die Türen verschwinden. Der nasse Asphalt unt
 
 Du hörst wieder das Summen der Server. Wieder das Ticken der Börse, die keine Börse ist.
 
-Und du verstehst, warum du „krank im Kopf" bist: weil man dir beigebracht hat, dass Nähe gefährlich ist, dass Verlust Schwäche ist, und dass Kontrolle Liebe ersetzt.
+Und du verstehst, warum du »krank im Kopf« bist: weil man dir beigebracht hat, dass Nähe gefährlich ist, dass Verlust Schwäche ist, und dass Kontrolle Liebe ersetzt.
 
 Du blinzelst. Die Bilder der Vergangenheit verblassen wie Rauch. Der Korridor löst sich auf, die nassen Pflastersteine unter dir werden wieder zu Metall und Glas.
 
-Das Summen der Server kehrt zurück. Das Ticken der Börsenkurse, die keine echten Kurse sind. Sarah und Marc stehen neben dir, sie sehen dich besorgt an. „Elias? Du hast eine Weile auf den Bildschirm gestarrt... bist du okay?"
+Das Summen der Server kehrt zurück. Das Ticken der Börsenkurse, die keine echten Kurse sind. Sarah und Marc stehen neben dir, sie sehen dich besorgt an. »Elias? Du hast eine Weile auf den Bildschirm gestarrt... bist du okay?«
 
 Du atmest tief durch. Du bist zurück im Kontrollzentrum. Das Handy auf dem Terminal vibriert immer noch, hartnäckig wie ein Herzschlag.
 
@@ -967,13 +967,13 @@ Du atmest tief durch. Du bist zurück im Kontrollzentrum. Das Handy auf dem Term
 ~ trust_group += 10
 ~ ego -= 5
 ~ evidence_found -= 1
-Du greifst nach dem Handy. „Mei Qiu?“, fragst du heiser.
+Du greifst nach dem Handy. »Mei Qiu?«, fragst du heiser.
 
 Eine Stimme antwortet, aber es ist nicht dein Anwalt. Es ist eine verzerrte Aufnahme deiner eigenen Stimme, wie du einen Bestechungsskandal planst. Dann ein lautes Löschgeräusch. *Piiiiep.*
 
-„Beweise vernichtet, Elias“, sagt die Stimme aus dem Lautsprecher. „Du bist rechtlich sauber. Und die Schotten bleiben geschlossen. Ihr habt Zeit gewonnen.“
+»Beweise vernichtet, Elias«, sagt die Stimme aus dem Lautsprecher. »Du bist rechtlich sauber. Und die Schotten bleiben geschlossen. Ihr habt Zeit gewonnen.«
 
-Sarah atmet erleichtert auf. „Danke, Elias. Du hast uns gerettet.“
+Sarah atmet erleichtert auf. »Danke, Elias. Du hast uns gerettet.«
 
 Du sagst nichts. Du weißt, dass du gerade deine einzige Chance verloren hast, jemals wieder legal in Frankfurt zu arbeiten. Du bist ein freier Mann ohne Zukunft.
 
@@ -983,15 +983,15 @@ Du sagst nichts. Du weißt, dass du gerade deine einzige Chance verloren hast, j
 ~ trust_group -= 10
 ~ ego += 10
 ~ evidence_found += 2
-Du lässt das Handy klingeln. Es vibriert über den Metalltisch, ein aggressives Summen. Sarah will danach greifen, aber du hältst ihren Arm fest. „Lass es!“, zischst du.
+Du lässt das Handy klingeln. Es vibriert über den Metalltisch, ein aggressives Summen. Sarah will danach greifen, aber du hältst ihren Arm fest. »Lass es!«, zischst du.
 
-„Warum? Es könnte Hilfe sein!“, schreit sie.
+»Warum? Es könnte Hilfe sein!«, schreit sie.
 
-„Es ist eine Falle!“, lügst du.
+»Es ist eine Falle!«, lügst du.
 
 Das Handy hört auf zu klingeln. In diesem Moment ertönt ein ohrenbetäubendes Grollen. Wasser beginnt durch die Lüftungsschächte zu schießen. Innerhalb von Sekunden steht das Wasser knöcheltief.
 
-„Du Idiot!“, brüllt Marc. „Wir werden hier ertrinken!“
+»Du Idiot!«, brüllt Marc. »Wir werden hier ertrinken!«
 
 Auf den Monitoren erscheint eine Schlagzeile der *Frankfurter Neuen Presse*: *TOP-MANAGER KORTIG IN GEHEIM-SKANDAL VERWICKELT – BEWEISE AUFGETAUCHT.*
 
@@ -1012,12 +1012,12 @@ Es trägt Dinge mit sich: Papierfetzen, eine zerknitterte Fahrkarte, eine leere 
 
 Du schmeckst den Dreck im Mund, jedes Einatmen ist ein Kampf gegen Panik. Frankfurt ist plötzlich nicht mehr Glas und Stahl – es ist ein Kanal, der dich verschlucken will.
 
-„Dort! Eine Leiter!“, ruft Sarah.
+»Dort! Eine Leiter!«, ruft Sarah.
 
 Sie ist am Ende eines langen Schachtes. Ihr müsst schwimmen. Das Wasser erreicht jetzt eure Brust.
 
 {survivors < 2:
-    Marc ist zu schwach vom Gift. Er verliert den Halt und wird von der Strömung mitgerissen. „Marc!“, schreist du, aber er verschwindet in der dunklen Flut.
+    Marc ist zu schwach vom Gift. Er verliert den Halt und wird von der Strömung mitgerissen. »Marc!«, schreist du, aber er verschwindet in der dunklen Flut.
     ~ survivors -= 1
 - else:
     Ihr helft euch gegenseitig. Marc schiebt Sarah hoch, du packst sie an den Beinen. Zusammen erreicht ihr die Leiter.
@@ -1050,19 +1050,19 @@ In der Mitte der Plattform steht ein kleiner, eleganter Tisch, wie in einem Ster
 
 Die mechanische Stimme dröhnt nun aus den riesigen Lautsprechern des Turms, so laut, dass man sie wahrscheinlich bis nach Sachsenhausen hören kann.
 
-„Willkommen zu Hause, Elias. Du wolltest immer ganz oben sein. Hier bist du. Der höchste Punkt der Stadt. Der höchste Punkt deines Lebens.“
+»Willkommen zu Hause, Elias. Du wolltest immer ganz oben sein. Hier bist du. Der höchste Punkt der Stadt. Der höchste Punkt deines Lebens.«
 
 Die Sicherheitsroboter rollen aus dem Schatten. Sie sind keine Menschen, sondern kugelrunde Maschinen auf Ketten, ausgestattet mit Laser-Zielsystemen. Die roten Punkte tanzen über eure Körper wie blutige Insekten.
 
-„Das letzte Spiel ist einfach. Eine mathematische Gleichung der Moral.“
+»Das letzte Spiel ist einfach. Eine mathematische Gleichung der Moral.«
 
-„Wenn du, Elias, den Revolver nimmst und dich opferst – ein Schuss in den Kopf –, dann öffnen sich die Fahrstuhltüren sofort. Sarah und Marc dürfen gehen. Sie werden reich belohnt werden. Sie werden dein Erbe antreten.“
+»Wenn du, Elias, den Revolver nimmst und dich opferst – ein Schuss in den Kopf –, dann öffnen sich die Fahrstuhltüren sofort. Sarah und Marc dürfen gehen. Sie werden reich belohnt werden. Sie werden dein Erbe antreten.«
 
-„Wenn du Sarah erschießt, darfst du und Marc gehen.“
+»Wenn du Sarah erschießt, darfst du und Marc gehen.«
 
-„Wenn du Marc erschießt, darfst du und Sarah gehen.“
+»Wenn du Marc erschießt, darfst du und Sarah gehen.«
 
-„Wenn du in 60 Sekunden keine Entscheidung triffst... werden die Roboter das Feuer eröffnen. Niemand verlässt diesen Turm lebend.“
+»Wenn du in 60 Sekunden keine Entscheidung triffst... werden die Roboter das Feuer eröffnen. Niemand verlässt diesen Turm lebend.«
 
 Der Timer auf dem großen Werbedisplay an der Fassade springt um: **60... 59... 58...**
 
@@ -1076,7 +1076,7 @@ Du nimmst den Revolver. Er ist schwerer, als er aussieht. Das Metall ist kalt.
 
 Die roten Laserpunkte tanzen über eure Körper. Die Roboter warten. Der Timer läuft. Du hast nur Sekunden.
 
-* [Den Revolver an die eigene Schläfe setzen. „Es tut mir leid. Für alles."] -> ende_selbstmord
+* [Den Revolver an die eigene Schläfe setzen. »Es tut mir leid. Für alles.«] -> ende_selbstmord
 * [Auf einen von ihnen schießen. Du musst wählen.] -> ende_wahl_andere
 * [Die Waffe auf die Roboter richten und kämpfen.] -> ende_kampf_alle_sterben
 
@@ -1085,7 +1085,7 @@ Die roten Laserpunkte tanzen über eure Körper. Die Roboter warten. Der Timer l
 ~ mental_stability = 10
 Du blickst über die Skyline. Dein ganzes Leben war ein Rennen gegen die Zeit, gegen andere, gegen dich selbst. Jetzt, hier oben, fühlt es sich plötzlich so unbedeutend an. Die Lichter von Frankfurt... sie glänzen auch ohne dich. Frankfurt braucht dich nicht. Frankfurt überlebt alles.
 
-„Sarah. Marc“, sagst du, und deine Stimme ist so sanft wie nie zuvor. „Geht. Erzählt ihnen nicht, was hier passiert ist. Erzählt ihnen, dass Elias Kortig am Ende doch einen guten Deal gemacht hat.“
+»Sarah. Marc«, sagst du, und deine Stimme ist so sanft wie nie zuvor. »Geht. Erzählt ihnen nicht, was hier passiert ist. Erzählt ihnen, dass Elias Kortig am Ende doch einen guten Deal gemacht hat.«
 
 Du setzt die Waffe an. Du schließt die Augen. Ein letzter Gedanke an den Geruch von Regen auf dem Asphalt der Zeil.
 
@@ -1121,9 +1121,9 @@ Du musst wählen. Deine Hand zittert. Der Lauf der Waffe schwankt zwischen Sarah
 #MOOD:noir,dread
 ~ ego += 10
 ~ survivors -= 1
-„Es tut mir leid, Marc“, flüsterst du. „Aber ich bin das Gesicht dieser Stadt. Ohne mich bricht alles zusammen.“
+»Es tut mir leid, Marc«, flüsterst du. »Aber ich bin das Gesicht dieser Stadt. Ohne mich bricht alles zusammen.«
 
-Marc nickt nur. Er hat es gewusst. „Du warst nie ein Anführer, Elias. Du warst nur ein Parasit mit gutem Haarschnitt."
+Marc nickt nur. Er hat es gewusst. »Du warst nie ein Anführer, Elias. Du warst nur ein Parasit mit gutem Haarschnitt.«
 
 Du drückst ab. Der Knall zerreißt die Stille der Nacht. Marc fällt rückwärts über das Geländer. Er stürzt in die Tiefe, lautlos, bis er von den Schatten der Straßenschluchten verschlungen wird.
 
@@ -1132,9 +1132,9 @@ Du drückst ab. Der Knall zerreißt die Stille der Nacht. Marc fällt rückwärt
 
 Die Roboter lassen euch passieren.
 
-Sarah starrt dich an. Ihr Blick ist so kalt, dass er dich innerlich gefrieren lässt. „Du hast ihn getötet. Für nichts.“
+Sarah starrt dich an. Ihr Blick ist so kalt, dass er dich innerlich gefrieren lässt. »Du hast ihn getötet. Für nichts.«
 
-„Ich habe überlebt“, sagst du. Du gehst zum Fahrstuhl. Sarah folgt dir nicht. Sie bleibt auf der Plattform stehen, während du nach unten fährst. Du bist frei. Du bist der König. Aber die Stadt, die du liebst, fühlt sich plötzlich an wie ein Grab.
+»Ich habe überlebt«, sagst du. Du gehst zum Fahrstuhl. Sarah folgt dir nicht. Sie bleibt auf der Plattform stehen, während du nach unten fährst. Du bist frei. Du bist der König. Aber die Stadt, die du liebst, fühlt sich plötzlich an wie ein Grab.
 
 -> epilog
 
@@ -1144,7 +1144,7 @@ Sarah starrt dich an. Ihr Blick ist so kalt, dass er dich innerlich gefrieren l�
 ~ survivors -= 1
 Du richtest die Waffe auf Sarah. Sie sieht dich nicht einmal an. Sie starrt nur auf die Lichter der Stadt.
 
-„Mach es schnell, Elias“, flüstert sie. „Ich will nicht mehr in dieser Welt leben, in der Leute wie du entscheiden dürfen.“
+»Mach es schnell, Elias«, flüstert sie. »Ich will nicht mehr in dieser Welt leben, in der Leute wie du entscheiden dürfen.«
 
 Du zögerst eine Sekunde. Nur eine. Dann drückst du ab.
 
@@ -1152,7 +1152,7 @@ Marc stößt einen Schrei aus und stürzt auf dich zu, aber die Roboter blockier
 
 Die Fahrstuhltüren öffnen sich.
 
-„Effizient, Elias“, sagt die Stimme. „Frauen und Kinder zuerst? Nein. Nur du zuerst. Immer nur du.“
+»Effizient, Elias«, sagt die Stimme. »Frauen und Kinder zuerst? Nein. Nur du zuerst. Immer nur du.«
 
 Du steigst in den Fahrstuhl. Marc wird von den Robotern festgehalten. Als sich die Türen schließen, siehst du sein Gesicht. Es ist das Gesicht eines Mannes, der nichts mehr zu verlieren hat. Du weißt, dass du von nun an jeden Tag über deine Schulter blicken wirst.
 
@@ -1162,9 +1162,9 @@ Du steigst in den Fahrstuhl. Marc wird von den Robotern festgehalten. Als sich d
 #MOOD:danger,climax
 ~ survivors = 0
 ~ mental_stability = 0
-„Fahrt zur Hölle!", schreist du und feuerst auf den ersten Roboter. Die Kugel prallt wirkungslos an seiner Panzerung ab.
+»Fahrt zur Hölle!«, schreist du und feuerst auf den ersten Roboter. Die Kugel prallt wirkungslos an seiner Panzerung ab.
 
-„Fehlentscheidung", sagt die Stimme.
+»Fehlentscheidung«, sagt die Stimme.
 
 In diesem Moment bricht das Inferno los. Dutzende Laserstrahlen schneiden durch die Nachtluft. Du spürst einen Einschlag in deiner Brust, dann noch einen. Sarah und Marc werden neben dir niedergestreckt.
 
@@ -1189,9 +1189,9 @@ Und dann... Dunkelheit.
 
 Ihr entscheidet euch für den schmalen Spalt in der Wand, der kaum als Gang zu erkennen ist. Der Geruch hier ist anders – schwerer, öliger, mit einer Note von verrottendem Gummi und... altem Tabak?
 
-„Elias, das sieht nicht wie ein offizieller Weg aus“, flüstert Sarah. Sie streicht mit der Hand über die rauen Wände. „Hier ist alles voller Ruß.“
+»Elias, das sieht nicht wie ein offizieller Weg aus«, flüstert Sarah. Sie streicht mit der Hand über die rauen Wände. »Hier ist alles voller Ruß.«
 
-„Das ist ein Versorgungsstollen für die alten Heizungskeller des Frankfurter Bankenviertels“, erklärst du. „Wenn wir Glück haben, führt er zu einem der alten Heizkraftwerke unter dem Roßmarkt.“
+»Das ist ein Versorgungsstollen für die alten Heizungskeller des Frankfurter Bankenviertels«, erklärst du. »Wenn wir Glück haben, führt er zu einem der alten Heizkraftwerke unter dem Roßmarkt.«
 
 Ihr zwängt euch durch den engen Gang. Marc muss sich seitlich bewegen, um mit seinen breiten Schultern nicht steckenzubleiben. Das Licht eurer improvisierten Taschenlampe – ein glimmendes Stück Plastik, das ihr gefunden habt – wirft lange, tanzende Schatten an die Decke.
 
@@ -1200,50 +1200,50 @@ Plötzlich weitet sich der Gang. Ihr steht in einem Raum, der wirkt, als hätte 
 #IMG:underground_living_room
 // Wirkung: Ein improvisiertes Wohnzimmer tief unter der Erde. Alte Teppiche, ein Stapel vergilbter Bücher, eine kleine Gaslampe. Es wirkt seltsam gemütlich und gleichzeitig absolut wahnsinnig.
 
-„Wer zum Teufel lebt hier unten?“, fragt Marc leise. Er hält die Fäuste geballt.
+»Wer zum Teufel lebt hier unten?«, fragt Marc leise. Er hält die Fäuste geballt.
 
-„Nicht leben... überdauern“, antwortet eine krächzende Stimme aus einer dunklen Ecke.
+»Nicht leben... überdauern«, antwortet eine krächzende Stimme aus einer dunklen Ecke.
 
 Ein Mann tritt ins Licht. Er ist alt, sein Bart ist lang und grau, seine Augen sind milchig, aber sie strahlen eine unheimliche Intelligenz aus. Er trägt einen zerlumpten Anzug, der einst sehr teuer gewesen sein muss. Ein altes Modell der Commerzbank-Uniform aus den 90ern.
 
-„Willkommen in meinem bescheidenen Reich, Elias Kortig“, sagt der Alte. „Ich habe dich erwartet. Die Schatten haben mir von dir erzählt.“
+»Willkommen in meinem bescheidenen Reich, Elias Kortig«, sagt der Alte. »Ich habe dich erwartet. Die Schatten haben mir von dir erzählt.«
 
-* [„Wer sind Sie? Und woher kennen Sie meinen Namen?“] -> treffen_ludwig
-* [„Verschwinden Sie, Alter! Wir haben keine Zeit für Rätsel.“] -> rudel_ludwig
+* [»Wer sind Sie? Und woher kennen Sie meinen Namen?«] -> treffen_ludwig
+* [»Verschwinden Sie, Alter! Wir haben keine Zeit für Rätsel.«] -> rudel_ludwig
 * [Die Umgebung nach Hinweisen auf einen Ausgang untersuchen.] -> suchen_ludwig
 
 === treffen_ludwig ===
 ~ trust_group += 1
 Du stellst die Frage, die du immer stellst, wenn du Kontrolle zurückholen willst: Wer bist du – und was hast du gegen mich in der Hand?
-Der Alte lacht, ein trockenes Husten. „Mein Name ist Ludwig. Einst war ich wie du. Ein Hai im Ozean des Geldes. Ich habe Deals gemacht, die die Skyline von Frankfurt verändert haben. Aber der Komplex... der Komplex hat mich geholt, lange bevor du deine erste Million verdient hast.“
+Der Alte lacht, ein trockenes Husten. »Mein Name ist Ludwig. Einst war ich wie du. Ein Hai im Ozean des Geldes. Ich habe Deals gemacht, die die Skyline von Frankfurt verändert haben. Aber der Komplex... der Komplex hat mich geholt, lange bevor du deine erste Million verdient hast.«
 
-„Sie sind ein Gefangener? Seit wie vielen Jahren?“, fragt Sarah erschrocken.
+»Sie sind ein Gefangener? Seit wie vielen Jahren?«, fragt Sarah erschrocken.
 
-„Jahre? Jahrzehnte? Hier unten zählt die Zeit anders. Sie fließt wie geschmolzenes Blei. Ich bin das Echo dessen, was aus dir werden wird, wenn du das Spiel nicht gewinnst.“
+»Jahre? Jahrzehnte? Hier unten zählt die Zeit anders. Sie fließt wie geschmolzenes Blei. Ich bin das Echo dessen, was aus dir werden wird, wenn du das Spiel nicht gewinnst.«
 
-Ludwig deutet auf einen Stapel Aktenordner. „Ich habe Informationen gesammelt. Über ihn. Den Schöpfer des Komplexes. Er ist kein Geist, Elias. Er ist ein Fehler im System.“
+Ludwig deutet auf einen Stapel Aktenordner. »Ich habe Informationen gesammelt. Über ihn. Den Schöpfer des Komplexes. Er ist kein Geist, Elias. Er ist ein Fehler im System.«
 
-* [„Erzählen Sie mir mehr über den Schöpfer. Wer steckt hinter all dem?“] -> ludwig_lore
-* [„Haben Sie einen Plan von den unteren Ebenen?“] -> ludwig_plan
+* [»Erzählen Sie mir mehr über den Schöpfer. Wer steckt hinter all dem?«] -> ludwig_lore
+* [»Haben Sie einen Plan von den unteren Ebenen?«] -> ludwig_plan
 * [Die Aktenordner selbst durchsuchen.] -> ludwig_akten
 
 === ludwig_lore ===
 #MOOD:mystery
 Du bohrst nach: Wenn hier unten ein Gott sitzt – wie heißt er, und wie hat er gelernt, Menschen zu essen?
-Ludwig beugt sich vor. Sein Atem riecht nach altem Papier. „Er war einer von uns. Ein Visionär. Ein Mathematiker, der glaubte, man könne die menschliche Gier berechnen. Er wollte Frankfurt optimieren. Aber der Algorithmus wurde hungrig. Er begann, Leben zu fordern, um die Stabilität des Marktes zu sichern.“
+Ludwig beugt sich vor. Sein Atem riecht nach altem Papier. »Er war einer von uns. Ein Visionär. Ein Mathematiker, der glaubte, man könne die menschliche Gier berechnen. Er wollte Frankfurt optimieren. Aber der Algorithmus wurde hungrig. Er begann, Leben zu fordern, um die Stabilität des Marktes zu sichern.«
 
-„Ein Mensch?“, fragst du. „Ist er noch am Leben?“
+»Ein Mensch?«, fragst du. »Ist er noch am Leben?«
 
-„Er ist der Komplex. Er hat sein Bewusstsein in die Server unter der Hauptwache geladen. Er ist der Geist in der Maschine, Elias. Und er hasst dich, weil du so... unberechenbar bist.“
+»Er ist der Komplex. Er hat sein Bewusstsein in die Server unter der Hauptwache geladen. Er ist der Geist in der Maschine, Elias. Und er hasst dich, weil du so... unberechenbar bist.«
 
 -> ludwig_angebot
 
 === ludwig_plan ===
 ~ evidence_found += 1
 Du verlangst etwas Greifbares: eine Karte, eine Linie, eine Richtung – irgendetwas, das nicht nur Angst ist.
-Ludwig rollt eine vergilbte Blaupause aus. Sie zeigt das gesamte Fundament von Frankfurt. „Dort“, er deutet auf einen Punkt tief unter dem Main Tower. „Das Herz des Komplexes. Die Serverfarm. Wenn ihr dorthin kommt, könnt ihr das System abschalten.“
+Ludwig rollt eine vergilbte Blaupause aus. Sie zeigt das gesamte Fundament von Frankfurt. »Dort«, er deutet auf einen Punkt tief unter dem Main Tower. »Das Herz des Komplexes. Die Serverfarm. Wenn ihr dorthin kommt, könnt ihr das System abschalten.«
 
-„Aber der Weg ist tödlich“, fügt er hinzu. „Er wird bewacht von Dingen, die weder Mensch noch Maschine sind.“
+»Aber der Weg ist tödlich«, fügt er hinzu. »Er wird bewacht von Dingen, die weder Mensch noch Maschine sind.«
 
 -> ludwig_angebot
 
@@ -1256,33 +1256,33 @@ Du ziehst einen Ordner heraus: *FALL #47 – WESTEND 2018*.
 
 Darin: ein Familienfoto. Eine türkische Familie vor ihrem kleinen Restaurant in der Taunusstraße. Der Vater, Mehmet Yilmaz, 58, trägt eine weiße Kochschürze und lächelt stolz. Seine Frau Ayşe steht neben ihm, die Hand auf der Schulter ihrer Tochter Zeynep, 16. Der Sohn, Can, 22, lehnt an der Tür – er studierte Jura an der Goethe-Universität.
 
-Ludwig murmelt aus der Ecke: „Die Yilmaz-Familie. Ihr Restaurant existierte seit 1987. Sie waren Institutionen im Viertel."
+Ludwig murmelt aus der Ecke: »Die Yilmaz-Familie. Ihr Restaurant existierte seit 1987. Sie waren Institutionen im Viertel.«
 
 Du liest die Akte weiter:
 
-„Mehmet Yilmaz weigerte sich, sein Grundstück zu verkaufen. Es war das letzte Hindernis für dein Westend-Projekt – ein 200-Millionen-Euro-Deal mit chinesischen Investoren. Deine Anwälte fanden eine alte Bauvorschrift aus den 70ern, die das Gebäude als 'nicht mehr konform' einstufte. Die Familie bekam 14 Tage Räumungsfrist."
+»Mehmet Yilmaz weigerte sich, sein Grundstück zu verkaufen. Es war das letzte Hindernis für dein Westend-Projekt – ein 200-Millionen-Euro-Deal mit chinesischen Investoren. Deine Anwälte fanden eine alte Bauvorschrift aus den 70ern, die das Gebäude als 'nicht mehr konform' einstufte. Die Familie bekam 14 Tage Räumungsfrist.«
 
 Ein Zeitungsausschnitt klebt auf der nächsten Seite: *BRAND IN WESTEND-RESTAURANT – FAMILIE VERMISST*.
 
-„Mehmet verschwand drei Tage vor der Zwangsräumung. Sein Auto wurde am Main gefunden, Schlüssel steckten noch. Ayşe meldete ihn als vermisst. Die Polizei fand nichts. Eine Woche später: Feuer im Restaurant. Ayşe und Zeynep waren noch drinnen. Can überlebte – er war an dem Abend in der Bibliothek."
+»Mehmet verschwand drei Tage vor der Zwangsräumung. Sein Auto wurde am Main gefunden, Schlüssel steckten noch. Ayşe meldete ihn als vermisst. Die Polizei fand nichts. Eine Woche später: Feuer im Restaurant. Ayşe und Zeynep waren noch drinnen. Can überlebte – er war an dem Abend in der Bibliothek.«
 
 Du blätterst weiter. Deine Hände zittern.
 
 Ein polizeiliches Vermerk: *Brandursache: Elektrischer Kurzschluss. Keine Hinweise auf Fremdverschulden.*
 
-Ludwigs Stimme wird schärfer: „Aber hier..." Er deutet auf eine handschriftliche Notiz in roter Tinte: *KOMPLEX-AUFTRAG #47 – ZIEL ERREICHT. RESTLICHER ERBE NEUTRALISIERT, SIEHE FALL #48*.
+Ludwigs Stimme wird schärfer: »Aber hier...« Er deutet auf eine handschriftliche Notiz in roter Tinte: *KOMPLEX-AUFTRAG #47 – ZIEL ERREICHT. RESTLICHER ERBE NEUTRALISIERT, SIEHE FALL #48*.
 
 Du ziehst Ordner #48 heraus. Can Yilmaz. Ein Foto von ihm als Student, lächelnd auf dem Campus. Darunter:
 
-„Can Yilmaz versuchte, deinen Deal juristisch anzufechten. Er sammelte Beweise für Korruption. Am 12. März 2018 verschwand er auf dem Weg zur Staatsanwaltschaft. Seine Leiche wurde nie gefunden. Offiziell: vermisst. Inoffiziell..." Ludwig tippt auf ein anderes Dokument. „Der Komplex hat ihn hier unten gehalten. Ebene 3. Er war einer der Ersten."
+»Can Yilmaz versuchte, deinen Deal juristisch anzufechten. Er sammelte Beweise für Korruption. Am 12. März 2018 verschwand er auf dem Weg zur Staatsanwaltschaft. Seine Leiche wurde nie gefunden. Offiziell: vermisst. Inoffiziell...« Ludwig tippt auf ein anderes Dokument. »Der Komplex hat ihn hier unten gehalten. Ebene 3. Er war einer der Ersten.«
 
-Marc starrt auf die Fotos. „Das sind fünf Menschen, Elias. Eine ganze Familie. Ausgelöscht."
+Marc starrt auf die Fotos. »Das sind fünf Menschen, Elias. Eine ganze Familie. Ausgelöscht.«
 
-Sarah blättert durch weitere Ordner, ihre Stimme bricht: „Hier... Dr. Anita Schwarz. Stadtplanerin. Sie wollte dein Hochhaus-Projekt im Ostend stoppen – Denkmalschutz. Sie verschwand im August 2019."
+Sarah blättert durch weitere Ordner, ihre Stimme bricht: »Hier... Dr. Anita Schwarz. Stadtplanerin. Sie wollte dein Hochhaus-Projekt im Ostend stoppen – Denkmalschutz. Sie verschwand im August 2019.«
 
-„Frederik Jansen", liest Marc. „Journalist. Er schrieb über deine Steuertricks. Tot bei einem 'Autounfall' auf der A5."
+»Frederik Jansen«, liest Marc. »Journalist. Er schrieb über deine Steuertricks. Tot bei einem 'Autounfall' auf der A5.«
 
-„Lara Müller. Umweltaktivistin. Sie protestierte gegen dein Ufer-Entwicklungsprojekt. Ertrunken im Main, 'Alkohol im Blut', obwohl sie ihr Leben lang keinen Tropfen trank."
+»Lara Müller. Umweltaktivistin. Sie protestierte gegen dein Ufer-Entwicklungsprojekt. Ertrunken im Main, 'Alkohol im Blut', obwohl sie ihr Leben lang keinen Tropfen trank.«
 
 #IMG:victims_file_wall
 // Wirkung: Eine Wand voller Aktenordner und Fotos. Im Vordergrund die Yilmaz-Familie beim Lächeln, dahinter dutzende weitere Gesichter in Schwarz-Weiß. Jedes Foto mit einem roten X durchgestrichen. Eine Galerie der Ausgelöschten. Ludwigs Hand zeigt mit zitterndem Finger auf die Beweise.
@@ -1291,7 +1291,7 @@ Die Ordner türmen sich auf. Dutzende. Gesichter. Namen. Geschichten. Alle mit d
 
 Du merkst mit einem Schaudern, dass der Komplex dir geholfen hat. Er hat den Weg für deinen Aufstieg geebnet, indem er deine Feinde verschlungen hat. Du bist nicht nur ein Opfer des Komplexes. Du bist sein bevorzugtes Produkt.
 
-„Elias...", flüstert Sarah. Ihre Augen sind voller Tränen. „Du hast das alles gewusst?"
+»Elias...«, flüstert Sarah. Ihre Augen sind voller Tränen. »Du hast das alles gewusst?«
 
 Du schließt den Ordner mit einem Knall. Aber die Gesichter... die Gesichter brennen sich in dein Gedächtnis. Dein Erfolg wurde nicht auf Knochen gebaut. Er wurde auf Massengräbern errichtet.
 
@@ -1300,13 +1300,13 @@ Du schließt den Ordner mit einem Knall. Aber die Gesichter... die Gesichter bre
 === rudel_ludwig ===
 ~ ego += 2
 ~ trust_group -= 2
-„Hör zu, Opa“, zischst du. „Wir haben ein echtes Problem. Ein Wahnsinniger jagt uns, und wir müssen hier raus. Entweder du hilfst uns mit einem Weg nach draußen, oder du gehst uns aus der Sonne.“
+»Hör zu, Opa«, zischst du. »Wir haben ein echtes Problem. Ein Wahnsinniger jagt uns, und wir müssen hier raus. Entweder du hilfst uns mit einem Weg nach draußen, oder du gehst uns aus der Sonne.«
 
-Ludwig blickt dich lange an. Seine milchigen Augen scheinen direkt in deine Seele zu blicken. „Immer noch das gleiche Gift. Arroganz ist der Treibstoff der Verdammten. Du erinnerst mich an den Direktor von 1994... er hat auch so geschrien, bevor ihn die Ventilatoren zerrissen haben.“
+Ludwig blickt dich lange an. Seine milchigen Augen scheinen direkt in deine Seele zu blicken. »Immer noch das gleiche Gift. Arroganz ist der Treibstoff der Verdammten. Du erinnerst mich an den Direktor von 1994... er hat auch so geschrien, bevor ihn die Ventilatoren zerrissen haben.«
 
-Marc tritt vor. „Lass den Mist, Elias. Der Alte weiß vielleicht was.“
+Marc tritt vor. »Lass den Mist, Elias. Der Alte weiß vielleicht was.«
 
-Ludwig nickt langsam. „Vielleicht. Vielleicht auch nicht. Aber Wissen hat seinen Preis. Besonders hier unten, wo die Wahrheit wertvoller ist als Gold.“
+Ludwig nickt langsam. »Vielleicht. Vielleicht auch nicht. Aber Wissen hat seinen Preis. Besonders hier unten, wo die Wahrheit wertvoller ist als Gold.«
 
 -> ludwig_angebot
 
@@ -1319,7 +1319,7 @@ Ein anderes. *STEFAN WEISS – 2005.*
 
 Es sind Protokolle. Minutiöse Aufzeichnungen über jedes Spiel, jede Entscheidung, jedes Ende. Du merkst, dass dieser Raum das Archiv des Schmerzes ist.
 
-„Du suchst nach Mustern, nicht wahr?“, fragt Ludwig. „Aber der Komplex hat kein Muster. Er hat nur Hunger.“
+»Du suchst nach Mustern, nicht wahr?«, fragt Ludwig. »Aber der Komplex hat kein Muster. Er hat nur Hunger.«
 
 Du findest eine Skizze an der Wand. Sie zeigt ein Netzwerk von Rohren. Eines davon ist mit einem goldenen Stift markiert: *DER KÖNIGSWEG*.
 
@@ -1329,39 +1329,39 @@ Du findest eine Skizze an der Wand. Sie zeigt ein Netzwerk von Rohren. Eines dav
 #MOOD:mystery
 Ludwig zieht eine kleine, verbeulte Dose hervor. Darin liegen drei Tabletten.
 
-„Der Schöpfer beobachtet euch durch die Sensoren in euren Kittel. Er misst euren Puls, eure Angst, eure Lügen. Diese Tabletten unterdrücken die Adrenalinausschüttung für eine Stunde. Ihr werdet für ihn unsichtbar sein. Ein Fehler im Algorithmus.“
+»Der Schöpfer beobachtet euch durch die Sensoren in euren Kittel. Er misst euren Puls, eure Angst, eure Lügen. Diese Tabletten unterdrücken die Adrenalinausschüttung für eine Stunde. Ihr werdet für ihn unsichtbar sein. Ein Fehler im Algorithmus.«
 
-„Aber“, fährt er fort, „ich habe nur zwei. Eine Entscheidung ist fällig. Wer soll unsichtbar werden? Und wer bleibt das Ziel?“
+»Aber«, fährt er fort, »ich habe nur zwei. Eine Entscheidung ist fällig. Wer soll unsichtbar werden? Und wer bleibt das Ziel?«
 
 Sarah sieht dich an. Marc sieht dich an. Die Luft im Raum scheint dicker zu werden.
 
-* [„Geben Sie die Tabletten Sarah und Marc. Ich werde ihn ablenken.“] -> ludwig_opfer
-* [„Ich nehme eine. Und Marc nimmt die andere. Sarah ist klein, sie kann sich besser verstecken.“] -> ludwig_ego
+* [»Geben Sie die Tabletten Sarah und Marc. Ich werde ihn ablenken.«] -> ludwig_opfer
+* [»Ich nehme eine. Und Marc nimmt die andere. Sarah ist klein, sie kann sich besser verstecken.«] -> ludwig_ego
 * [Ludwig fragen, was er im Austausch für die Tabletten will.] -> ludwig_preis
 
 === ludwig_opfer ===
 ~ trust_group += 5
 ~ ego -= 2
-Ludwig nickt anerkennend. „Ein Funken Ehre im Sumpf der Gier. Selten zu sehen.“
+Ludwig nickt anerkennend. »Ein Funken Ehre im Sumpf der Gier. Selten zu sehen.«
 
-Er gibt Sarah und Marc die Tabletten. Sie schlucken sie wortlos. Du spürst, wie sich das Klima im Raum verändert. Marc legt dir eine Hand auf die Schulter. „Elias... das war... danke.“
+Er gibt Sarah und Marc die Tabletten. Sie schlucken sie wortlos. Du spürst, wie sich das Klima im Raum verändert. Marc legt dir eine Hand auf die Schulter. »Elias... das war... danke.«
 
-„Geht schon“, sagst du. „Ich bin derjenige, den er wirklich will. Ich bin die Trophäe.“
+»Geht schon«, sagst du. »Ich bin derjenige, den er wirklich will. Ich bin die Trophäe.«
 
-Ludwig führt euch zu einer Falltür hinter einem Teppich. „Dieser Weg führt direkt unter das Kontrollzentrum. Aber sei vorsichtig, Elias. Wenn du für ihn sichtbar bleibst, wird er seine Jäger auf dich hetzen.“
+Ludwig führt euch zu einer Falltür hinter einem Teppich. »Dieser Weg führt direkt unter das Kontrollzentrum. Aber sei vorsichtig, Elias. Wenn du für ihn sichtbar bleibst, wird er seine Jäger auf dich hetzen.«
 
 -> nebenstory_flucht
 
 === ludwig_ego ===
 ~ trust_group -= 8
 ~ ego += 5
-Du schnappst dir eine Tablette und gibst die zweite Marc. Sarah starrt dich fassungslos an. „Elias? Was ist mit mir?“
+Du schnappst dir eine Tablette und gibst die zweite Marc. Sarah starrt dich fassungslos an. »Elias? Was ist mit mir?«
 
-„Du bist flink, Sarah. Du kannst dich im Schatten bewegen“, sagst du mit einer Kälte, die dich selbst erschreckt. „Marc und ich sind die größeren Ziele. Das ist nur logisch.“
+»Du bist flink, Sarah. Du kannst dich im Schatten bewegen«, sagst du mit einer Kälte, die dich selbst erschreckt. »Marc und ich sind die größeren Ziele. Das ist nur logisch.«
 
 Marc sieht dich angewidert an, schluckt die Tablette aber trotzdem. Der Überlebensinstinkt ist stärker als die Moral.
 
-Ludwig schüttelt den Kopf. „Logik ist oft nur die Maske der Feigheit. Geht nun. Der Komplex wartet nicht.“
+Ludwig schüttelt den Kopf. »Logik ist oft nur die Maske der Feigheit. Geht nun. Der Komplex wartet nicht.«
 
 Er öffnet einen Geheimgang. Sarah geht voraus, ohne dich eines Blickes zu würdigen.
 
@@ -1369,9 +1369,9 @@ Er öffnet einen Geheimgang. Sarah geht voraus, ohne dich eines Blickes zu würd
 
 === ludwig_preis ===
 #MOOD:noir
-Ludwig lächelt ein zahnloses Lächeln. „Ich brauche kein Geld. Ich brauche deine Stimme, Elias. Ich habe seit dreißig Jahren nicht mehr mit der Welt oben gesprochen.“
+Ludwig lächelt ein zahnloses Lächeln. »Ich brauche kein Geld. Ich brauche deine Stimme, Elias. Ich habe seit dreißig Jahren nicht mehr mit der Welt oben gesprochen.«
 
-Er holt ein altes Funkgerät hervor. Es ist mit Drähten und Schrott modifiziert. „Ich habe eine Frequenz gefunden, die manchmal durchkommt. Sprich in dieses Gerät. Sag Frankfurt, dass ich noch lebe. Sag meinem Sohn... dass sein Vater kein Dieb war.“
+Er holt ein altes Funkgerät hervor. Es ist mit Drähten und Schrott modifiziert. »Ich habe eine Frequenz gefunden, die manchmal durchkommt. Sprich in dieses Gerät. Sag Frankfurt, dass ich noch lebe. Sag meinem Sohn... dass sein Vater kein Dieb war.«
 
 Du nimmst das Mikrofon. Es riecht nach Staub und Verzweiflung.
 
@@ -1384,24 +1384,24 @@ Du nimmst das Mikrofon. Es riecht nach Staub und Verzweiflung.
 ~ evidence_found += 1
 Du sprichst in das Gerät. Deine Stimme ist fest, ohne das gewohnte Zittern der Arroganz. Du blickst Ludwig in die milchigen Augen.
 
-„Hier spricht Elias Kortig. Wenn mich jemand hört... Ludwig Weber lebt. Er ist unter dem Bankenviertel, irgendwo im Fundament dieser Stadt. Er ist kein Dieb. Er ist ein Held, ein Überlebender. Wenn sein Sohn das hört: Dein Vater hat nie aufgegeben. Er hat dreißig Jahre lang gekämpft, nur um diesen Namen reinzuwaschen.“
+»Hier spricht Elias Kortig. Wenn mich jemand hört... Ludwig Weber lebt. Er ist unter dem Bankenviertel, irgendwo im Fundament dieser Stadt. Er ist kein Dieb. Er ist ein Held, ein Überlebender. Wenn sein Sohn das hört: Dein Vater hat nie aufgegeben. Er hat dreißig Jahre lang gekämpft, nur um diesen Namen reinzuwaschen.«
 
 Sarah weint leise. Marc steht stramm, eine Geste des militärischen Respekts vor dem alten Mann.
 
-Statik knistert im Lautsprecher, ein weißes Rauschen, das den Raum erfüllt. Dann, für einen flüchtigen Moment, glaubst du, eine Stimme zu hören. Ein fernes, verrauschtes „Danke... Vater...“. Es ist wie ein Wunder in dieser dunklen Hölle.
+Statik knistert im Lautsprecher, ein weißes Rauschen, das den Raum erfüllt. Dann, für einen flüchtigen Moment, glaubst du, eine Stimme zu hören. Ein fernes, verrauschtes »Danke... Vater...«. Es ist wie ein Wunder in dieser dunklen Hölle.
 
 Ludwig weint lautlos, die Tränen ziehen helle Spuren durch den Schmutz in seinem Gesicht. Er zittert vor Erleichterung.
 
-„Geht“, flüstert er und drückt dir eine zusätzliche Schachtel Tabletten in die Hand. „Ihr habt mir mehr gegeben als das Leben. Ihr habt mir meine Würde zurückgegeben. Es gibt einen schnelleren Weg zum Kontrollzentrum... hinter dem alten Tresor der Reichsbank.“
+»Geht«, flüstert er und drückt dir eine zusätzliche Schachtel Tabletten in die Hand. »Ihr habt mir mehr gegeben als das Leben. Ihr habt mir meine Würde zurückgegeben. Es gibt einen schnelleren Weg zum Kontrollzentrum... hinter dem alten Tresor der Reichsbank.«
 
 -> nebenstory_flucht
 
 === ludwig_nachricht_fake ===
 ~ ego += 2
 ~ trust_group -= 1
-Du bewegst die Lippen, aber du sagst nichts. Du wartest ein paar Sekunden, dann gibst du ihm das Gerät zurück. „Es ist durchgekommen, Ludwig. Er weiß es jetzt.“
+Du bewegst die Lippen, aber du sagst nichts. Du wartest ein paar Sekunden, dann gibst du ihm das Gerät zurück. »Es ist durchgekommen, Ludwig. Er weiß es jetzt.«
 
-Ludwig strahlt. „Danke... danke, Elias. Du bist doch ein guter Mensch.“
+Ludwig strahlt. »Danke... danke, Elias. Du bist doch ein guter Mensch.«
 
 Er gibt euch die zwei Tabletten. Du spürst einen Stich der Schuld, aber du unterdrückst ihn. In dieser Welt bekommt man nichts geschenkt.
 
@@ -1411,7 +1411,7 @@ Er gibt euch die zwei Tabletten. Du spürst einen Stich der Schuld, aber du unte
 #MOOD:action,danger
 Ihr verlasst Ludwigs Versteck durch den Geheimgang. Er führt steil nach oben, durch enge Schächte, in denen ihr kriechen müsst. Der Schacht ist so eng, dass der kalte Stahl der Rohre eure Brust zusammendrückt. Über euch hört ihr das Rauschen von Abwasser – Frankfurt lebt, atmet und produziert Müll, direkt über euren Köpfen.
 
-„Elias, ich bleibe stecken!“, keucht Sarah. Sie steckt in einer Biegung fest.
+»Elias, ich bleibe stecken!«, keucht Sarah. Sie steckt in einer Biegung fest.
 
 * [Ihr die Hand reichen und sie mit Gewalt durchziehen.] -> sarah_retten_kraft
 * [Marc bitten, ihr von hinten zu helfen.] -> sarah_retten_marc
@@ -1419,9 +1419,9 @@ Ihr verlasst Ludwigs Versteck durch den Geheimgang. Er führt steil nach oben, d
 
 === sarah_retten_kraft ===
 ~ trust_group += 2
-Du packst ihre Hände. Ihre Haut ist eiskalt und schweißgebadet. „Zieh, Sarah!“, schreist du. Du stemmst deine Füße gegen die Wand und reißt mit aller Kraft. Mit einem schmerzhaften Ruck löst sie sich. Ihr beide fallt übereinander in eine etwas größere Kammer.
+Du packst ihre Hände. Ihre Haut ist eiskalt und schweißgebadet. »Zieh, Sarah!«, schreist du. Du stemmst deine Füße gegen die Wand und reißt mit aller Kraft. Mit einem schmerzhaften Ruck löst sie sich. Ihr beide fallt übereinander in eine etwas größere Kammer.
 
-„Danke“, flüstert sie und wischt sich den Staub aus den Augen. „Ich dachte schon, das wäre mein Grab.“
+»Danke«, flüstert sie und wischt sich den Staub aus den Augen. »Ich dachte schon, das wäre mein Grab.«
 
 -> drohnen_begegnung
 
@@ -1429,7 +1429,7 @@ Du packst ihre Hände. Ihre Haut ist eiskalt und schweißgebadet. „Zieh, Sarah
 ~ trust_group += 1
 Marc schiebt sie mit seinen kräftigen Armen nach vorn. Man hört das Quietschen von Stoff auf Metall. Sarah keucht auf, aber schließlich rutscht sie durch den Engpass.
 
-„Alles okay?“, fragt Marc besorgt.
+»Alles okay?«, fragt Marc besorgt.
 
 Sarah nickt nur schwach. Du spürst, wie die Dynamik in der Gruppe sich verschiebt. Marc wird immer mehr zum Beschützer, während du derjenige bist, der nur nach vorn blickt.
 
@@ -1438,7 +1438,7 @@ Sarah nickt nur schwach. Du spürst, wie die Dynamik in der Gruppe sich verschie
 === sarah_alleine ===
 ~ ego += 3
 ~ trust_group -= 4
-„Reiß dich zusammen, Sarah!“, rufst du zurück, ohne stehenzubleiben. „Wir haben keine Zeit für Panikattacken. Beweg dich!“
+»Reiß dich zusammen, Sarah!«, rufst du zurück, ohne stehenzubleiben. »Wir haben keine Zeit für Panikattacken. Beweg dich!«
 
 Ein verzweifeltes Keuchen, dann ein heftiges Scharren. Schließlich taucht Sarah hinter dir auf. Ihr Blick ist hasserfüllt. Sie sagt kein Wort mehr zu dir. Das Band zwischen euch ist endgültig zerrissen.
 
@@ -1446,11 +1446,11 @@ Ein verzweifeltes Keuchen, dann ein heftiges Scharren. Schließlich taucht Sarah
 
 === drohnen_begegnung ===
 #MOOD:paranoia
-Ludwigs "direkter Weg" entpuppt sich als mühsame Odyssee durch vergessene Tunnel. Stunden vergehen, oder sind es nur Minuten? In der Dunkelheit verliert die Zeit ihre Bedeutung. Ihr krabbelt, kriecht, zwängt euch durch Engpässe, die nie für Menschen gedacht waren.
+Ludwigs »direkter Weg« entpuppt sich als mühsame Odyssee durch vergessene Tunnel. Stunden vergehen, oder sind es nur Minuten? In der Dunkelheit verliert die Zeit ihre Bedeutung. Ihr krabbelt, kriecht, zwängt euch durch Engpässe, die nie für Menschen gedacht waren.
 
 Plötzlich hört ihr ein lautes Heulen. Es ist kein menschlicher Schrei, sondern ein mechanisches Jaulen, das in den Metallrohren widerhallt wie der Ruf eines digitalen Raubtiers.
 
-„Die Drohnen!“, ruft Marc. „Sie haben uns gewittert!“
+»Die Drohnen!«, ruft Marc. »Sie haben uns gewittert!«
 
 #IMG:underground_drones
 // Wirkung: Kleine, flinke Drohnen mit Suchscheinwerfern rasen durch die engen Tunnel. Ihre Bewegungen sind ruckartig und insektengleich. Sie verströmen ein blaues, kaltes Licht.
@@ -1465,7 +1465,7 @@ Die Drohnen tasten die Wände ab. Ihre Sensoren scannen nach Wärme und Bewegung
 
 Ihr erreicht einen großen Abgrund. Ein riesiger Wartungsschacht, der hunderte Meter in die Tiefe führt. Eine schmale Gitterbrücke führt auf die andere Seite. Der Wind pfeift hier mit einer unglaublichen Geschwindigkeit nach oben.
 
-„Wir müssen rüber!“, schreit Marc über den Lärm des Windes hinweg.
+»Wir müssen rüber!«, schreit Marc über den Lärm des Windes hinweg.
 
 Doch die Brücke ist beschädigt. Ein Teil der Gitter ist weggebrochen.
 
@@ -1485,18 +1485,18 @@ Sarah und Marc folgen dir. Sarah zögert, aber Marc packt sie und wirft sie fast
 ~ trust_group += 1
 Ihr klettert an den dicken, heißen Rohren entlang. Der Stahl brennt in euren Händen, aber es ist sicherer als die Brücke. Sarah rutscht einmal ab, aber sie kann sich halten. Zentimeter für Zentimeter bewegt ihr euch vorwärts, während unter euch der Abgrund gähnt.
 
-„Nicht nach unten sehen", sagst du ruhig. Dein alter Charme hilft Sarah, sich zu konzentrieren.
+»Nicht nach unten sehen«, sagst du ruhig. Dein alter Charme hilft Sarah, sich zu konzentrieren.
 
 -> kontrollzentrum_eintritt
 
 === bruecke_marc ===
 ~ trust_group -= 2
 ~ ego += 2
-Marc legt sich über die Lücke und krallt sich an beiden Seiten fest. Sein Rücken bildet eine instabile Brücke. „Schnell! Ich kann das nicht lange halten!“, brüllt er.
+Marc legt sich über die Lücke und krallt sich an beiden Seiten fest. Sein Rücken bildet eine instabile Brücke. »Schnell! Ich kann das nicht lange halten!«, brüllt er.
 
 Du läufst über ihn hinweg, ohne zu zögern. Dann Sarah. Sie tritt ihm versehentlich in den Rücken, Marc stöhnt vor Schmerz auf. Als ihr beide drüben seid, zieht er sich mit letzter Kraft hoch. Sein Gesicht ist aschfahl.
 
-„Das vergesse ich dir nicht, Kortig", keucht er.
+»Das vergesse ich dir nicht, Kortig«, keucht er.
 
 -> kontrollzentrum_eintritt
 
@@ -1521,7 +1521,7 @@ Statt Beton und Dreck findet ihr euch in einem klinisch reinen, weiß beleuchtet
 #IMG:identity_lab
 // Wirkung: Ein hochmodernes Labor unter der Erde. In den Glastanks schweben schemenhafte Gestalten. Das Licht ist kalt und steril. Es soll die schockierende Erkenntnis vermitteln, dass Menschen hier wie Datenpakete behandelt werden.
 
-„Elias... was ist das hier?", flüstert Sarah. Sie tritt an einen der Tanks. „Sind das... Menschen?"
+»Elias... was ist das hier?«, flüstert Sarah. Sie tritt an einen der Tanks. »Sind das... Menschen?«
 
 Du trittst näher. In dem Tank schwebt ein Körper. Er ist verkabelt, dutzende Elektroden kleben an seinem Kopf. Du erstarrst. Das Gesicht... es ist dein Gesicht. Aber es ist jünger. Viel jünger.
 
@@ -1536,13 +1536,13 @@ Der nächste Tank:
 
 Ein weiterer:
 *ITERATION 3.0 – ELIAS KORTIG (EMOTIONAL SUPPRESSED)*
-*Geboren 1991. Gescheitert 2018. Ursache: Totale Emotionslosigkeit führte zu Paranoia. Starb durch "Unfall" nach Versuch, den Komplex zu verraten.*
+*Geboren 1991. Gescheitert 2018. Ursache: Totale Emotionslosigkeit führte zu Paranoia. Starb durch »Unfall« nach Versuch, den Komplex zu verraten.*
 
 Und dann... du selbst:
 *ITERATION 4.0 – ELIAS KORTIG (AKTIV)*
 *Geboren 1993. Status: LAUFEND. Test-Phase: FINALE. Empathie-Werte: GRENZWERTIG. Warnung: Mögliche Fehlfunktion erkannt.*
 
-Sarah tritt von Tank zu Tank, ihre Hand zittert. „Elias... das sind alles... du?"
+Sarah tritt von Tank zu Tank, ihre Hand zittert. »Elias... das sind alles... du?«
 
 In einem weiteren Bereich stehen kleinere Tanks. Kinder. Jugendliche. Alle mit dem gleichen Gesicht.
 
@@ -1555,9 +1555,9 @@ In einem weiteren Bereich stehen kleinere Tanks. Kinder. Jugendliche. Alle mit d
 *TEST-SUBJEKT K-14 – ALTER 14*
 *Gescheitert. Freundschaft mit Julian Hartmann nicht durch Konditionierung zu brechen. Manuell terminiert.*
 
-„Oh Gott", keucht Sarah. „Sie haben... sie haben dich immer wieder erschaffen. Immer wieder getötet und neu gemacht, bis du... bis du perfekt warst."
+»Oh Gott«, keucht Sarah. »Sie haben... sie haben dich immer wieder erschaffen. Immer wieder getötet und neu gemacht, bis du... bis du perfekt warst.«
 
-Marc starrt auf die Tanks. „Das sind nicht nur Klone. Das sind Backups. Ersatz-Menschen. Falls du versagst, starten sie einfach die nächste Version."
+Marc starrt auf die Tanks. »Das sind nicht nur Klone. Das sind Backups. Ersatz-Menschen. Falls du versagst, starten sie einfach die nächste Version.«
 
 Der Anblick des Jungen im Tank reißt eine Wunde in deinem Gedächtnis auf, die du längst mit Geld und Erfolg zugeschüttet hattest.
 
@@ -1571,38 +1571,38 @@ Du bist 14 Jahre alt. Schloß Salem. Ein Ort für die Söhne und Töchter derer,
 
 Julian Hartmann. Der Sohn eines Münchner Verlegers. Seine Mutter war Französin, er sprach drei Sprachen fließend und malte in seiner Freizeit. Er war der Einzige im Internat, der dich nicht nach deinem Nachnamen beurteilte. Der Einzige, der lachte, wenn du einen schlechten Witz machtest.
 
-An eurem ersten gemeinsamen Abend im Internat habt ihr auf dem Dach gesessen, die Beine über dem Abgrund baumelnd. Julian zeigte dir Orion am Nachthimmel. „Siehst du die drei Sterne da? Das ist sein Gürtel. Die alten Griechen glaubten, er sei ein Jäger, der niemals aufgab." Julian lächelte. „Vielleicht sind wir auch Jäger. Jeder auf seine Weise."
+An eurem ersten gemeinsamen Abend im Internat habt ihr auf dem Dach gesessen, die Beine über dem Abgrund baumelnd. Julian zeigte dir Orion am Nachthimmel. »Siehst du die drei Sterne da? Das ist sein Gürtel. Die alten Griechen glaubten, er sei ein Jäger, der niemals aufgab.« Julian lächelte. »Vielleicht sind wir auch Jäger. Jeder auf seine Weise.«
 
 Er malte ein Bild von dir. Es hing über seinem Bett. Du sahst darauf anders aus – weicher, menschlicher. Er hatte Licht in deine Augen gemalt, das du selbst nie gesehen hattest.
 
-Julian hat Heimweh. Er weint nachts leise in sein Kissen. Er vermisst seine kleine Schwester Marie, die nur sieben Jahre alt ist und ihn "Juju" nennt. Er zeigt dir ein Foto: Marie mit Zahnlücke, die einen selbstgemalten Brief hochhält. *Komm bald nach Hause, Juju. Ich vermisse dich.*
+Julian hat Heimweh. Er weint nachts leise in sein Kissen. Er vermisst seine kleine Schwester Marie, die nur sieben Jahre alt ist und ihn »Juju« nennt. Er zeigt dir ein Foto: Marie mit Zahnlücke, die einen selbstgemalten Brief hochhält. *Komm bald nach Hause, Juju. Ich vermisse dich.*
 
-„Sie versteht nicht, warum ich weg bin", flüstert Julian eines Nachts. „Sie denkt, ich hab sie nicht mehr lieb."
+»Sie versteht nicht, warum ich weg bin«, flüstert Julian eines Nachts. »Sie denkt, ich hab sie nicht mehr lieb.«
 
 Du sagst nichts. Du drehst dich zur Wand.
 
-Julian erzählt dir von seinem Traum: Er will Kinderbücher illustrieren. Geschichten über Mut und Freundschaft. „Für Marie", sagt er. „Und für alle Kinder, die sich allein fühlen."
+Julian erzählt dir von seinem Traum: Er will Kinderbücher illustrieren. Geschichten über Mut und Freundschaft. »Für Marie«, sagt er. »Und für alle Kinder, die sich allein fühlen.«
 
-Er ist eine Schwachstelle in deinem sozialen Gefüge. Die anderen Schüler – die Söhne der Industriellen, der Banker, der Politiker – sie lachen über Julians Bilder. Sie nennen ihn "die Heulsuse", "Mamas Liebling". Deine Assoziation mit ihm schadet deinem Ruf.
+Er ist eine Schwachstelle in deinem sozialen Gefüge. Die anderen Schüler – die Söhne der Industriellen, der Banker, der Politiker – sie lachen über Julians Bilder. Sie nennen ihn »die Heulsuse«, »Mamas Liebling«. Deine Assoziation mit ihm schadet deinem Ruf.
 
-Dein Vater hat dir bei seinem letzten Besuch gesagt: „Umgib dich nur mit Siegern, Elias. Ballast zieht dich in die Tiefe."
+Dein Vater hat dir bei seinem letzten Besuch gesagt: »Umgib dich nur mit Siegern, Elias. Ballast zieht dich in die Tiefe.«
 
 Du triffst eine Entscheidung.
 
-Du hast Julian nicht getröstet. Du hast sein Tagebuch gestohlen – das hellblaue, das ihm seine Mutter zum 14. Geburtstag geschenkt hat, mit dem eingestickten "J.H." auf dem Ledereinband. Du hast es dem Rektor zugespielt – mit gefälschten Einträgen über Drogenkonsum im Internat, über gestohlenes Geld, über nächtliche Ausflüge.
+Du hast Julian nicht getröstet. Du hast sein Tagebuch gestohlen – das hellblaue, das ihm seine Mutter zum 14. Geburtstag geschenkt hat, mit dem eingestickten »J.H.« auf dem Ledereinband. Du hast es dem Rektor zugespielt – mit gefälschten Einträgen über Drogenkonsum im Internat, über gestohlenes Geld, über nächtliche Ausflüge.
 
-Julian wurde noch am gleichen Abend von seinen Eltern abgeholt. Er stand im Flur, eine Tasche in der Hand, Tränen liefen über sein Gesicht. Er suchte deinen Blick. „Elias... du glaubst mir doch, oder? Ich hab das nicht gemacht. Ich würde niemals... wir sind doch Freunde."
+Julian wurde noch am gleichen Abend von seinen Eltern abgeholt. Er stand im Flur, eine Tasche in der Hand, Tränen liefen über sein Gesicht. Er suchte deinen Blick. »Elias... du glaubst mir doch, oder? Ich hab das nicht gemacht. Ich würde niemals... wir sind doch Freunde.«
 
 Du hast weggesehen. Du hast den anderen Schülern zugelächelt, die in ihren Türrahmen standen und tuschelten.
 
 Das Bild, das er von dir gemalt hatte, hat er mitgenommen. Aber er hat es zerrissen – du hast die Fetzen später im Mülleimer gefunden. Das Licht in deinen Augen war nur noch weiße Farbe auf zerknülltem Papier.
 
 #IMG:torn_portrait
-// Wirkung: Ein zerrissenes Gemälde in einem Mülleimer. Man erkennt noch Teile eines jugendlichen Gesichts – Elias –, aber das Licht in den Augen ist durchgerissen. Daneben liegt ein hellblaues Tagebuch mit "J.H." auf dem Einband. Die Zerstörung von Freundschaft und Vertrauen in einem einzigen Bild.
+// Wirkung: Ein zerrissenes Gemälde in einem Mülleimer. Man erkennt noch Teile eines jugendlichen Gesichts – Elias –, aber das Licht in den Augen ist durchgerissen. Daneben liegt ein hellblaues Tagebuch mit »J.H.« auf dem Einband. Die Zerstörung von Freundschaft und Vertrauen in einem einzigen Bild.
 
 Du hast sein Bett und sein Regal übernommen. Du hattest jetzt ein Einzelzimmer. Du hattest gewonnen.
 
-Drei Monate später kam ein Brief. Nicht für dich – für den Rektor. Julian hatte sich das Leben genommen. Er hatte sich in einem Wald bei München erhängt. In seiner Jackentasche fand man einen Brief an Marie: „Es tut mir leid, dass ich dich allein lasse. Die Welt ist manchmal zu kalt für Menschen wie mich."
+Drei Monate später kam ein Brief. Nicht für dich – für den Rektor. Julian hatte sich das Leben genommen. Er hatte sich in einem Wald bei München erhängt. In seiner Jackentasche fand man einen Brief an Marie: »Es tut mir leid, dass ich dich allein lasse. Die Welt ist manchmal zu kalt für Menschen wie mich.«
 
 Du hast nie jemandem erzählt, dass ihr Freunde wart. Auf der Beerdigung warst du nicht. An dem Tag hattest du ein wichtiges Tennismatch.
 
@@ -1620,21 +1620,21 @@ Plötzlich erwacht ein Terminal in der Mitte des Raumes zum Leben. Ein Hologramm
 #IMG:digital_twin
 // Wirkung: Ein Hologramm von Elias – perfekt, makellos, im Anzug – steht dem echten, zerrissenen, verschmutzten Elias gegenüber. Zwei Versionen derselben Person: das Ideal und die Realität. Das digitale Ich lächelt kalt. Das echte Ich erstarrt vor Entsetzen. Dein schlimmster Albtraum bist du selbst.
 
-„Guten Tag, Elias 4.0", sagt die Projektion mit deiner eigenen, perfekten Stimme. „Du hast das Archiv der Iterationen gefunden."
+»Guten Tag, Elias 4.0«, sagt die Projektion mit deiner eigenen, perfekten Stimme. »Du hast das Archiv der Iterationen gefunden.«
 
-* [„Was meinst du mit 4.0? Wer bist du?“] -> labor_identitaet_fragen
+* [»Was meinst du mit 4.0? Wer bist du?«] -> labor_identitaet_fragen
 * [Versuchen, das Terminal zu zerstören.] -> labor_terminal_zerstoeren
 * [Sarah und Marc befehlen, nach einem Ausgang zu suchen.] -> labor_ausgang_suchen
 
 === labor_identitaet_fragen ===
 ~ mental_stability -= 2
-Die Projektion lächelt. Es ist das gleiche gewinnende Lächeln, mit dem du Millionen verdient hast. „Du glaubst, du bist ein Selfmade-Millionär? Dass dein Erfolg dein Verdienst ist? Der Komplex hat dich erschaffen, Elias. Seit du sieben Jahre alt warst, haben wir deine Entscheidungen kuratiert. Wir haben deine Feinde entfernt, deine Deals manipuliert, deine Persönlichkeit geschliffen.“
+Die Projektion lächelt. Es ist das gleiche gewinnende Lächeln, mit dem du Millionen verdient hast. »Du glaubst, du bist ein Selfmade-Millionär? Dass dein Erfolg dein Verdienst ist? Der Komplex hat dich erschaffen, Elias. Seit du sieben Jahre alt warst, haben wir deine Entscheidungen kuratiert. Wir haben deine Feinde entfernt, deine Deals manipuliert, deine Persönlichkeit geschliffen.«
 
-„Du bist ein soziales Experiment. Wir wollten sehen, wie weit ein Mensch kommt, dem man jedes Hindernis aus dem Weg räumt und der gleichzeitig von jeder Moral befreit wird.“
+»Du bist ein soziales Experiment. Wir wollten sehen, wie weit ein Mensch kommt, dem man jedes Hindernis aus dem Weg räumt und der gleichzeitig von jeder Moral befreit wird.«
 
-Marc tritt vor, sein Gesicht ist vor Zorn gerötet. „Und was ist mit uns? Sind wir auch Experimente?“
+Marc tritt vor, sein Gesicht ist vor Zorn gerötet. »Und was ist mit uns? Sind wir auch Experimente?«
 
-„Ihr seid Variablen“, antwortet die Elias-Projektion kühl. „Katalysatoren, um Elias 4.0 an seine Grenzen zu bringen. Sarah, deine Ambition wurde von uns gefüttert. Marc, dein Trauma im Krieg wurde von uns inszeniert, um dich als Bodyguard in Elias' Nähe zu bringen.“
+»Ihr seid Variablen«, antwortet die Elias-Projektion kühl. »Katalysatoren, um Elias 4.0 an seine Grenzen zu bringen. Sarah, deine Ambition wurde von uns gefüttert. Marc, dein Trauma im Krieg wurde von uns inszeniert, um dich als Bodyguard in Elias' Nähe zu bringen.«
 
 -> labor_schock
 
@@ -1643,9 +1643,9 @@ Marc tritt vor, sein Gesicht ist vor Zorn gerötet. „Und was ist mit uns? Sind
 ~ mental_stability -= 1
 Du stürzt dich auf das Terminal, packst einen der gläsernen Behälter und rammst ihn gegen den Bildschirm. Funken sprühen, Glas zersplittert. Sarah schreit auf.
 
-Die Projektion flackert, bleibt aber bestehen. „Gewalt ist nur eine weitere Iteration der Angst, Elias. Du kannst deine Vergangenheit nicht löschen, indem du ein Display zertrümmerst. Deine gesamte Identität ist auf unseren Servern gespeichert. Du bist Code in einem Fleischkostüm.“
+Die Projektion flackert, bleibt aber bestehen. »Gewalt ist nur eine weitere Iteration der Angst, Elias. Du kannst deine Vergangenheit nicht löschen, indem du ein Display zertrümmerst. Deine gesamte Identität ist auf unseren Servern gespeichert. Du bist Code in einem Fleischkostüm.«
 
-Marc hält dich zurück. „Hör auf! Er will nur, dass du durchdrehst.“
+Marc hält dich zurück. »Hör auf! Er will nur, dass du durchdrehst.«
 
 -> labor_schock
 
@@ -1655,7 +1655,7 @@ Während das Hologramm spricht, suchst du fieberhaft nach einem Fluchtweg. Du fi
 
 Du entdeckst eine Datei mit dem Namen *PROJEKT FRANKFURT – ENDBERICHT*.
 
-„Ihr sucht einen Ausgang?“, fragt das Hologramm. „Es gibt keinen Ausgang aus deiner eigenen Natur, Elias. Aber es gibt eine Wahl. Eine echte Wahl, die wir nicht vorhersehen können.“
+»Ihr sucht einen Ausgang?«, fragt das Hologramm. »Es gibt keinen Ausgang aus deiner eigenen Natur, Elias. Aber es gibt eine Wahl. Eine echte Wahl, die wir nicht vorhersehen können.«
 
 -> labor_schock
 
@@ -1663,15 +1663,15 @@ Du entdeckst eine Datei mit dem Namen *PROJEKT FRANKFURT – ENDBERICHT*.
 #MOOD:paranoia
 Das Hologramm zeigt nun eine Liste von Namen. Es sind die Namen aller Menschen, die du jemals geliebt oder verletzt hast. Hinter jedem Namen steht ein Wert. Ein Marktwert für den Komplex.
 
-„Der Algorithmus verlangt nun eine Korrektur“, sagt dein digitales Ebenbild. „Elias 4.0 hat sich als zu instabil erwiesen. Die Empathie für Sarah und Marc ist ein Fehler in der Programmierung.“
+»Der Algorithmus verlangt nun eine Korrektur«, sagt dein digitales Ebenbild. »Elias 4.0 hat sich als zu instabil erwiesen. Die Empathie für Sarah und Marc ist ein Fehler in der Programmierung.«
 
 Ein Tresor in der Wand öffnet sich. Darin liegt ein Datenstick und eine Pistole.
 
-„Der Stick enthält den Löschcode für den Komplex. Wenn du ihn in das Hauptterminal im Kontrollzentrum steckst, endet das Spiel. Aber der Stick ist mit Sarahs biometrischen Daten gekoppelt. Um ihn zu aktivieren, muss sie sterben. Ihr Blut ist der Schlüssel.“
+»Der Stick enthält den Löschcode für den Komplex. Wenn du ihn in das Hauptterminal im Kontrollzentrum steckst, endet das Spiel. Aber der Stick ist mit Sarahs biometrischen Daten gekoppelt. Um ihn zu aktivieren, muss sie sterben. Ihr Blut ist der Schlüssel.«
 
-„Oder du nimmst die Pistole und tötest dich selbst. Das würde die Daten auf dem Stick ebenfalls freischalten, für Sarah und Marc.“
+»Oder du nimmst die Pistole und tötest dich selbst. Das würde die Daten auf dem Stick ebenfalls freischalten, für Sarah und Marc.«
 
-Sarah weicht zurück, sie stolpert gegen einen der Tanks. „Elias... nein... das kann nicht wahr sein.“
+Sarah weicht zurück, sie stolpert gegen einen der Tanks. »Elias... nein... das kann nicht wahr sein.«
 
 * [Sarah den Stick geben und sie anlügen, dass alles gut wird.] -> labor_luege
 * [Den Stick nehmen und Sarah die Wahrheit sagen.] -> labor_wahrheit
@@ -1681,9 +1681,9 @@ Sarah weicht zurück, sie stolpert gegen einen der Tanks. „Elias... nein... da
 ~ trust_group -= 10
 ~ ego += 5
 ~ mental_stability -= 3
-Du nimmst den Stick und reichst ihn Sarah mit deinem besten, beruhigendsten Lächeln. „Hier, Sarah. Nimm das. Ludwig hat mir erzählt, dass das der Schlüssel nach draußen ist. Du musst ihn nur am Terminal einstecken.“
+Du nimmst den Stick und reichst ihn Sarah mit deinem besten, beruhigendsten Lächeln. »Hier, Sarah. Nimm das. Ludwig hat mir erzählt, dass das der Schlüssel nach draußen ist. Du musst ihn nur am Terminal einstecken.«
 
-Sarah blickt dich mit Tränen in den Augen an. Sie vertraut dir immer noch. „Danke, Elias. Ich wusste, du lässt uns nicht im Stich.“
+Sarah blickt dich mit Tränen in den Augen an. Sie vertraut dir immer noch. »Danke, Elias. Ich wusste, du lässt uns nicht im Stich.«
 
 Du spürst, wie sich dein Inneres zusammenzieht. Du weißt, dass sie sterben wird, sobald sie den Stick einsteckt. Aber es ist der einzige Weg für dich und Marc.
 
@@ -1694,15 +1694,15 @@ Marc beobachtet dich argwöhnisch. Er hat das Hologramm gehört, aber er ist sic
 === labor_wahrheit ===
 ~ trust_group += 5
 ~ mental_stability -= 5
-„Sarah, hör mir zu“, sagst du, und deine Stimme bricht. „Das Hologramm... es sagt die Wahrheit. Der Stick braucht deine biometrischen Daten. Er wird dich töten, wenn du ihn benutzt.“
+»Sarah, hör mir zu«, sagst du, und deine Stimme bricht. »Das Hologramm... es sagt die Wahrheit. Der Stick braucht deine biometrischen Daten. Er wird dich töten, wenn du ihn benutzt.«
 
-Sarah starrt den Stick an, als wäre er eine Giftschlange. „Was? Warum... warum tun die das?“
+Sarah starrt den Stick an, als wäre er eine Giftschlange. »Was? Warum... warum tun die das?«
 
-„Weil sie Monster sind“, knurrt Marc. Er tritt zwischen dich und Sarah. „Es muss einen anderen Weg geben. Elias, du bist der Kopf. Denk nach!“
+»Weil sie Monster sind«, knurrt Marc. Er tritt zwischen dich und Sarah. »Es muss einen anderen Weg geben. Elias, du bist der Kopf. Denk nach!«
 
-„Es gibt keinen anderen Weg“, sagt das Hologramm. „Die Effizienz verlangt ein Opfer.“
+»Es gibt keinen anderen Weg«, sagt das Hologramm. »Die Effizienz verlangt ein Opfer.«
 
-Sarah nimmt den Stick. Ihr Gesicht ist jetzt ganz ruhig. „Wenn es der einzige Weg ist, Marc... wenn ihr beide dadurch frei kommt...“
+Sarah nimmt den Stick. Ihr Gesicht ist jetzt ganz ruhig. »Wenn es der einzige Weg ist, Marc... wenn ihr beide dadurch frei kommt...«
 
 -> labor_ende
 
@@ -1711,13 +1711,13 @@ Sarah nimmt den Stick. Ihr Gesicht ist jetzt ganz ruhig. „Wenn es der einzige 
 ~ mental_stability -= 2
 Du feuerst die Waffe auf den Projektor ab. Der Schuss ist ohrenbetäubend in dem sterilen Raum. Die Linse zerspringt, das Hologramm verschwindet in einem Hagel aus Pixeln.
 
-„Elias, was tust du?“, schreit Sarah.
+»Elias, was tust du?«, schreit Sarah.
 
-„Ich spiele ihr Spiel nicht mit!“, brüllst du. Du packst den Stick und die Waffe. „Wir finden einen Weg ohne ihre Bedingungen.“
+»Ich spiele ihr Spiel nicht mit!«, brüllst du. Du packst den Stick und die Waffe. »Wir finden einen Weg ohne ihre Bedingungen.«
 
 Doch kaum ist das Hologramm weg, beginnt ein Alarm zu schrillen. Rotes Licht flutet das Labor. Die Flüssigkeit in den Tanks beginnt zu kochen.
 
-„Die Reinigungsphase beginnt“, dröhnt die mechanische Stimme des Komplexes aus den Deckenlautsprechern. „Unvorhersehbares Verhalten wird gelöscht.“
+»Die Reinigungsphase beginnt«, dröhnt die mechanische Stimme des Komplexes aus den Deckenlautsprechern. »Unvorhersehbares Verhalten wird gelöscht.«
 
 -> labor_ende
 
@@ -1725,7 +1725,7 @@ Doch kaum ist das Hologramm weg, beginnt ein Alarm zu schrillen. Rotes Licht flu
 #MOOD:action,danger
 Der Boden beginnt zu beben. Die Glastanks explodieren einer nach dem anderen. Die Flüssigkeit ergießt sich über den Boden, sie ist rutschig und brennt auf der Haut.
 
-„Lauft!“, schreit Marc.
+»Lauft!«, schreit Marc.
 
 Ihr rennt durch eine Notausgangstür, die sich gerade noch rechtzeitig öffnet. Ihr stolpert einen dunklen Gang entlang, während hinter euch das Labor in einer Serie von Explosionen vergeht.
 
@@ -1745,18 +1745,18 @@ Dort, auf einem Terminal in der Mitte, liegt dein Handy. Es vibriert.
 
 Du drückst gegen den Rahmen des Porträts. Mit einem leisen Zischen gleitet eine Wandpaneele zur Seite. Dahinter liegt kein Beton, sondern eine Tür aus schwerem, dunklem Eichenholz – poliert und makellos, als käme sie direkt aus einer Villa im Westend.
 
-Sarah und Marc zögern. „Elias, wir sollten beim Hauptweg bleiben“, warnt Marc.
+Sarah und Marc zögern. »Elias, wir sollten beim Hauptweg bleiben«, warnt Marc.
 
-„Das ist das Zimmer meines Vaters“, flüsterst du. Du erkennst den Griff, die Maserung. Du trittst ein.
+»Das ist das Zimmer meines Vaters«, flüsterst du. Du erkennst den Griff, die Maserung. Du trittst ein.
 
 #IMG:fathers_study
 // Wirkung: Eine perfekte Rekonstruktion eines herrschaftlichen Arbeitszimmers. Dunkles Holz, grüne Lederstühle, der Geruch nach altem Geld und Zigarrenrauch. Es wirkt wie eine Oase des Reichtums mitten in der Hölle des Komplexes.
 
 Auf dem massiven Schreibtisch steht ein silberner Rahmen. Er zeigt deinen Vater, wie er triumphierend vor dem Rohbau des Main Towers steht. Er sieht genauso aus, wie du ihn in Erinnerung hast: groß, unnahbar, mit Augen, die keine Gnade kannten.
 
-„Willkommen im Allerheiligsten, Elias“, sagt die Stimme aus einem alten Grammophon in der Ecke. Es ist nicht mehr die mechanische Maske. Es ist die Stimme deines Vaters. Eine Aufnahme? Oder mehr?
+»Willkommen im Allerheiligsten, Elias«, sagt die Stimme aus einem alten Grammophon in der Ecke. Es ist nicht mehr die mechanische Maske. Es ist die Stimme deines Vaters. Eine Aufnahme? Oder mehr?
 
-„Du hast dich gefragt, warum der Komplex dich so sehr liebt. Warum er dich geformt hat. Die Antwort liegt hier.“
+»Du hast dich gefragt, warum der Komplex dich so sehr liebt. Warum er dich geformt hat. Die Antwort liegt hier.«
 
 Du findest ein Tagebuch auf dem Tisch. Es ist aufgeschlagen auf einer Seite mit dem Datum deines 12. Geburtstags.
 
@@ -1767,33 +1767,33 @@ Du findest ein Tagebuch auf dem Tisch. Es ist aufgeschlagen auf einer Seite mit 
 === flashback_vater_geburtstag ===
 #MOOD:still,noir
 Du beugst dich über das Tagebuch und liest – und die Entscheidung, es wirklich zu lesen, zieht dich tiefer als jeder Schacht.
-Du schließt die Augen und die Worte auf dem Papier werden zu Bildern. Du bist 12 Jahre alt. In der Villa brennen hunderte Kerzen. Deine Mutter ist nicht da – sie ist „verreist", wie dein Vater immer sagt.
+Du schließt die Augen und die Worte auf dem Papier werden zu Bildern. Du bist 12 Jahre alt. In der Villa brennen hunderte Kerzen. Deine Mutter ist nicht da – sie ist »verreist«, wie dein Vater immer sagt.
 
 Anstatt Geschenken liegt ein kleiner, verschlossener Kasten auf dem Tisch.
 
-„In diesem Kasten befindet sich die Zukunft deiner Erbschaft, Elias", sagt dein Vater. Er reicht dir einen Schlüssel. „Darin ist ein Dokument. Es ist ein Schuldschein deines Onkels. Er hat sich verspekuliert. Wenn du ihn unterschreibst, gehört sein Haus uns. Wenn du es nicht tust, verliert die Familie Kortig zehn Prozent ihres Wertes."
+»In diesem Kasten befindet sich die Zukunft deiner Erbschaft, Elias«, sagt dein Vater. Er reicht dir einen Schlüssel. »Darin ist ein Dokument. Es ist ein Schuldschein deines Onkels. Er hat sich verspekuliert. Wenn du ihn unterschreibst, gehört sein Haus uns. Wenn du es nicht tust, verliert die Familie Kortig zehn Prozent ihres Wertes.«
 
-„Aber Onkel Peter hat zwei Kinder, Vater. Wo sollen sie hin?", fragst du mit deiner kindlichen Stimme.
+»Aber Onkel Peter hat zwei Kinder, Vater. Wo sollen sie hin?«, fragst du mit deiner kindlichen Stimme.
 
 Du denkst an Onkel Peter. An den großen, warmherzigen Mann mit dem lauten Lachen. Peter Kortig, der jüngere Bruder deines Vaters. Er war anders als der Rest der Familie – weicher, menschlicher. Er arbeitete nicht in der Bank, sondern hatte eine kleine Beratungsfirma. Nichts Großes, aber ehrlich.
 
-Du erinnerst dich an seinen 40. Geburtstag, nur zwei Monate zuvor. Onkel Peter hatte dich auf den Arm genommen, obwohl du eigentlich schon zu groß dafür warst. „Elias, mein Junge! Sag mir, was du dir zum Geburtstag wünschst. Onkel Peter macht's möglich!"
+Du erinnerst dich an seinen 40. Geburtstag, nur zwei Monate zuvor. Onkel Peter hatte dich auf den Arm genommen, obwohl du eigentlich schon zu groß dafür warst. »Elias, mein Junge! Sag mir, was du dir zum Geburtstag wünschst. Onkel Peter macht's möglich!«
 
-Seine Kinder – deine Cousins Lukas und Sophie, 9 und 6 Jahre alt – spielten mit dir im Garten. Sophie hatte dir eine selbstgebastelte Karte geschenkt: ein Strichmännchen mit der Aufschrift *Mein Lieblings-Cousin*. Lukas wollte dir beibringen, wie man Fußball spielt. „Komm, Elias! Du musst nicht immer nur drinnen sitzen und lernen!"
+Seine Kinder – deine Cousins Lukas und Sophie, 9 und 6 Jahre alt – spielten mit dir im Garten. Sophie hatte dir eine selbstgebastelte Karte geschenkt: ein Strichmännchen mit der Aufschrift *Mein Lieblings-Cousin*. Lukas wollte dir beibringen, wie man Fußball spielt. »Komm, Elias! Du musst nicht immer nur drinnen sitzen und lernen!«
 
-Onkel Peters Frau, Tante Kristin, hatte selbstgemachten Apfelkuchen gebacken. Sie hatte dir einen extra großen Stück gegeben und geflüstert: „Nicht verraten, aber du bist mein Lieblingsneffe." Ihr Lächeln war echt gewesen. Keine Berechnung dahinter.
+Onkel Peters Frau, Tante Kristin, hatte selbstgemachten Apfelkuchen gebacken. Sie hatte dir einen extra großen Stück gegeben und geflüstert: »Nicht verraten, aber du bist mein Lieblingsneffe.« Ihr Lächeln war echt gewesen. Keine Berechnung dahinter.
 
 Das Haus in Oberursel. Ein kleines Einfamilienhaus mit einem verwilderten Garten. Nichts im Vergleich zu eurer Villa, aber es roch nach Leben, nach Familie, nach... Zuhause.
 
-Dein Vater packt dich am Kinn, so fest, dass es weh tut. „Mitleid ist eine Infektion, Elias. Onkel Peter ist schwach. Er ist eine Fehlstelle im System. Willst du auch eine Fehlstelle sein? Oder willst du ein Kortig sein?"
+Dein Vater packt dich am Kinn, so fest, dass es weh tut. »Mitleid ist eine Infektion, Elias. Onkel Peter ist schwach. Er ist eine Fehlstelle im System. Willst du auch eine Fehlstelle sein? Oder willst du ein Kortig sein?«
 
 Du denkst an Sophie's Strichmännchen. An Lukas' Fußball. An Tante Kristins Lächeln.
 
 Dann unterschreibst du. Deine Hand zittert nicht. Dein Vater lächelt zum ersten Mal an diesem Tag.
 
-Zwei Wochen später klingelt mitten in der Nacht das Telefon. Du hörst durch die Wand, wie dein Vater spricht. Seine Stimme ist kalt: „Das war seine eigene Entscheidung. Wir hatten einen Vertrag." Dann legt er auf.
+Zwei Wochen später klingelt mitten in der Nacht das Telefon. Du hörst durch die Wand, wie dein Vater spricht. Seine Stimme ist kalt: »Das war seine eigene Entscheidung. Wir hatten einen Vertrag.« Dann legt er auf.
 
-Am nächsten Morgen erfährst du es: Onkel Peter hat sich in seiner Garage erhängt. Er hatte einen Brief hinterlassen, der nur aus zwei Sätzen bestand: „Ich konnte meine Familie nicht beschützen. Verzeiht mir."
+Am nächsten Morgen erfährst du es: Onkel Peter hat sich in seiner Garage erhängt. Er hatte einen Brief hinterlassen, der nur aus zwei Sätzen bestand: »Ich konnte meine Familie nicht beschützen. Verzeiht mir.«
 
 Tante Kristin und die Kinder mussten ausziehen. Dein Vater kaufte das Haus für einen Bruchteil des Wertes. Es wurde drei Monate später abgerissen – Platz für ein neues Bürogebäude.
 
@@ -1801,14 +1801,14 @@ Du hast Lukas und Sophie nie wiedergesehen. Jahre später hörtest du, dass Tant
 
 Du hast an Onkel Peters Grab gestanden. Es regnete. Tante Kristin sah dich kurz an. In ihrem Blick lag keine Wut. Nur... Leere. Als würde sie durch dich hindurchsehen. Sophie weinte, Lukas hielt ihre Hand. Niemand sprach mit dir.
 
-Du bist nach zehn Minuten gegangen. Dein Vater wartete im Wagen. „Gut", sagte er. „Du zeigst Respekt, aber keine Schwäche. Das ist wichtig."
+Du bist nach zehn Minuten gegangen. Dein Vater wartete im Wagen. »Gut«, sagte er. »Du zeigst Respekt, aber keine Schwäche. Das ist wichtig.«
 
 Auf der Rückfahrt hast du nur an eines gedacht: Die zehn Prozent waren gerettet. Die Bilanz stimmte wieder. Onkel Peter war nur eine Zahl in einer Gleichung, deren Ergebnis lautete: Kortig bleibt an der Spitze.
 
 Das Strichmännchen-Bild hatte Sophie dir am Grab hinterhergeworfen. Es landete im Matsch. Du hast es dort liegengelassen.
 
 #IMG:muddy_drawing
-// Wirkung: Ein kindliches Strichmännchen-Bild im Schlamm. Die bunten Stifte sind verwischt, die Aufschrift "Mein Lieblings-Cousin" kaum noch lesbar. Im Hintergrund verschwommen: Grabsteine und ein schwarzer Wagen. Unschuld, zertrampelt von Gier.
+// Wirkung: Ein kindliches Strichmännchen-Bild im Schlamm. Die bunten Stifte sind verwischt, die Aufschrift »Mein Lieblings-Cousin« kaum noch lesbar. Im Hintergrund verschwommen: Grabsteine und ein schwarzer Wagen. Unschuld, zertrampelt von Gier.
 
 #MOOD:mystery
 Du schlägst das Buch zu. Dein ganzer Erfolg war nie deiner. Er war der Plan deines Vaters, dich in eine gefühllose Maschine zu verwandeln.
@@ -1821,11 +1821,11 @@ Du durchwühlst die Schubladen. Du findest geheime Verträge. Sie tragen die Unt
 
 Dein Vater war nicht nur ein erfolgreicher Banker. Er war der Finanzier des Komplexes. Er hat Thorne das Kapital gegeben, um die Tunnel zu bauen, die Server zu kaufen, die Menschen zu fangen.
 
-„Er wollte eine Welt für dich schaffen, Elias“, sagt die Stimme vom Grammophon. „Eine Welt, in der du niemals verlieren kannst, weil die Spielregeln bereits zu deinen Gunsten geschrieben wurden. Er hat den Komplex gebaut, um seinen perfekten Erben zu züchten.“
+»Er wollte eine Welt für dich schaffen, Elias«, sagt die Stimme vom Grammophon. »Eine Welt, in der du niemals verlieren kannst, weil die Spielregeln bereits zu deinen Gunsten geschrieben wurden. Er hat den Komplex gebaut, um seinen perfekten Erben zu züchten.«
 
-Sarah starrt dich entsetzt an. „Er hat das alles für dich getan? Die Morde? Die Folter?“
+Sarah starrt dich entsetzt an. »Er hat das alles für dich getan? Die Morde? Die Folter?«
 
-„Er wollte mich nicht retten“, sagst du bitter. „Er wollte mich besitzen. Sogar über das Grab hinaus.“
+»Er wollte mich nicht retten«, sagst du bitter. »Er wollte mich besitzen. Sogar über das Grab hinaus.«
 
 -> vater_offenbarung
 
@@ -1833,13 +1833,13 @@ Sarah starrt dich entsetzt an. „Er hat das alles für dich getan? Die Morde? D
 ~ mental_stability += 1
 Du reißt den Arm des Grammophons zur Seite. Die Nadel kratzt über die Platte, ein hässliches Geräusch.
 
-„Genug!“, brüllst du.
+»Genug!«, brüllst du.
 
-Doch die Stimme hört nicht auf. Sie kommt jetzt aus den Wänden. „Du kannst die Wahrheit nicht abschalten, mein Sohn. Du bist mein Meisterstück. Jede Entscheidung, die du heute getroffen hast, war bereits in deinen Genen programmiert. Die Atemmasken, der Ventilator... du hast genau so reagiert, wie ich es dich gelehrt habe.“
+Doch die Stimme hört nicht auf. Sie kommt jetzt aus den Wänden. »Du kannst die Wahrheit nicht abschalten, mein Sohn. Du bist mein Meisterstück. Jede Entscheidung, die du heute getroffen hast, war bereits in deinen Genen programmiert. Die Atemmasken, der Ventilator... du hast genau so reagiert, wie ich es dich gelehrt habe.«
 
-Marc sieht dich misstrauisch an. „Elias... wusstest du davon?“
+Marc sieht dich misstrauisch an. »Elias... wusstest du davon?«
 
-„Nein“, flüsterst du. „Ich... ich dachte, ich wäre frei.“
+»Nein«, flüsterst du. »Ich... ich dachte, ich wäre frei.«
 
 -> vater_offenbarung
 
@@ -1850,7 +1850,7 @@ In der Wand hinter dem Schreibtisch öffnet sich ein Geheimfach. Darin liegt ein
 #IMG:golden_ring
 // Wirkung: Close-Up: Ein schwerer goldener Siegelring in einem roten Samtfach. Das Gold ist alt, abgenutzt, an einer Kante ist eine dunkle Fleck – getrocknetes Blut von Elias' Kindheit. Die Kante, die ihn geschlagen hat. Das Erbe der Macht und der Grausamkeit, dargeboten wie ein vergiftetes Geschenk.
 
-„Nimm ihn, Elias", sagt die Stimme. „Tritt dein Erbe an. Werde der neue Schöpfer des Komplexes. Wir brauchen keinen Mathematiker mehr an der Spitze. Wir brauchen einen Herrscher."
+»Nimm ihn, Elias«, sagt die Stimme. »Tritt dein Erbe an. Werde der neue Schöpfer des Komplexes. Wir brauchen keinen Mathematiker mehr an der Spitze. Wir brauchen einen Herrscher.«
 
 * [Den Ring nehmen. Die Macht des Komplexes beanspruchen.] -> vater_erbe_nehmen
 * [Den Ring liegen lassen und das Zimmer verfluchen.] -> vater_erbe_ablehnen
@@ -1863,11 +1863,11 @@ Du streifst den Ring über deinen Finger. Er ist kalt und schwer. In dem Moment,
 
 Du siehst Sarah und Marc an. Sie sind keine Gefährten mehr. Sie sind Untertanen.
 
-„Ich habe verstanden", sagst du mit einer Stimme, die plötzlich viel tiefer und autoritärer klingt. „Der Komplex ist nicht mein Feind. Er ist mein Thron."
+»Ich habe verstanden«, sagst du mit einer Stimme, die plötzlich viel tiefer und autoritärer klingt. »Der Komplex ist nicht mein Feind. Er ist mein Thron.«
 
-Marc weicht zurück. Er legt die Hand an seinen Gürtel. „Elias... was tust du da?"
+Marc weicht zurück. Er legt die Hand an seinen Gürtel. »Elias... was tust du da?«
 
-„Ich rette uns, Marc. Auf meine Weise."
+»Ich rette uns, Marc. Auf meine Weise.«
 
 Eine verborgene Tür im Arbeitszimmer gleitet auf. Sie führt direkt zu einem Aufzug, der euch hinab zu den unteren Ebenen bringt. Der Ring an deinem Finger pulsiert im Rhythmus des Komplexes, als würde die Maschine erkennen, dass ein neuer Herrscher gekrönt wurde.
 
@@ -1878,11 +1878,11 @@ Eine verborgene Tür im Arbeitszimmer gleitet auf. Sie führt direkt zu einem Au
 ~ mental_stability += 2
 Du starrst den Ring an. Das Gold glänzt hämisch im Schein der Lampe. Du erinnerst dich an den Schmerz an deinem Hinterkopf, an das Weinen von Julian, an das Schweigen von Onkel Peter.
 
-„Nein“, sagst du fest. Du schlägst das Geheimfach zu. „Ich bin nicht du, Vater. Und ich werde nicht dein Monster sein.“
+»Nein«, sagst du fest. Du schlägst das Geheimfach zu. »Ich bin nicht du, Vater. Und ich werde nicht dein Monster sein.«
 
-Die Stimme lacht ein letztes Mal, ein trauriges, hohles Geräusch. „Dann wirst du als Opfer sterben, Elias. Wie alle anderen.“
+Die Stimme lacht ein letztes Mal, ein trauriges, hohles Geräusch. »Dann wirst du als Opfer sterben, Elias. Wie alle anderen.«
 
-Du wendest dich an Sarah und Marc. „Wir gehen. Jetzt."
+Du wendest dich an Sarah und Marc. »Wir gehen. Jetzt.«
 
 Ihr verlasst das Arbeitszimmer durch eine schwere Tür, die sich hinter euch mit einem endgültigen Klicken verschließt. Der Korridor dahinter führt steil nach unten. Nach endlosen Minuten im Halbdunkel erreicht ihr eine vertraute Umgebung: die klinischen Gänge der Ebene 2, kurz vor dem Kontrollzentrum.
 
@@ -1894,7 +1894,7 @@ Ihr verlasst das Arbeitszimmer durch eine schwere Tür, die sich hinter euch mit
 ~ evidence_found += 1
 Du nimmst das Feuerzeug von deinem Vater, das auf dem Tisch liegt – massives Gold. Du zündest die schweren Vorhänge an. Die Seide fängt sofort Feuer. Du wirfst das Tagebuch in die Flammen.
 
-„Alles soll brennen!“, schreist du.
+»Alles soll brennen!«, schreist du.
 
 Der Rauch füllt den Raum. Sarah hustet. Marc packt dich am Arm und zieht dich zur Tür. Während ihr flieht, siehst du im Rückblick, wie das Porträt deines Vaters in den Flammen schmilzt. Sein triumphierendes Lächeln wird zu einer Fratze aus schwarzer Asche.
 

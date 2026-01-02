@@ -32,6 +32,7 @@ class PageViewWidget extends StatefulWidget {
   final void Function(PageChoice choice)? onChoiceSelected;
   final bool skipAnimation;
   final double speedMultiplier;
+  final String fontFamily;
 
   const PageViewWidget({
     super.key,
@@ -42,6 +43,7 @@ class PageViewWidget extends StatefulWidget {
     this.onChoiceSelected,
     this.skipAnimation = false,
     this.speedMultiplier = 1.0,
+    this.fontFamily = 'EBGaramond',
   });
 
   @override
@@ -290,28 +292,105 @@ class _PageViewWidgetState extends State<PageViewWidget>
 
   Widget _buildText() {
     final now = DateTime.now().millisecondsSinceEpoch;
-    final displayedText = widget.page.text.substring(0, _charIndex);
+    final fullText = widget.page.text;
     
     final baseStyle = TextStyle(
-      fontFamily: 'Mynerve',
+      fontFamily: widget.fontFamily,
       fontSize: _AnimConfig.fontSize,
       height: _AnimConfig.lineHeight,
       letterSpacing: _AnimConfig.letterSpacing,
       color: _textColor,
     );
 
-    return _buildRevealedText(displayedText, baseStyle, now);
+    // Always render full text for correct justified layout
+    // Use _charIndex to control visibility
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Process text to show visible hyphens at line breaks
+        final processedText = _processHyphensForDisplay(
+          fullText, 
+          baseStyle, 
+          constraints.maxWidth,
+        );
+        return _buildRevealedText(processedText, baseStyle, now, _charIndex);
+      },
+    );
+  }
+  
+  /// Replaces soft hyphens at line breaks with visible hyphens
+  /// 
+  /// Flutter doesn't natively show hyphens when breaking at soft hyphens (U+00AD).
+  /// This method analyzes the text layout and replaces soft hyphens that occur
+  /// at line endings with visible hyphen characters.
+  String _processHyphensForDisplay(String text, TextStyle style, double maxWidth) {
+    // Count soft hyphens for debugging
+    final softHyphenCount = text.split('\u00AD').length - 1;
+    if (softHyphenCount > 0) {
+      print('🔤 [Hyphen] Found $softHyphenCount soft hyphens in text (${text.length} chars)');
+    }
+    
+    if (!text.contains('\u00AD')) return text;
+    
+    final textPainter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.justify,
+    )..layout(maxWidth: maxWidth);
+    
+    // Find soft hyphens that are at line breaks by checking Y position
+    final softHyphensAtBreaks = <int>{};
+    
+    for (int i = 0; i < text.length - 1; i++) {
+      if (text.codeUnitAt(i) == 0x00AD) {
+        // Get the position of this soft hyphen and the next character
+        final boxes = textPainter.getBoxesForSelection(
+          TextSelection(baseOffset: i, extentOffset: i + 1),
+        );
+        final nextBoxes = textPainter.getBoxesForSelection(
+          TextSelection(baseOffset: i + 1, extentOffset: i + 2),
+        );
+        
+        if (boxes.isNotEmpty && nextBoxes.isNotEmpty) {
+          // If the next character is on a different line (different Y), this is a break point
+          final currentY = boxes.first.top;
+          final nextY = nextBoxes.first.top;
+          
+          if ((nextY - currentY).abs() > 5) { // Different line
+            softHyphensAtBreaks.add(i);
+          }
+        }
+      }
+    }
+    
+    // Build result: replace soft hyphens at breaks with visible hyphens, remove others
+    final result = StringBuffer();
+    for (int i = 0; i < text.length; i++) {
+      if (text.codeUnitAt(i) == 0x00AD) {
+        if (softHyphensAtBreaks.contains(i)) {
+          result.write('-'); // Visible hyphen at line break
+        }
+        // Otherwise, skip the soft hyphen (it's not needed)
+      } else {
+        result.write(text[i]);
+      }
+    }
+    
+    return result.toString();
   }
 
-  Widget _buildRevealedText(String text, TextStyle baseStyle, int now) {
+  Widget _buildRevealedText(String text, TextStyle baseStyle, int now, int visibleChars) {
     if (text.isEmpty) {
       // Show placeholder to maintain layout
       return Text(' ', style: baseStyle);
     }
     
+    // Clamp visibleChars to actual text length (text may be shorter after hyphen processing)
+    final effectiveVisibleChars = visibleChars.clamp(0, text.length);
+    
     // Determine which characters are in quotes
     // ONLY highlight text between „ (German opening, U+201E) and closing quotes
     // Use startsInQuote from the page to handle cross-page quotes
+    // Note: Soft hyphens have been processed - they're now regular hyphens or removed
     final isInQuote = List<bool>.filled(text.length, false);
     bool quoteState = widget.page.startsInQuote; // Start with inherited state!
     
@@ -319,16 +398,13 @@ class _PageViewWidgetState extends State<PageViewWidget>
       final char = text[i];
       final code = char.codeUnitAt(0);
       
-      // ONLY „ (German opening quotation mark) opens quotes
-      if (code == 0x201E) { // „
+      // » (Guillemet right-pointing, U+00BB) opens quotes
+      if (code == 0x00BB) { // »
         quoteState = true;
         isInQuote[i] = true;
       }
-      // Any of these close the quote (if one was opened with „)
-      // ONLY double quotes - no apostrophes/single quotes!
-      else if (quoteState && (code == 0x201D ||  // " Right double quotation mark
-                               code == 0x201C ||  // " Left double quotation mark
-                               code == 0x0022)) { // " ASCII straight double quote
+      // « (Guillemet left-pointing, U+00AB) closes quotes
+      else if (quoteState && code == 0x00AB) { // «
         isInQuote[i] = true;
         quoteState = false;
       }
@@ -338,7 +414,8 @@ class _PageViewWidgetState extends State<PageViewWidget>
       }
     }
     
-    // Build rich text with glow spans AND quote styling
+    // Build rich text with visibility based on effectiveVisibleChars
+    // FULL text is always rendered for correct justified layout
     final spans = <TextSpan>[];
     int lastEnd = 0;
     
@@ -347,13 +424,14 @@ class _PageViewWidgetState extends State<PageViewWidget>
       
       // Add non-glow text before this glow
       if (glow.startIndex > lastEnd) {
-        _addTextWithQuoteColors(
+        _addTextWithVisibility(
           spans,
           text,
           lastEnd,
           glow.startIndex,
           baseStyle,
           isInQuote,
+          effectiveVisibleChars,
         );
       }
       
@@ -365,7 +443,7 @@ class _PageViewWidgetState extends State<PageViewWidget>
       // Add glow text with proper styling
       final isQuoted = _isAnyCharInQuotes(glow.startIndex, glow.endIndex, isInQuote);
       
-      _addTextWithQuoteColors(
+      _addTextWithVisibility(
         spans,
         text,
         glow.startIndex,
@@ -392,6 +470,7 @@ class _PageViewWidgetState extends State<PageViewWidget>
           ],
         ),
         isInQuote,
+        effectiveVisibleChars,
       );
       
       lastEnd = glow.endIndex;
@@ -399,19 +478,108 @@ class _PageViewWidgetState extends State<PageViewWidget>
     
     // Add remaining text
     if (lastEnd < text.length) {
-      _addTextWithQuoteColors(
+      _addTextWithVisibility(
         spans,
         text,
         lastEnd,
         text.length,
         baseStyle,
         isInQuote,
+        effectiveVisibleChars,
       );
     }
     
     return RichText(
       text: TextSpan(children: spans.isEmpty ? [TextSpan(text: text, style: baseStyle)] : spans),
+      textAlign: TextAlign.justify,
     );
+  }
+  
+  /// Add text spans with visibility control for justified text animation
+  void _addTextWithVisibility(
+    List<TextSpan> spans,
+    String text,
+    int start,
+    int end,
+    TextStyle baseStyle,
+    List<bool> isInQuote,
+    int visibleChars,
+  ) {
+    if (start >= end) return;
+    
+    // Split the segment into visible and invisible parts
+    final visibleEnd = visibleChars.clamp(start, end);
+    
+    // Add visible part (if any)
+    if (visibleEnd > start) {
+      _addTextSegmentWithQuotes(spans, text, start, visibleEnd, baseStyle, isInQuote, true);
+    }
+    
+    // Add invisible part (if any) - transparent but still takes up space for layout
+    if (visibleEnd < end) {
+      _addTextSegmentWithQuotes(spans, text, visibleEnd, end, baseStyle, isInQuote, false);
+    }
+  }
+  
+  /// Add text segment with quote styling and visibility
+  void _addTextSegmentWithQuotes(
+    List<TextSpan> spans,
+    String text,
+    int start,
+    int end,
+    TextStyle baseStyle,
+    List<bool> isInQuote,
+    bool visible,
+  ) {
+    if (start >= end) return;
+    
+    int segmentStart = start;
+    bool lastQuoteState = isInQuote[start];
+    
+    for (int i = start + 1; i <= end; i++) {
+      final currentQuoteState = i < end ? isInQuote[i] : !lastQuoteState;
+      
+      if (currentQuoteState != lastQuoteState || i == end) {
+        final segmentText = text.substring(segmentStart, i);
+        final isQuoted = lastQuoteState;
+        
+        // Build shadows list
+        final shadows = <Shadow>[];
+        if (visible && isQuoted && segmentText.trim().isNotEmpty) {
+          shadows.add(Shadow(
+            color: const Color(0xFFFDF0FF).withOpacity(0.6),
+            blurRadius: 12,
+          ));
+          shadows.add(Shadow(
+            color: const Color(0xFFFDF0FF).withOpacity(0.3),
+            blurRadius: 20,
+          ));
+        }
+        
+        // Determine color based on visibility and quote state
+        Color textColor;
+        if (!visible) {
+          textColor = Colors.transparent; // Invisible but takes space
+        } else if (isQuoted) {
+          textColor = const Color(0xFFFDF0FF);
+        } else {
+          textColor = baseStyle.color ?? _textColor;
+        }
+        
+        spans.add(TextSpan(
+          text: segmentText,
+          style: baseStyle.copyWith(
+            color: textColor,
+            shadows: shadows.isEmpty ? baseStyle.shadows : shadows,
+          ),
+        ));
+        
+        segmentStart = i;
+        if (i < end) {
+          lastQuoteState = currentQuoteState;
+        }
+      }
+    }
   }
 
   bool _isAnyCharInQuotes(int start, int end, List<bool> isInQuote) {
@@ -650,7 +818,7 @@ class _PageViewWidgetState extends State<PageViewWidget>
                     height: 1.4,
                     letterSpacing: 0.3,
                   ),
-                  textAlign: TextAlign.left,
+                  textAlign: TextAlign.justify,
                 ),
               ),
               const SizedBox(width: 10),

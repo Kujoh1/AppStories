@@ -29,6 +29,23 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
   late Animation<double> _bgOpacity;
   static const double _backgroundMaxOpacity = 0.03;
   
+  // Preloader animations
+  late AnimationController _preloaderController;
+  late AnimationController _pulseController;
+  late AnimationController _textFadeController;
+  late Animation<double> _bookRotation;
+  late Animation<double> _pageFlip;
+  late Animation<double> _pulseAnimation;
+  late Animation<double> _shimmerAnimation;
+  int _loadingTextIndex = 0;
+  
+  static const List<String> _loadingTexts = [
+    'Geschichte wird vorbereitet...',
+    'Seiten werden berechnet...',
+    'Layouts werden optimiert...',
+    'Fast fertig...',
+  ];
+  
   String? _currentBackground;
   String? _previousBackground;
   
@@ -46,13 +63,66 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
       parent: _bgController,
       curve: Curves.easeInOut,
     );
-    // Note: Page index is set by HomePage before navigation
-    // Either to 0 (start from beginning) or to saved progress
+    
+    // Preloader animations
+    _preloaderController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat();
+    
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+    
+    _textFadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    
+    _bookRotation = Tween<double>(begin: -0.02, end: 0.02).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+    
+    _pageFlip = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _preloaderController, curve: Curves.easeInOut),
+    );
+    
+    _pulseAnimation = Tween<double>(begin: 0.95, end: 1.05).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+    
+    _shimmerAnimation = Tween<double>(begin: -1.0, end: 2.0).animate(
+      CurvedAnimation(parent: _preloaderController, curve: Curves.linear),
+    );
+    
+    // Cycle through loading texts
+    _startLoadingTextCycle();
+  }
+  
+  void _startLoadingTextCycle() {
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+        _textFadeController.forward().then((_) {
+          if (mounted) {
+            setState(() {
+              _loadingTextIndex = (_loadingTextIndex + 1) % _loadingTexts.length;
+            });
+            _textFadeController.reverse().then((_) {
+              _startLoadingTextCycle();
+            });
+          }
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
     _bgController.dispose();
+    _preloaderController.dispose();
+    _pulseController.dispose();
+    _textFadeController.dispose();
     super.dispose();
   }
 
@@ -73,6 +143,7 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
 
   Widget _buildContent(BoxConstraints constraints) {
     final bookId = ref.watch(selectedBookIdProvider);
+    final settings = ref.watch(settingsProvider);
     
     if (_viewportSize == null) {
       return _buildLoadingScreen();
@@ -90,6 +161,7 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
       bookId: bookId,
       viewportWidth: _viewportSize!.width,
       viewportHeight: contentHeight,
+      fontFamily: settings.fontFamily,
     );
     
     final pagedBookAsync = ref.watch(pagedBookProvider(params));
@@ -162,6 +234,7 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
                   totalPages: pagedBook.totalPages,
                   skipAnimation: settings.skipAnimation,
                   speedMultiplier: settings.speedMultiplier,
+                  fontFamily: settings.fontFamily,
                   onNext: () => _goToNextPage(pagedBook),
                   onPrevious: () => _goToPreviousPage(),
                   onChoiceSelected: (choice) => _handleChoice(choice, pagedBook, params),
@@ -227,26 +300,236 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
   Widget _buildLoadingScreen() {
     return Container(
       decoration: _buildDefaultGradient(),
-      child: const Center(
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
-              strokeWidth: 2,
-              color: Color(0xFFFDF0FF),
+            // Animated book icon with page flip effect
+            AnimatedBuilder(
+              animation: Listenable.merge([_pulseController, _preloaderController]),
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _pulseAnimation.value,
+                  child: Transform.rotate(
+                    angle: _bookRotation.value,
+                    child: _buildAnimatedBookIcon(),
+                  ),
+                );
+              },
             ),
-            SizedBox(height: 16),
-            Text(
-              'Seiten werden berechnet...',
-              style: TextStyle(
-                color: Colors.white54,
-                fontSize: 14,
-                fontFamily: 'Mynerve',
-              ),
+            const SizedBox(height: 40),
+            
+            // Shimmer progress bar
+            _buildShimmerProgressBar(),
+            const SizedBox(height: 24),
+            
+            // Animated loading text
+            AnimatedBuilder(
+              animation: _textFadeController,
+              builder: (context, child) {
+                return Opacity(
+                  opacity: 1.0 - (_textFadeController.value * 0.5),
+                  child: Text(
+                    _loadingTexts[_loadingTextIndex],
+                    style: const TextStyle(
+                      color: Color(0xFFFDF0FF),
+                      fontSize: 16,
+                      fontFamily: 'Mynerve',
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                );
+              },
             ),
+            const SizedBox(height: 8),
+            
+            // Subtle dots animation
+            _buildLoadingDots(),
           ],
         ),
       ),
+    );
+  }
+  
+  Widget _buildAnimatedBookIcon() {
+    return AnimatedBuilder(
+      animation: _preloaderController,
+      builder: (context, child) {
+        return SizedBox(
+          width: 80,
+          height: 100,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Book base (back cover)
+              Container(
+                width: 60,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2A1F3D),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color: const Color(0xFFBB86FC).withOpacity(0.3),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFBB86FC).withOpacity(0.2),
+                      blurRadius: 20,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Animated pages
+              ...List.generate(3, (index) {
+                final delay = index * 0.15;
+                final progress = ((_pageFlip.value - delay) % 1.0).clamp(0.0, 1.0);
+                final angle = progress * 3.14159 * 0.3;
+                
+                return Transform(
+                  alignment: Alignment.centerLeft,
+                  transform: Matrix4.identity()
+                    ..setEntry(3, 2, 0.001)
+                    ..rotateY(-angle),
+                  child: Container(
+                    width: 55,
+                    height: 75,
+                    margin: EdgeInsets.only(left: 5 + index * 2.0),
+                    decoration: BoxDecoration(
+                      color: Color.lerp(
+                        const Color(0xFFFDF0FF),
+                        const Color(0xFFE8D5F0),
+                        progress,
+                      ),
+                      borderRadius: BorderRadius.circular(2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1 * (1 - progress)),
+                          blurRadius: 4,
+                          offset: const Offset(2, 0),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: List.generate(
+                          5,
+                          (i) => Container(
+                            height: 4,
+                            margin: const EdgeInsets.only(bottom: 4),
+                            width: 30 - (i * 3.0),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2A1F3D).withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+              
+              // Book spine highlight
+              Positioned(
+                left: 2,
+                child: Container(
+                  width: 4,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFFBB86FC).withOpacity(0.6),
+                        const Color(0xFF6B4D8A).withOpacity(0.3),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: const BorderRadius.horizontal(left: Radius.circular(4)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+  
+  Widget _buildShimmerProgressBar() {
+    return AnimatedBuilder(
+      animation: _shimmerAnimation,
+      builder: (context, child) {
+        return Container(
+          width: 200,
+          height: 3,
+          decoration: BoxDecoration(
+            color: const Color(0xFF2A1F3D),
+            borderRadius: BorderRadius.circular(2),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(2),
+            child: Stack(
+              children: [
+                // Background
+                Container(
+                  color: const Color(0xFF1A1025),
+                ),
+                // Shimmer effect
+                Positioned(
+                  left: _shimmerAnimation.value * 200 - 100,
+                  child: Container(
+                    width: 100,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.transparent,
+                          const Color(0xFFBB86FC).withOpacity(0.8),
+                          const Color(0xFFFDF0FF).withOpacity(0.9),
+                          const Color(0xFFBB86FC).withOpacity(0.8),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.3, 0.5, 0.7, 1.0],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+  
+  Widget _buildLoadingDots() {
+    return AnimatedBuilder(
+      animation: _preloaderController,
+      builder: (context, child) {
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(3, (index) {
+            final delay = index * 0.2;
+            final progress = ((_preloaderController.value - delay) % 1.0);
+            final opacity = (progress < 0.5 ? progress * 2 : 2 - progress * 2).clamp(0.3, 1.0);
+            
+            return Container(
+              width: 6,
+              height: 6,
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFBB86FC).withOpacity(opacity),
+                shape: BoxShape.circle,
+              ),
+            );
+          }),
+        );
+      },
     );
   }
 
@@ -285,10 +568,12 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
                 onPressed: () {
                   if (_viewportSize != null) {
                     final mq = MediaQuery.of(context);
+                    final settings = ref.read(settingsProvider);
                     ref.invalidate(pagedBookProvider(PageAnalysisParams(
                       bookId: bookId,
                       viewportWidth: _viewportSize!.width,
                       viewportHeight: _viewportSize!.height - 56 - mq.padding.top - mq.padding.bottom,
+                      fontFamily: settings.fontFamily,
                     )));
                   }
                 },

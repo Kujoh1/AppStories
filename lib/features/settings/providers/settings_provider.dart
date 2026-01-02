@@ -10,24 +10,64 @@ enum TextAnimationSpeed {
   instant, // Sofort (keine Animation)
 }
 
+/// Font family options
+enum StoryFont {
+  mynerve,    // Handschrift-artig, verspielt
+  garamond,   // Klassisch, elegant, wie ein echtes Buch
+}
+
 /// Settings state
 class AppSettings {
   final TextAnimationSpeed textSpeed;
   final bool soundEnabled;
+  final StoryFont storyFont;
   
   const AppSettings({
     this.textSpeed = TextAnimationSpeed.normal,
     this.soundEnabled = true,
+    this.storyFont = StoryFont.garamond, // Garamond als Standard
   });
   
   AppSettings copyWith({
     TextAnimationSpeed? textSpeed,
     bool? soundEnabled,
+    StoryFont? storyFont,
   }) {
     return AppSettings(
       textSpeed: textSpeed ?? this.textSpeed,
       soundEnabled: soundEnabled ?? this.soundEnabled,
+      storyFont: storyFont ?? this.storyFont,
     );
+  }
+  
+  /// Get the font family name for Flutter
+  String get fontFamily {
+    switch (storyFont) {
+      case StoryFont.mynerve:
+        return 'Mynerve';
+      case StoryFont.garamond:
+        return 'EBGaramond';
+    }
+  }
+  
+  /// Get display name for font
+  static String getFontName(StoryFont font) {
+    switch (font) {
+      case StoryFont.mynerve:
+        return 'Mynerve';
+      case StoryFont.garamond:
+        return 'EB Garamond';
+    }
+  }
+  
+  /// Get font description
+  static String getFontDescription(StoryFont font) {
+    switch (font) {
+      case StoryFont.mynerve:
+        return 'Modern & verspielt';
+      case StoryFont.garamond:
+        return 'Klassisch & elegant';
+    }
   }
   
   /// Get speed multiplier (higher = faster animation)
@@ -81,10 +121,12 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     final prefs = await SharedPreferences.getInstance();
     final speedIndex = prefs.getInt('textSpeed') ?? 1;
     final soundEnabled = prefs.getBool('soundEnabled') ?? true;
+    final fontIndex = prefs.getInt('storyFont') ?? 1; // Default to Garamond
     
     state = AppSettings(
       textSpeed: TextAnimationSpeed.values[speedIndex.clamp(0, 4)],
       soundEnabled: soundEnabled,
+      storyFont: StoryFont.values[fontIndex.clamp(0, StoryFont.values.length - 1)],
     );
   }
   
@@ -98,6 +140,12 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     state = state.copyWith(soundEnabled: enabled);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('soundEnabled', enabled);
+  }
+  
+  Future<void> setStoryFont(StoryFont font) async {
+    state = state.copyWith(storyFont: font);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('storyFont', font.index);
   }
 }
 

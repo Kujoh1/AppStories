@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import '../../domain/models/story_page.dart';
 import 'ink_parser.dart';
+import 'hyphenator_service.dart';
 
 /// Configuration for text layout calculation
 class PageLayoutConfig {
@@ -61,21 +62,22 @@ class PageAnalyzer {
   
   /// Calculate the quote state at the end of a text
   /// Returns true if the text ends with an open quote (started with „ but not closed)
+  /// Ignores soft hyphens (U+00AD) which may be present for hyphenation
   bool _endsWithOpenQuote(String text) {
     bool inQuote = false;
     
     for (int i = 0; i < text.length; i++) {
       final code = text.codeUnitAt(i);
       
-      // German opening quote „ (U+201E) - opens
-      if (code == 0x201E) {
+      // Skip soft hyphens (used for hyphenation)
+      if (code == 0x00AD) continue;
+      
+      // » (Guillemet right-pointing, U+00BB) - opens quotes
+      if (code == 0x00BB) {
         inQuote = true;
       }
-      // Closing quotes - closes
-      // ONLY double quotes - no apostrophes/single quotes!
-      else if (inQuote && (code == 0x201D ||  // " Right double quotation mark
-                           code == 0x201C ||  // " Left double quotation mark
-                           code == 0x0022)) { // " ASCII straight double quote
+      // « (Guillemet left-pointing, U+00AB) - closes quotes
+      else if (inQuote && code == 0x00AB) {
         inQuote = false;
       }
     }
@@ -230,6 +232,7 @@ class PageAnalyzer {
       final painter = TextPainter(
         text: TextSpan(text: testText, style: config.textStyle),
         textDirection: ui.TextDirection.ltr,
+        textAlign: TextAlign.justify,
       )..layout(maxWidth: width);
       final lines = painter.computeLineMetrics().length;
       painter.dispose();
@@ -247,6 +250,7 @@ class PageAnalyzer {
       final verifyPainter = TextPainter(
         text: TextSpan(text: finalText, style: config.textStyle),
         textDirection: ui.TextDirection.ltr,
+        textAlign: TextAlign.justify,
       )..layout(maxWidth: width);
       final actualLines = verifyPainter.computeLineMetrics().length;
       final actualHeight = verifyPainter.height;
@@ -434,12 +438,16 @@ class PageAnalyzer {
   /// 
   /// KEY PRINCIPLE: For scenes with choices, calculate the LAST page first
   /// (where choices appear), then paginate the remaining text for earlier pages.
+  /// 
+  /// If [hyphenator] is provided, text will be hyphenated for optimal
+  /// justified text layout using soft hyphens.
   Future<PagedBook> analyzeInkStory({
     required InkStory story,
     required String bookId,
     required double viewportWidth,
     required double viewportHeight,
     String? startKnot,
+    HyphenatorService? hyphenator,
   }) async {
     final pages = <StoryPage>[];
     final sceneToPageIndex = <String, int>{};
@@ -468,9 +476,16 @@ class PageAnalyzer {
         }
       }
       
-      // Convert choices
+      // Hyphenate text for optimal justified layout
+      final sceneText = hyphenator?.isInitialized == true
+          ? hyphenator!.hyphenateText(knot.content)
+          : knot.content;
+      
+      // Convert choices (also hyphenate choice text)
       final choices = knot.choices.asMap().entries.map((e) => PageChoice(
-        text: e.value.text,
+        text: hyphenator?.isInitialized == true
+            ? hyphenator!.hyphenateText(e.value.text)
+            : e.value.text,
         targetSceneId: e.value.targetKnot,
         index: e.key,
       )).toList();
@@ -481,7 +496,7 @@ class PageAnalyzer {
       
       // Paginate using new "last page first" algorithm
       final textPages = _paginateSceneText(
-        text: knot.content,
+        text: sceneText,
         viewportWidth: viewportWidth,
         viewportHeight: viewportHeight,
         hasImage: hasImage,
@@ -631,6 +646,7 @@ class PageAnalyzer {
       final painter = TextPainter(
         text: TextSpan(text: testText, style: config.textStyle),
         textDirection: ui.TextDirection.ltr,
+        textAlign: TextAlign.justify,
       )..layout(maxWidth: width);
       final lines = painter.computeLineMetrics().length;
       painter.dispose();

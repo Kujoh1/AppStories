@@ -154,7 +154,7 @@ class _SimpleTypewriterTextState extends State<SimpleTypewriterText>
             animation: _cursorAnimation,
             builder: (context, child) {
               return RichText(
-                textAlign: TextAlign.left,
+                textAlign: TextAlign.justify,
                 text: TextSpan(
                   style: TextStyle(
                     fontFamily: 'Garamond, Georgia, serif',

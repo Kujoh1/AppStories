@@ -1,13 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/page_analyzer.dart';
+import '../../../core/services/hyphenator_service.dart';
 import '../../../data/repositories/book_repository.dart';
 import '../../../domain/models/story_page.dart';
 import 'book_provider.dart';
 
-/// Provider for the PageAnalyzer instance
-final pageAnalyzerProvider = Provider<PageAnalyzer>((ref) {
-  return const PageAnalyzer();
+/// Provider for the HyphenatorService (singleton)
+/// Provides German text hyphenation for improved justified text layout
+final hyphenatorServiceProvider = Provider<HyphenatorService>((ref) {
+  final service = HyphenatorService();
+  // Initialize asynchronously - will be ready by the time stories are loaded
+  service.initialize();
+  return service;
+});
+
+/// Provider for the PageAnalyzer instance with configurable font
+final pageAnalyzerProvider = Provider.family<PageAnalyzer, String>((ref, fontFamily) {
+  return PageAnalyzer(config: PageLayoutConfig(fontFamily: fontFamily));
 });
 
 /// Parameters for page analysis
@@ -15,11 +25,13 @@ class PageAnalysisParams {
   final String bookId;
   final double viewportWidth;
   final double viewportHeight;
+  final String fontFamily;
   
   const PageAnalysisParams({
     required this.bookId,
     required this.viewportWidth,
     required this.viewportHeight,
+    this.fontFamily = 'EBGaramond',
   });
   
   @override
@@ -28,11 +40,12 @@ class PageAnalysisParams {
     return other is PageAnalysisParams &&
            other.bookId == bookId &&
            other.viewportWidth == viewportWidth &&
-           other.viewportHeight == viewportHeight;
+           other.viewportHeight == viewportHeight &&
+           other.fontFamily == fontFamily;
   }
   
   @override
-  int get hashCode => Object.hash(bookId, viewportWidth, viewportHeight);
+  int get hashCode => Object.hash(bookId, viewportWidth, viewportHeight, fontFamily);
 }
 
 /// Provider for pre-analyzed paged book
@@ -41,10 +54,17 @@ class PageAnalysisParams {
 final pagedBookProvider = FutureProvider.family.autoDispose<PagedBook, PageAnalysisParams>((ref, params) async {
   print('📐 [PageAnalyzer] Starting page calculation for ${params.bookId}');
   print('   Viewport: ${params.viewportWidth.toInt()}x${params.viewportHeight.toInt()}');
+  print('   Font: ${params.fontFamily}');
   
-  final analyzer = ref.watch(pageAnalyzerProvider);
+  final analyzer = ref.watch(pageAnalyzerProvider(params.fontFamily));
   final repository = ref.watch(bookRepositoryProvider);
+  final hyphenator = ref.watch(hyphenatorServiceProvider);
   final format = repository.getStoryFormat(params.bookId);
+  
+  // Ensure hyphenator is initialized
+  if (!hyphenator.isInitialized) {
+    await hyphenator.initialize();
+  }
   
   if (format == StoryFormat.ink) {
     // Ink story
@@ -54,8 +74,10 @@ final pagedBookProvider = FutureProvider.family.autoDispose<PagedBook, PageAnaly
       bookId: params.bookId,
       viewportWidth: params.viewportWidth,
       viewportHeight: params.viewportHeight,
+      hyphenator: hyphenator,
     );
     print('✅ [PageAnalyzer] Completed! Generated ${result.totalPages} pages');
+    print('   Hyphenation: ${hyphenator.getCacheStats()}');
     return result;
   } else {
     // DOCX story
