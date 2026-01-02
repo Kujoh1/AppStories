@@ -382,7 +382,12 @@ class InkParser {
     
     final lines = content.split('\n');
     
-    for (final line in lines) {
+    // Track current choice being parsed (for multi-line choices)
+    String? currentChoiceText;
+    String? currentChoiceTarget;
+    
+    for (int i = 0; i < lines.length; i++) {
+      final line = lines[i];
       final trimmed = line.trim();
       
       // Skip empty lines and comments
@@ -396,28 +401,67 @@ class InkParser {
         continue;
       }
       
-      // Parse choices
-      final choiceMatch = _choicePattern.firstMatch(trimmed);
-      if (choiceMatch != null) {
+      // Check for single-line choice: * [Text] -> target
+      final singleLineChoiceMatch = _choicePattern.firstMatch(trimmed);
+      if (singleLineChoiceMatch != null) {
         choices.add(InkChoice(
-          text: choiceMatch.group(1)!,
-          targetKnot: choiceMatch.group(2)!,
+          text: singleLineChoiceMatch.group(1)!,
+          targetKnot: singleLineChoiceMatch.group(2)!,
         ));
         continue;
       }
       
-      // Parse divert
-      final divertMatch = _divertPattern.firstMatch(trimmed);
-      if (divertMatch != null) {
-        divert = divertMatch.group(1);
+      // Check for multi-line choice start: * [Text]
+      final choiceStartPattern = RegExp(r'^\s*\*\s*\[([^\]]+)\]\s*$');
+      final choiceStartMatch = choiceStartPattern.firstMatch(trimmed);
+      if (choiceStartMatch != null) {
+        // Save current choice if exists
+        if (currentChoiceText != null && currentChoiceTarget != null) {
+          choices.add(InkChoice(
+            text: currentChoiceText,
+            targetKnot: currentChoiceTarget,
+          ));
+        }
+        // Start new choice
+        currentChoiceText = choiceStartMatch.group(1);
+        currentChoiceTarget = null;
         continue;
+      }
+      
+      // If we're in a choice, look for the divert (-> target)
+      if (currentChoiceText != null) {
+        final divertMatch = _divertPattern.firstMatch(trimmed);
+        if (divertMatch != null) {
+          currentChoiceTarget = divertMatch.group(1);
+          // Add the completed choice
+          choices.add(InkChoice(
+            text: currentChoiceText,
+            targetKnot: currentChoiceTarget!,
+          ));
+          currentChoiceText = null;
+          currentChoiceTarget = null;
+          continue;
+        }
+        // Skip variable changes within choices
+        if (trimmed.startsWith('~')) continue;
+      }
+      
+      // Parse standalone divert (not within a choice)
+      if (currentChoiceText == null) {
+        final divertMatch = _divertPattern.firstMatch(trimmed);
+        if (divertMatch != null) {
+          divert = divertMatch.group(1);
+          continue;
+        }
       }
       
       // Skip variable changes for now (handled in runtime)
       if (trimmed.startsWith('~')) continue;
       
-      // Regular text
-      textLines.add(trimmed);
+      // Regular text (only if not in a choice)
+      if (currentChoiceText == null) {
+        textLines.add(trimmed);
+      }
     }
     
     return InkKnot(

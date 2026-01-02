@@ -66,6 +66,12 @@ class DocxBookRepository implements BookRepository {
       'path': 'assets/stories/ink/Story_04.md',
       'format': StoryFormat.ink,
     },
+    'echoes_first_dawn': {
+      'title': 'Echoes of the First Dawn',
+      'author': 'AppStories',
+      'path': 'assets/stories/ink/Story_05_final.md',
+      'format': StoryFormat.ink,
+    },
   };
 
   @override
