@@ -29,9 +29,9 @@ class PageLayoutConfig {
   final double safetyBuffer;
 
   const PageLayoutConfig({
-    this.fontSize = 16.0,
+    this.fontSize = 18.0,
     this.lineHeight = 1.9,
-    this.letterSpacing = 0.5,
+    this.letterSpacing = 0.45,
     this.horizontalPadding = 16.0,
     this.fontFamily = 'Mynerve',
     this.imageHeight = 180.0,
@@ -459,9 +459,16 @@ class PageAnalyzer {
     print('📐 [PageAnalyzer] Analyzing ${knotOrder.length} scenes');
     print('   Viewport: ${viewportWidth.toInt()}x${viewportHeight.toInt()}');
     
+    int processedKnots = 0;
     for (final knotName in knotOrder) {
       final knot = story.knots[knotName];
       if (knot == null) continue;
+      
+      // Yield to event loop every 5 knots to allow UI updates
+      processedKnots++;
+      if (processedKnots % 5 == 0) {
+        await Future.delayed(Duration.zero);
+      }
       
       // Record scene start
       sceneToPageIndex[knotName] = pages.length;

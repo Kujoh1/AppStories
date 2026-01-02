@@ -6,16 +6,16 @@ import '../providers/settings_provider.dart';
 class SettingsDialog extends ConsumerStatefulWidget {
   const SettingsDialog({super.key});
 
-  static Future<void> show(BuildContext context) {
-    return showModalBottomSheet(
+  static Future<bool?> show(BuildContext context) {
+    return showModalBottomSheet<bool>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       useSafeArea: true,
       builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.5,
-        minChildSize: 0.4,
-        maxChildSize: 0.7,
+        initialChildSize: 0.65,
+        minChildSize: 0.5,
+        maxChildSize: 0.85,
         expand: false,
         builder: (context, scrollController) => const SettingsDialog(),
       ),
@@ -27,66 +27,197 @@ class SettingsDialog extends ConsumerStatefulWidget {
 }
 
 class _SettingsDialogState extends ConsumerState<SettingsDialog> {
+  // Temporary state for pending changes
+  late StoryFont _pendingFont;
+  late StoryFontSize _pendingFontSize;
+  late TextAnimationSpeed _pendingSpeed;
+  
+  bool _isLoading = false;
+  bool _hasChanges = false;
+  
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with current settings
+    final settings = ref.read(settingsProvider);
+    _pendingFont = settings.storyFont;
+    _pendingFontSize = settings.fontSize;
+    _pendingSpeed = settings.textSpeed;
+  }
+  
+  void _updatePendingFont(StoryFont font) {
+    setState(() {
+      _pendingFont = font;
+      _checkForChanges();
+    });
+  }
+  
+  void _updatePendingFontSize(StoryFontSize size) {
+    setState(() {
+      _pendingFontSize = size;
+      _checkForChanges();
+    });
+  }
+  
+  void _updatePendingSpeed(TextAnimationSpeed speed) {
+    setState(() {
+      _pendingSpeed = speed;
+      _checkForChanges();
+    });
+  }
+  
+  void _checkForChanges() {
+    final settings = ref.read(settingsProvider);
+    _hasChanges = _pendingFont != settings.storyFont ||
+                  _pendingFontSize != settings.fontSize ||
+                  _pendingSpeed != settings.textSpeed;
+  }
+  
+  Future<void> _saveSettings() async {
+    if (!_hasChanges) {
+      Navigator.of(context).pop(false);
+      return;
+    }
+    
+    setState(() => _isLoading = true);
+    
+    try {
+      final settings = ref.read(settingsProvider);
+      final fontChanged = _pendingFont != settings.storyFont;
+      final fontSizeChanged = _pendingFontSize != settings.fontSize;
+      
+      // Apply all settings
+      await ref.read(settingsProvider.notifier).applySettings(
+        storyFont: _pendingFont,
+        fontSize: _pendingFontSize,
+        textSpeed: _pendingSpeed,
+      );
+      
+      // If font or size changed, we need to signal that layout recalculation is needed
+      final needsRecalc = fontChanged || fontSizeChanged;
+      
+      // Small delay to show loading animation
+      await Future.delayed(const Duration(milliseconds: 300));
+      
+      if (mounted) {
+        Navigator.of(context).pop(needsRecalc);
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
+    final primaryColor = Theme.of(context).colorScheme.primary;
 
-    return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF1A1A1A),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(24),
-          shrinkWrap: true,
-          children: [
-            // Handle bar
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.white24,
-                  borderRadius: BorderRadius.circular(2),
+    return Stack(
+      children: [
+        Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFF1A1A1A),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.all(24),
+              shrinkWrap: true,
+              children: [
+                // Handle bar
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
                 ),
-              ),
+                
+                const SizedBox(height: 24),
+                
+                // Title
+                Text(
+                  'Einstellungen',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Mynerve',
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                
+                const SizedBox(height: 32),
+                
+                // Font Selection
+                _buildFontSection(context, primaryColor),
+                
+                const SizedBox(height: 24),
+                
+                // Font Size Selection
+                _buildFontSizeSection(context, primaryColor),
+                
+                const SizedBox(height: 24),
+                
+                // Text Animation Speed
+                _buildTextSpeedSection(context, primaryColor),
+                
+                const SizedBox(height: 32),
+                
+                // Save Button
+                _buildSaveButton(context, primaryColor),
+                
+                const SizedBox(height: 24),
+              ],
             ),
-            
-            const SizedBox(height: 24),
-            
-            // Title
-            Text(
-              'Einstellungen',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Mynerve',
-              ),
-              textAlign: TextAlign.center,
-            ),
-            
-            const SizedBox(height: 32),
-            
-            // Font Selection - Elegant switcher
-            _buildFontSection(context, ref, settings),
-            
-            const SizedBox(height: 24),
-            
-            // Text Animation Speed - Card Selection
-            _buildTextSpeedSection(context, ref, settings),
-            
-            const SizedBox(height: 40),
-          ],
+          ),
         ),
-      ),
+        
+        // Loading Overlay
+        if (_isLoading)
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.7),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                    strokeWidth: 3,
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Einstellungen werden angewendet...',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.8),
+                      fontSize: 14,
+                      fontFamily: 'Mynerve',
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Layout wird neu berechnet',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.5),
+                      fontSize: 12,
+                      fontFamily: 'Mynerve',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
     );
   }
   
-  /// Build the font selection section with elegant preview cards
-  Widget _buildFontSection(BuildContext context, WidgetRef ref, AppSettings settings) {
-    final primaryColor = Theme.of(context).colorScheme.primary;
-    
+  /// Build the font selection section
+  Widget _buildFontSection(BuildContext context, Color primaryColor) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
@@ -126,7 +257,7 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
             // Font cards
             Row(
               children: StoryFont.values.map((font) {
-                final isSelected = settings.storyFont == font;
+                final isSelected = _pendingFont == font;
                 final fontFamily = font == StoryFont.mynerve ? 'Mynerve' : 'EBGaramond';
                 
                 return Expanded(
@@ -135,9 +266,7 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
                       right: font == StoryFont.mynerve ? 8 : 0,
                     ),
                     child: GestureDetector(
-                      onTap: () {
-                        ref.read(settingsProvider.notifier).setStoryFont(font);
-                      },
+                      onTap: () => _updatePendingFont(font),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         padding: const EdgeInsets.all(16),
@@ -152,36 +281,25 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
                                 : Colors.white.withOpacity(0.1),
                             width: isSelected ? 2 : 1,
                           ),
-                          boxShadow: isSelected ? [
-                            BoxShadow(
-                              color: primaryColor.withOpacity(0.2),
-                              blurRadius: 12,
-                              spreadRadius: 0,
-                            ),
-                          ] : null,
                         ),
                         child: Column(
                           children: [
-                            // Font preview text
                             Text(
                               'Abc',
                               style: TextStyle(
-                                fontSize: 32,
+                                fontSize: 28,
                                 fontWeight: FontWeight.w500,
                                 color: isSelected 
                                     ? const Color(0xFFFDF0FF)
                                     : Colors.white.withOpacity(0.6),
                                 fontFamily: fontFamily,
-                                height: 1.2,
                               ),
                             ),
                             const SizedBox(height: 8),
-                            
-                            // Font name
                             Text(
                               AppSettings.getFontName(font),
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: 12,
                                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                                 color: isSelected 
                                     ? primaryColor
@@ -189,27 +307,6 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
                                 fontFamily: 'Mynerve',
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            
-                            // Font description
-                            Text(
-                              AppSettings.getFontDescription(font),
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Colors.white.withOpacity(0.4),
-                                fontFamily: 'Mynerve',
-                              ),
-                            ),
-                            
-                            // Selected indicator
-                            if (isSelected) ...[
-                              const SizedBox(height: 8),
-                              Icon(
-                                Icons.check_circle_rounded,
-                                color: primaryColor,
-                                size: 18,
-                              ),
-                            ],
                           ],
                         ),
                       ),
@@ -218,35 +315,109 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
                 );
               }).toList(),
             ),
-            
-            const SizedBox(height: 16),
-            
-            // Preview text
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              child: Container(
-                key: ValueKey(settings.storyFont),
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0A0806),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.05),
-                  ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  /// Build the font size selection section
+  Widget _buildFontSizeSection(BuildContext context, Color primaryColor) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Section header
+            Row(
+              children: [
+                Icon(
+                  Icons.format_size_rounded,
+                  color: primaryColor,
+                  size: 20,
                 ),
-                child: Text(
-                  '„Die Antarktis will mich töten", flüsterte sie in die Dunkelheit.',
+                const SizedBox(width: 12),
+                Text(
+                  'Schriftgröße',
                   style: TextStyle(
                     fontSize: 16,
-                    height: 1.6,
-                    color: const Color(0xFFFDF0FF),
-                    fontFamily: settings.fontFamily,
-                    letterSpacing: 0.3,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white.withOpacity(0.87),
+                    fontFamily: 'Mynerve',
                   ),
-                  textAlign: TextAlign.justify,
                 ),
-              ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            
+            // Size cards
+            Row(
+              children: StoryFontSize.values.map((size) {
+                final isSelected = _pendingFontSize == size;
+                final sizeValue = size == StoryFontSize.small ? 16 : 18;
+                
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      right: size == StoryFontSize.small ? 8 : 0,
+                    ),
+                    child: GestureDetector(
+                      onTap: () => _updatePendingFontSize(size),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: isSelected 
+                              ? primaryColor.withOpacity(0.15)
+                              : Colors.white.withOpacity(0.03),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isSelected 
+                                ? primaryColor
+                                : Colors.white.withOpacity(0.1),
+                            width: isSelected ? 2 : 1,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              '$sizeValue',
+                              style: TextStyle(
+                                fontSize: sizeValue.toDouble() + 8,
+                                fontWeight: FontWeight.bold,
+                                color: isSelected 
+                                    ? const Color(0xFFFDF0FF)
+                                    : Colors.white.withOpacity(0.6),
+                                fontFamily: 'Mynerve',
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              size == StoryFontSize.small ? 'Klein' : 'Groß',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isSelected 
+                                    ? primaryColor
+                                    : Colors.white.withOpacity(0.5),
+                                fontFamily: 'Mynerve',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
           ],
         ),
@@ -254,8 +425,8 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
     );
   }
 
-  /// Build the text animation speed selection section with simple cards
-  Widget _buildTextSpeedSection(BuildContext context, WidgetRef ref, AppSettings settings) {
+  /// Build the text animation speed selection section
+  Widget _buildTextSpeedSection(BuildContext context, Color primaryColor) {
     final speedOptions = [
       (speed: TextAnimationSpeed.slow, label: 'Langsam'),
       (speed: TextAnimationSpeed.normal, label: 'Normal'),
@@ -263,10 +434,7 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
       (speed: TextAnimationSpeed.instant, label: 'Sofort'),
     ];
 
-    final primaryColor = Theme.of(context).colorScheme.primary;
-
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(12),
@@ -302,10 +470,10 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
             ),
             const SizedBox(height: 16),
             
-            // Speed cards in a row
+            // Speed cards
             Row(
               children: speedOptions.map((option) {
-                final isSelected = settings.textSpeed == option.speed;
+                final isSelected = _pendingSpeed == option.speed;
                 
                 return Expanded(
                   child: Padding(
@@ -313,9 +481,7 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
                       right: option.speed != TextAnimationSpeed.instant ? 8 : 0,
                     ),
                     child: GestureDetector(
-                      onTap: () {
-                        ref.read(settingsProvider.notifier).setTextSpeed(option.speed);
-                      },
+                      onTap: () => _updatePendingSpeed(option.speed),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 150),
                         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -334,7 +500,7 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
                         child: Text(
                           option.label,
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                             color: isSelected 
                                 ? primaryColor
@@ -348,6 +514,55 @@ class _SettingsDialogState extends ConsumerState<SettingsDialog> {
                   ),
                 );
               }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  /// Build the save button
+  Widget _buildSaveButton(BuildContext context, Color primaryColor) {
+    return GestureDetector(
+      onTap: _saveSettings,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: _hasChanges
+                ? [primaryColor, primaryColor.withOpacity(0.8)]
+                : [Colors.white.withOpacity(0.1), Colors.white.withOpacity(0.05)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: _hasChanges ? [
+            BoxShadow(
+              color: primaryColor.withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ] : null,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.save_rounded,
+              color: _hasChanges ? Colors.white : Colors.white.withOpacity(0.5),
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'Speichern',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: _hasChanges ? Colors.white : Colors.white.withOpacity(0.5),
+                fontFamily: 'Mynerve',
+                letterSpacing: 0.5,
+              ),
             ),
           ],
         ),

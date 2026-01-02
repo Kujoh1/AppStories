@@ -15,9 +15,12 @@ final hyphenatorServiceProvider = Provider<HyphenatorService>((ref) {
   return service;
 });
 
-/// Provider for the PageAnalyzer instance with configurable font
-final pageAnalyzerProvider = Provider.family<PageAnalyzer, String>((ref, fontFamily) {
-  return PageAnalyzer(config: PageLayoutConfig(fontFamily: fontFamily));
+/// Provider for the PageAnalyzer instance with configurable font and size
+final pageAnalyzerProvider = Provider.family<PageAnalyzer, ({String fontFamily, double fontSize})>((ref, params) {
+  return PageAnalyzer(config: PageLayoutConfig(
+    fontFamily: params.fontFamily,
+    fontSize: params.fontSize,
+  ));
 });
 
 /// Parameters for page analysis
@@ -26,12 +29,14 @@ class PageAnalysisParams {
   final double viewportWidth;
   final double viewportHeight;
   final String fontFamily;
+  final double fontSize;
   
   const PageAnalysisParams({
     required this.bookId,
     required this.viewportWidth,
     required this.viewportHeight,
     this.fontFamily = 'EBGaramond',
+    this.fontSize = 18.0,
   });
   
   @override
@@ -41,12 +46,29 @@ class PageAnalysisParams {
            other.bookId == bookId &&
            other.viewportWidth == viewportWidth &&
            other.viewportHeight == viewportHeight &&
-           other.fontFamily == fontFamily;
+           other.fontFamily == fontFamily &&
+           other.fontSize == fontSize;
   }
   
   @override
-  int get hashCode => Object.hash(bookId, viewportWidth, viewportHeight, fontFamily);
+  int get hashCode => Object.hash(bookId, viewportWidth, viewportHeight, fontFamily, fontSize);
 }
+
+/// Data class for pre-calculated book result
+class PreCalculatedBook {
+  final PagedBook book;
+  final PageAnalysisParams params;
+  
+  const PreCalculatedBook({
+    required this.book,
+    required this.params,
+  });
+}
+
+/// Persistent state for pre-calculated book (survives navigation!)
+/// This is set by HomePage after calculation and read by InkReaderPage
+/// Using StateProvider (not autoDispose) so data persists during navigation
+final preCalculatedBookProvider = StateProvider<PreCalculatedBook?>((ref) => null);
 
 /// Provider for pre-analyzed paged book
 /// This calculates all pages when needed and recalculates on book reload
@@ -54,9 +76,9 @@ class PageAnalysisParams {
 final pagedBookProvider = FutureProvider.family.autoDispose<PagedBook, PageAnalysisParams>((ref, params) async {
   print('📐 [PageAnalyzer] Starting page calculation for ${params.bookId}');
   print('   Viewport: ${params.viewportWidth.toInt()}x${params.viewportHeight.toInt()}');
-  print('   Font: ${params.fontFamily}');
+  print('   Font: ${params.fontFamily}, Size: ${params.fontSize}');
   
-  final analyzer = ref.watch(pageAnalyzerProvider(params.fontFamily));
+  final analyzer = ref.watch(pageAnalyzerProvider((fontFamily: params.fontFamily, fontSize: params.fontSize)));
   final repository = ref.watch(bookRepositoryProvider);
   final hyphenator = ref.watch(hyphenatorServiceProvider);
   final format = repository.getStoryFormat(params.bookId);

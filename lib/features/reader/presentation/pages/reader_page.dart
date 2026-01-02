@@ -311,7 +311,21 @@ class _ReaderPageState extends ConsumerState<ReaderPage> {
           // Settings
           IconButton(
             icon: const Icon(Icons.tune_rounded, color: Colors.white38, size: 20),
-            onPressed: () => SettingsDialog.show(context),
+            onPressed: () async {
+              final needsRecalc = await SettingsDialog.show(context);
+              if (needsRecalc == true && _viewportSize != null) {
+                final settings = ref.read(settingsProvider);
+                final bookId = ref.read(selectedBookIdProvider);
+                final mq = MediaQuery.of(context);
+                ref.invalidate(pagedBookProvider(PageAnalysisParams(
+                  bookId: bookId,
+                  viewportWidth: _viewportSize!.width,
+                  viewportHeight: _viewportSize!.height - 56 - mq.padding.top - mq.padding.bottom,
+                  fontFamily: settings.fontFamily,
+                  fontSize: settings.fontSizeValue,
+                )));
+              }
+            },
             tooltip: 'Einstellungen',
           ),
 

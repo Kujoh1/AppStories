@@ -16,28 +16,58 @@ enum StoryFont {
   garamond,   // Klassisch, elegant, wie ein echtes Buch
 }
 
+/// Font size options
+enum StoryFontSize {
+  small,  // 16pt
+  large,  // 18pt
+}
+
 /// Settings state
 class AppSettings {
   final TextAnimationSpeed textSpeed;
   final bool soundEnabled;
   final StoryFont storyFont;
+  final StoryFontSize fontSize;
   
   const AppSettings({
     this.textSpeed = TextAnimationSpeed.normal,
     this.soundEnabled = true,
     this.storyFont = StoryFont.garamond, // Garamond als Standard
+    this.fontSize = StoryFontSize.large, // 18pt als Standard
   });
   
   AppSettings copyWith({
     TextAnimationSpeed? textSpeed,
     bool? soundEnabled,
     StoryFont? storyFont,
+    StoryFontSize? fontSize,
   }) {
     return AppSettings(
       textSpeed: textSpeed ?? this.textSpeed,
       soundEnabled: soundEnabled ?? this.soundEnabled,
       storyFont: storyFont ?? this.storyFont,
+      fontSize: fontSize ?? this.fontSize,
     );
+  }
+  
+  /// Get the font size value in pixels
+  double get fontSizeValue {
+    switch (fontSize) {
+      case StoryFontSize.small:
+        return 16.0;
+      case StoryFontSize.large:
+        return 18.0;
+    }
+  }
+  
+  /// Get display name for font size
+  static String getFontSizeName(StoryFontSize size) {
+    switch (size) {
+      case StoryFontSize.small:
+        return '16';
+      case StoryFontSize.large:
+        return '18';
+    }
   }
   
   /// Get the font family name for Flutter
@@ -122,11 +152,13 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     final speedIndex = prefs.getInt('textSpeed') ?? 1;
     final soundEnabled = prefs.getBool('soundEnabled') ?? true;
     final fontIndex = prefs.getInt('storyFont') ?? 1; // Default to Garamond
+    final fontSizeIndex = prefs.getInt('fontSize') ?? 1; // Default to large (18)
     
     state = AppSettings(
       textSpeed: TextAnimationSpeed.values[speedIndex.clamp(0, 4)],
       soundEnabled: soundEnabled,
       storyFont: StoryFont.values[fontIndex.clamp(0, StoryFont.values.length - 1)],
+      fontSize: StoryFontSize.values[fontSizeIndex.clamp(0, StoryFontSize.values.length - 1)],
     );
   }
   
@@ -146,6 +178,37 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
     state = state.copyWith(storyFont: font);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('storyFont', font.index);
+  }
+  
+  Future<void> setFontSize(StoryFontSize size) async {
+    state = state.copyWith(fontSize: size);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('fontSize', size.index);
+  }
+  
+  /// Apply multiple settings at once (for save button)
+  Future<void> applySettings({
+    TextAnimationSpeed? textSpeed,
+    StoryFont? storyFont,
+    StoryFontSize? fontSize,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    if (textSpeed != null) {
+      await prefs.setInt('textSpeed', textSpeed.index);
+    }
+    if (storyFont != null) {
+      await prefs.setInt('storyFont', storyFont.index);
+    }
+    if (fontSize != null) {
+      await prefs.setInt('fontSize', fontSize.index);
+    }
+    
+    state = state.copyWith(
+      textSpeed: textSpeed,
+      storyFont: storyFont,
+      fontSize: fontSize,
+    );
   }
 }
 

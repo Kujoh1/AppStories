@@ -9,9 +9,8 @@ import '../../../../core/widgets/smart_image.dart';
 class _AnimConfig {
   static const int charDelayMs = 12;
   static const int glowDurationMs = 1200;
-  static const double fontSize = 16.0;
   static const double lineHeight = 1.9;
-  static const double letterSpacing = 0.5;
+  static const double letterSpacing = 0.45;
   static const Color glowColor = Color(0xFFFDF0FF);
   static const Color darkTextColor = Color(0xFFFDF0FF);
 }
@@ -33,6 +32,7 @@ class PageViewWidget extends StatefulWidget {
   final bool skipAnimation;
   final double speedMultiplier;
   final String fontFamily;
+  final double fontSize;
 
   const PageViewWidget({
     super.key,
@@ -44,6 +44,7 @@ class PageViewWidget extends StatefulWidget {
     this.skipAnimation = false,
     this.speedMultiplier = 1.0,
     this.fontFamily = 'EBGaramond',
+    this.fontSize = 18.0,
   });
 
   @override
@@ -296,7 +297,7 @@ class _PageViewWidgetState extends State<PageViewWidget>
     
     final baseStyle = TextStyle(
       fontFamily: widget.fontFamily,
-      fontSize: _AnimConfig.fontSize,
+      fontSize: widget.fontSize,
       height: _AnimConfig.lineHeight,
       letterSpacing: _AnimConfig.letterSpacing,
       color: _textColor,
@@ -456,17 +457,17 @@ class _PageViewWidgetState extends State<PageViewWidget>
                 color: _AnimConfig.glowColor.withOpacity(intensity * 0.8),
                 blurRadius: intensity * 12,
               ),
-            // White glow for quoted text (stronger)
-            if (isQuoted) ...[
-              Shadow(
-                color: const Color(0xFFFDF0FF).withOpacity(0.6),
-                blurRadius: 12,
-              ),
-              Shadow(
-                color: const Color(0xFFFDF0FF).withOpacity(0.3),
-                blurRadius: 20,
-              ),
-            ],
+            // White glow for quoted text (temporarily disabled)
+            // if (isQuoted) ...[
+            //   Shadow(
+            //     color: const Color(0xFFFDF0FF).withOpacity(0.6),
+            //     blurRadius: 12,
+            //   ),
+            //   Shadow(
+            //     color: const Color(0xFFFDF0FF).withOpacity(0.3),
+            //     blurRadius: 20,
+            //   ),
+            // ],
           ],
         ),
         isInQuote,
@@ -543,18 +544,18 @@ class _PageViewWidgetState extends State<PageViewWidget>
         final segmentText = text.substring(segmentStart, i);
         final isQuoted = lastQuoteState;
         
-        // Build shadows list
+        // Build shadows list (glow temporarily disabled)
         final shadows = <Shadow>[];
-        if (visible && isQuoted && segmentText.trim().isNotEmpty) {
-          shadows.add(Shadow(
-            color: const Color(0xFFFDF0FF).withOpacity(0.6),
-            blurRadius: 12,
-          ));
-          shadows.add(Shadow(
-            color: const Color(0xFFFDF0FF).withOpacity(0.3),
-            blurRadius: 20,
-          ));
-        }
+        // if (visible && isQuoted && segmentText.trim().isNotEmpty) {
+        //   shadows.add(Shadow(
+        //     color: const Color(0xFFFDF0FF).withOpacity(0.6),
+        //     blurRadius: 12,
+        //   ));
+        //   shadows.add(Shadow(
+        //     color: const Color(0xFFFDF0FF).withOpacity(0.3),
+        //     blurRadius: 20,
+        //   ));
+        // }
         
         // Determine color based on visibility and quote state
         Color textColor;
@@ -609,16 +610,17 @@ class _PageViewWidgetState extends State<PageViewWidget>
           text: text.substring(segmentStart, i),
           style: baseStyle.copyWith(
             color: lastQuoteState ? const Color(0xFFFDF0FF) : baseStyle.color,
-            shadows: lastQuoteState ? [
-              Shadow(
-                color: const Color(0xFFFDF0FF).withOpacity(0.6),
-                blurRadius: 12,
-              ),
-              Shadow(
-                color: const Color(0xFFFDF0FF).withOpacity(0.3),
-                blurRadius: 20,
-              ),
-            ] : baseStyle.shadows,
+            // Glow effect temporarily disabled
+            // shadows: lastQuoteState ? [
+            //   Shadow(
+            //     color: const Color(0xFFFDF0FF).withOpacity(0.6),
+            //     blurRadius: 12,
+            //   ),
+            //   Shadow(
+            //     color: const Color(0xFFFDF0FF).withOpacity(0.3),
+            //     blurRadius: 20,
+            //   ),
+            // ] : baseStyle.shadows,
           ),
         ));
         segmentStart = i;
@@ -633,16 +635,17 @@ class _PageViewWidgetState extends State<PageViewWidget>
         text: text.substring(segmentStart, end),
         style: baseStyle.copyWith(
           color: (lastQuoteState ?? false) ? const Color(0xFFFDF0FF) : baseStyle.color,
-          shadows: (lastQuoteState ?? false) ? [
-            Shadow(
-              color: const Color(0xFFFDF0FF).withOpacity(0.6),
-              blurRadius: 12,
-            ),
-            Shadow(
-              color: const Color(0xFFFDF0FF).withOpacity(0.3),
-              blurRadius: 20,
-            ),
-          ] : baseStyle.shadows,
+          // Glow effect temporarily disabled
+          // shadows: (lastQuoteState ?? false) ? [
+          //   Shadow(
+          //     color: const Color(0xFFFDF0FF).withOpacity(0.6),
+          //     blurRadius: 12,
+          //   ),
+          //   Shadow(
+          //     color: const Color(0xFFFDF0FF).withOpacity(0.3),
+          //     blurRadius: 20,
+          //   ),
+          // ] : baseStyle.shadows,
         ),
       ));
     }

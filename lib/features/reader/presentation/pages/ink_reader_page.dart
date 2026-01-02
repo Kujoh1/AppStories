@@ -29,7 +29,7 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
   late Animation<double> _bgOpacity;
   static const double _backgroundMaxOpacity = 0.03;
   
-  // Preloader animations
+  // Preloader animations (fallback if no pre-calculated data)
   late AnimationController _preloaderController;
   late AnimationController _pulseController;
   late AnimationController _textFadeController;
@@ -149,6 +149,15 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
       return _buildLoadingScreen();
     }
     
+    // Check if we have pre-calculated data from HomePage
+    final preCalculated = ref.watch(preCalculatedBookProvider);
+    
+    if (preCalculated != null && preCalculated.params.bookId == bookId) {
+      // Use cached data - no loading needed!
+      return _buildReader(preCalculated.book, preCalculated.params);
+    }
+    
+    // Fallback: Calculate here (e.g., on app restart or settings change)
     // Calculate actual viewport height for PageViewWidget
     // Must match exactly: screen - SafeArea(top) - AppBar(56) - SafeArea(bottom)
     final mediaQuery = MediaQuery.of(context);
@@ -162,6 +171,7 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
       viewportWidth: _viewportSize!.width,
       viewportHeight: contentHeight,
       fontFamily: settings.fontFamily,
+      fontSize: settings.fontSizeValue,
     );
     
     final pagedBookAsync = ref.watch(pagedBookProvider(params));
@@ -235,6 +245,7 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
                   skipAnimation: settings.skipAnimation,
                   speedMultiplier: settings.speedMultiplier,
                   fontFamily: settings.fontFamily,
+                  fontSize: settings.fontSizeValue,
                   onNext: () => _goToNextPage(pagedBook),
                   onPrevious: () => _goToPreviousPage(),
                   onChoiceSelected: (choice) => _handleChoice(choice, pagedBook, params),
@@ -574,6 +585,7 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
                       viewportWidth: _viewportSize!.width,
                       viewportHeight: _viewportSize!.height - 56 - mq.padding.top - mq.padding.bottom,
                       fontFamily: settings.fontFamily,
+                      fontSize: settings.fontSizeValue,
                     )));
                   }
                 },
@@ -692,7 +704,21 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
           // Settings
           IconButton(
             icon: const Icon(Icons.tune_rounded, color: Colors.white38, size: 20),
-            onPressed: () => SettingsDialog.show(context),
+            onPressed: () async {
+              final needsRecalc = await SettingsDialog.show(context);
+              if (needsRecalc == true && _viewportSize != null) {
+                final settings = ref.read(settingsProvider);
+                final bookId = ref.read(selectedBookIdProvider);
+                final mq = MediaQuery.of(context);
+                ref.invalidate(pagedBookProvider(PageAnalysisParams(
+                  bookId: bookId,
+                  viewportWidth: _viewportSize!.width,
+                  viewportHeight: _viewportSize!.height - 56 - mq.padding.top - mq.padding.bottom,
+                  fontFamily: settings.fontFamily,
+                  fontSize: settings.fontSizeValue,
+                )));
+              }
+            },
             tooltip: 'Einstellungen',
           ),
 
