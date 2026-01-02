@@ -70,6 +70,13 @@ class PreCalculatedBook {
 /// Using StateProvider (not autoDispose) so data persists during navigation
 final preCalculatedBookProvider = StateProvider<PreCalculatedBook?>((ref) => null);
 
+/// Episode info record type
+typedef EpisodeInfoRecord = ({String seriesId, int episodeNumber, int totalEpisodes});
+
+/// Provider for current episode info (for series books)
+/// Used to track which episode is being read and enable episode completion
+final currentEpisodeInfoProvider = StateProvider<EpisodeInfoRecord?>((ref) => null);
+
 /// Provider for pre-analyzed paged book
 /// This calculates all pages when needed and recalculates on book reload
 /// Uses autoDispose to ensure fresh calculations when book is reloaded
@@ -81,7 +88,17 @@ final pagedBookProvider = FutureProvider.family.autoDispose<PagedBook, PageAnaly
   final analyzer = ref.watch(pageAnalyzerProvider((fontFamily: params.fontFamily, fontSize: params.fontSize)));
   final repository = ref.watch(bookRepositoryProvider);
   final hyphenator = ref.watch(hyphenatorServiceProvider);
-  final format = repository.getStoryFormat(params.bookId);
+  
+  // Check if this is an episode (format: seriesId_episode_N)
+  final episodeMatch = RegExp(r'^(.+)_episode_(\d+)$').firstMatch(params.bookId);
+  final isEpisode = episodeMatch != null;
+  final seriesId = isEpisode ? episodeMatch.group(1)! : params.bookId;
+  final episodeNumber = isEpisode ? int.parse(episodeMatch.group(2)!) : 0;
+  
+  // Determine story format based on series or regular book
+  final format = isEpisode 
+      ? StoryFormat.ink  // Episodes are always Ink format
+      : repository.getStoryFormat(params.bookId);
   
   // Ensure hyphenator is initialized
   if (!hyphenator.isInitialized) {
@@ -89,8 +106,11 @@ final pagedBookProvider = FutureProvider.family.autoDispose<PagedBook, PageAnaly
   }
   
   if (format == StoryFormat.ink) {
-    // Ink story
-    final story = await repository.getInkStory(params.bookId);
+    // Load Ink story - either episode or regular book
+    final story = isEpisode
+        ? await repository.getEpisodeStory(seriesId, episodeNumber)
+        : await repository.getInkStory(params.bookId);
+    
     final result = await analyzer.analyzeInkStory(
       story: story,
       bookId: params.bookId,

@@ -1,5 +1,6 @@
 import '../../domain/models/book_graph.dart';
 import '../../domain/models/chapter_info.dart';
+import '../../domain/models/series_metadata.dart';
 import '../../core/services/story_parser.dart';
 import '../../core/services/ink_parser.dart';
 
@@ -28,6 +29,17 @@ abstract class BookRepository {
   
   /// Load Ink story (for Ink format books)
   Future<InkStory> getInkStory(String bookId);
+  
+  // ==================== SERIES SUPPORT ====================
+  
+  /// Check if a book is a series (has episodes)
+  bool isSeriesBook(String bookId);
+  
+  /// Get series metadata (returns null if not a series)
+  SeriesMetadata? getSeriesMetadata(String bookId);
+  
+  /// Load Ink story for a specific episode
+  Future<InkStory> getEpisodeStory(String seriesId, int episodeNumber);
 }
 
 /// Repository that loads stories from various formats
@@ -40,6 +52,64 @@ class DocxBookRepository implements BookRepository {
   
   // Cache for Ink stories
   final Map<String, InkStory> _inkStoryCache = {};
+  
+  // Cache for episode stories (keyed by "seriesId_episodeNumber")
+  final Map<String, InkStory> _episodeStoryCache = {};
+  
+  // Series metadata - books that have episodes
+  // Note: Episode files should be properly formatted Ink stories
+  // Each episode needs its own complete Ink file with VAR declarations
+  static final Map<String, SeriesMetadata> _seriesMetadata = {
+    'echoes_first_dawn': SeriesMetadata(
+      seriesId: 'echoes_first_dawn',
+      title: 'Echoes of the First Dawn',
+      author: 'AppStories',
+      episodes: [
+        const EpisodeInfo(
+          number: 1,
+          title: 'Der Schneesturm',
+          filePath: 'assets/stories/ink/Story_05_episode_01.md',
+          description: 'Die Antarktis birgt ein Geheimnis, das älter ist als die Menschheit.',
+          estimatedMinutes: 35,
+        ),
+        const EpisodeInfo(
+          number: 2,
+          title: 'Die Stadt der Ersten',
+          filePath: 'assets/stories/ink/Story_05_episode_02.md',
+          description: 'Die Jagd nach den zwölf Schlüsseln beginnt.',
+          estimatedMinutes: 40,
+        ),
+        const EpisodeInfo(
+          number: 3,
+          title: 'Die Dunkelheit erwacht',
+          filePath: 'assets/stories/ink/Story_05_episode_03.md',
+          description: 'Die wahre Natur der Bedrohung offenbart sich.',
+          estimatedMinutes: 50,
+        ),
+        const EpisodeInfo(
+          number: 4,
+          title: 'Die Konfrontation',
+          filePath: 'assets/stories/ink/Story_05_episode_04.md',
+          description: 'Verbündete und Feinde treffen aufeinander.',
+          estimatedMinutes: 45,
+        ),
+        const EpisodeInfo(
+          number: 5,
+          title: 'Der Abstieg',
+          filePath: 'assets/stories/ink/Story_05_episode_05.md',
+          description: 'Der Weg zum Kern der Dunkelheit.',
+          estimatedMinutes: 35,
+        ),
+        const EpisodeInfo(
+          number: 6,
+          title: 'Das Vermächtnis',
+          filePath: 'assets/stories/ink/Story_05_episode_06.md',
+          description: 'Die finale Entscheidung über das Schicksal der Menschheit.',
+          estimatedMinutes: 40,
+        ),
+      ],
+    ),
+  };
   
   static const Map<String, Map<String, dynamic>> _bookMetadata = {
     'zwischen_den_gleisen': {
@@ -269,5 +339,46 @@ class DocxBookRepository implements BookRepository {
   Future<LegacyPage?> getPage(String bookId, String pageId) async {
     final book = await getBook(bookId);
     return book.getPage(pageId);
+  }
+  
+  // ==================== SERIES IMPLEMENTATION ====================
+  
+  @override
+  bool isSeriesBook(String bookId) {
+    return _seriesMetadata.containsKey(bookId);
+  }
+  
+  @override
+  SeriesMetadata? getSeriesMetadata(String bookId) {
+    return _seriesMetadata[bookId];
+  }
+  
+  @override
+  Future<InkStory> getEpisodeStory(String seriesId, int episodeNumber) async {
+    final cacheKey = '${seriesId}_episode_$episodeNumber';
+    
+    if (_episodeStoryCache.containsKey(cacheKey)) {
+      return _episodeStoryCache[cacheKey]!;
+    }
+    
+    final series = _seriesMetadata[seriesId];
+    if (series == null) {
+      throw Exception('Series with ID $seriesId not found');
+    }
+    
+    final episode = series.episodes.firstWhere(
+      (e) => e.number == episodeNumber,
+      orElse: () => throw Exception('Episode $episodeNumber not found in series $seriesId'),
+    );
+    
+    final story = await InkParser.loadFromAsset(episode.filePath);
+    _episodeStoryCache[cacheKey] = story;
+    
+    return story;
+  }
+  
+  /// Clear episode cache (useful when switching episodes)
+  void clearEpisodeCache() {
+    _episodeStoryCache.clear();
   }
 }

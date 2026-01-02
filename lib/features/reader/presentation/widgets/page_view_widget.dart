@@ -270,19 +270,19 @@ class _PageViewWidgetState extends State<PageViewWidget>
                   ),
                 ),
                 
-                // Chapter/Page indicator (fixed at bottom left)
-                Positioned(
-                  left: 8,
-                  bottom: 8,
-                  child: _buildChapterPageIndicator(),
-                ),
+                // Chapter/Page indicator (hidden)
+                // Positioned(
+                //   left: 8,
+                //   bottom: 8,
+                //   child: _buildChapterPageIndicator(),
+                // ),
                 
-                // Copyright (fixed at bottom right)
-                Positioned(
-                  right: 8,
-                  bottom: 8,
-                  child: _buildCopyright(),
-                ),
+                // Copyright (hidden)
+                // Positioned(
+                //   right: 8,
+                //   bottom: 8,
+                //   child: _buildCopyright(),
+                // ),
               ],
             ),
           ),

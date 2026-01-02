@@ -1,14 +1,19 @@
+import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/services/page_analyzer.dart';
 import '../../../../core/widgets/smart_image.dart';
+import '../../../../data/repositories/book_repository.dart';
 import '../../../../domain/models/story_page.dart';
 import '../../providers/book_provider.dart';
 import '../../providers/page_state_provider.dart';
 import '../../providers/reading_progress_provider.dart';
 import '../widgets/page_view_widget.dart';
 import '../widgets/chapter_overview_dialog.dart';
+import '../widgets/episode_end_screen.dart';
 import '../../../settings/presentation/settings_dialog.dart';
 import '../../../settings/providers/settings_provider.dart';
 
@@ -51,6 +56,15 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
   
   // Viewport size for page calculation
   Size? _viewportSize;
+  
+  // Episode transition state
+  bool _isLoadingNextEpisode = false;
+  String _episodeLoadingMessage = '';
+  double _episodeLoadingProgress = 0.0;
+  Timer? _episodeProgressTimer;
+  
+  // End screen state
+  bool _showingEndScreen = false;
 
   @override
   void initState() {
@@ -123,6 +137,7 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
     _preloaderController.dispose();
     _pulseController.dispose();
     _textFadeController.dispose();
+    _episodeProgressTimer?.cancel();
     super.dispose();
   }
 
@@ -130,29 +145,118 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0806),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          // Store viewport size for page calculation
-          _viewportSize = Size(constraints.maxWidth, constraints.maxHeight);
-          
-          return _buildContent(constraints);
-        },
+      body: Stack(
+        children: [
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // Store viewport size for page calculation
+              _viewportSize = Size(constraints.maxWidth, constraints.maxHeight);
+              
+              return _buildContent(constraints);
+            },
+          ),
+          // Episode loading overlay
+          if (_isLoadingNextEpisode)
+            _buildEpisodeLoadingOverlay(),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildEpisodeLoadingOverlay() {
+    return Positioned.fill(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: Container(
+          color: Colors.black.withOpacity(0.7),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Animated book icon
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  duration: const Duration(milliseconds: 800),
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: 0.8 + (0.2 * value),
+                      child: Icon(
+                        Icons.auto_stories_rounded,
+                        size: 64,
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 32),
+                // Loading message
+                Material(
+                  color: Colors.transparent,
+                  child: Text(
+                    _episodeLoadingMessage,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // Progress bar
+                SizedBox(
+                  width: 200,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: _episodeLoadingProgress,
+                      backgroundColor: Colors.white.withOpacity(0.2),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).colorScheme.primary,
+                      ),
+                      minHeight: 6,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Percentage
+                Material(
+                  color: Colors.transparent,
+                  child: Text(
+                    '${(_episodeLoadingProgress * 100).toInt()}%',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.7),
+                      fontSize: 14,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildContent(BoxConstraints constraints) {
-    final bookId = ref.watch(selectedBookIdProvider);
+    final selectedBookId = ref.watch(selectedBookIdProvider);
     final settings = ref.watch(settingsProvider);
+    final episodeInfo = ref.watch(currentEpisodeInfoProvider);
     
     if (_viewportSize == null) {
       return _buildLoadingScreen();
     }
     
+    // Determine the effective bookId (for episodes, use the episode-specific ID)
+    final effectiveBookId = episodeInfo != null
+        ? '${episodeInfo.seriesId}_episode_${episodeInfo.episodeNumber}'
+        : selectedBookId;
+    
     // Check if we have pre-calculated data from HomePage
     final preCalculated = ref.watch(preCalculatedBookProvider);
     
-    if (preCalculated != null && preCalculated.params.bookId == bookId) {
+    if (preCalculated != null && preCalculated.params.bookId == effectiveBookId) {
       // Use cached data - no loading needed!
       return _buildReader(preCalculated.book, preCalculated.params);
     }
@@ -167,7 +271,7 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
         - mediaQuery.padding.bottom; // SafeArea bottom (home indicator)
     
     final params = PageAnalysisParams(
-      bookId: bookId,
+      bookId: effectiveBookId,
       viewportWidth: _viewportSize!.width,
       viewportHeight: contentHeight,
       fontFamily: settings.fontFamily,
@@ -188,6 +292,11 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
     final settings = ref.watch(settingsProvider);
     final bookId = ref.watch(selectedBookIdProvider);
     
+    // Check if we should show end screen
+    if (_showingEndScreen) {
+      return _buildEndScreen();
+    }
+    
     // Safety check
     if (pagedBook.pages.isEmpty) {
       return _buildEndScreen();
@@ -202,11 +311,6 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
     }
     
     final currentPage = pagedBook.pages[safePageIndex];
-    
-    // Check for story end
-    if (safePageIndex >= pagedBook.pages.length) {
-      return _buildEndScreen();
-    }
 
     return Stack(
       fit: StackFit.expand,
@@ -298,14 +402,37 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
   
   void _saveProgress(int pageIndex, int totalPages) {
     if (pageIndex > 0) {
-      final bookId = ref.read(selectedBookIdProvider);
-      ref.read(readingProgressServiceProvider).saveProgress(bookId, pageIndex, totalPages);
+      final progressService = ref.read(readingProgressServiceProvider);
+      final episodeInfo = ref.read(currentEpisodeInfoProvider);
+      
+      if (episodeInfo != null) {
+        // Save episode-specific progress
+        progressService.saveEpisodeProgress(
+          episodeInfo.seriesId, 
+          episodeInfo.episodeNumber, 
+          pageIndex, 
+          totalPages,
+        );
+      } else {
+        // Save regular book progress
+        final bookId = ref.read(selectedBookIdProvider);
+        progressService.saveProgress(bookId, pageIndex, totalPages);
+      }
     }
   }
 
   void _showEndScreen() {
-    // Navigate to end screen or show completion dialog
-    setState(() {});
+    // Mark episode as completed if this is a series
+    final episodeInfo = ref.read(currentEpisodeInfoProvider);
+    if (episodeInfo != null) {
+      final progressService = ref.read(readingProgressServiceProvider);
+      progressService.markEpisodeCompleted(episodeInfo.seriesId, episodeInfo.episodeNumber);
+    }
+    
+    // Show the end screen
+    setState(() {
+      _showingEndScreen = true;
+    });
   }
 
   Widget _buildLoadingScreen() {
@@ -708,10 +835,14 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
               final needsRecalc = await SettingsDialog.show(context);
               if (needsRecalc == true && _viewportSize != null) {
                 final settings = ref.read(settingsProvider);
-                final bookId = ref.read(selectedBookIdProvider);
+                final episodeInfo = ref.read(currentEpisodeInfoProvider);
+                final selectedBookId = ref.read(selectedBookIdProvider);
+                final effectiveBookId = episodeInfo != null
+                    ? '${episodeInfo.seriesId}_episode_${episodeInfo.episodeNumber}'
+                    : selectedBookId;
                 final mq = MediaQuery.of(context);
                 ref.invalidate(pagedBookProvider(PageAnalysisParams(
-                  bookId: bookId,
+                  bookId: effectiveBookId,
                   viewportWidth: _viewportSize!.width,
                   viewportHeight: _viewportSize!.height - 56 - mq.padding.top - mq.padding.bottom,
                   fontFamily: settings.fontFamily,
@@ -735,7 +866,22 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
 
   Widget _buildEndScreen() {
     final theme = Theme.of(context);
-
+    final episodeInfo = ref.watch(currentEpisodeInfoProvider);
+    final hasNextEpisode = episodeInfo != null && 
+                           episodeInfo.episodeNumber < episodeInfo.totalEpisodes;
+    
+    // For episodes: use the epic animated end screen
+    if (episodeInfo != null) {
+      return EpisodeEndScreen(
+        episodeNumber: episodeInfo.episodeNumber,
+        totalEpisodes: episodeInfo.totalEpisodes,
+        hasNextEpisode: hasNextEpisode,
+        onNextEpisode: () => _startNextEpisode(episodeInfo),
+        onReplay: _resetStory,
+      );
+    }
+    
+    // For standalone stories: keep the simple end screen
     return Container(
       decoration: _buildDefaultGradient(),
       child: SafeArea(
@@ -779,6 +925,7 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
                     ),
                   ],
                 ),
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
 
@@ -792,6 +939,7 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
                 ),
                 textAlign: TextAlign.center,
               ),
+              
               const SizedBox(height: 48),
 
               // Actions
@@ -831,10 +979,236 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
       ),
     );
   }
+  
+  Widget _buildEpisodeProgress(EpisodeInfoRecord episodeInfo) {
+    final theme = Theme.of(context);
+    final progress = episodeInfo.episodeNumber / episodeInfo.totalEpisodes;
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.1),
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Serienfortschritt',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.white.withOpacity(0.5),
+                ),
+              ),
+              Text(
+                '${episodeInfo.episodeNumber} von ${episodeInfo.totalEpisodes}',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(3),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.white.withOpacity(0.1),
+              color: theme.colorScheme.primary,
+              minHeight: 6,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Future<void> _startNextEpisode(EpisodeInfoRecord currentEpisode) async {
+    final repository = ref.read(bookRepositoryProvider);
+    final series = repository.getSeriesMetadata(currentEpisode.seriesId);
+    final progressService = ref.read(readingProgressServiceProvider);
+    final settings = ref.read(settingsProvider);
+    
+    if (series == null) return;
+    
+    final nextEpisodeNumber = currentEpisode.episodeNumber + 1;
+    
+    // Check if next episode exists
+    if (nextEpisodeNumber > series.episodeCount) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Das war die letzte Episode!')),
+      );
+      return;
+    }
+    
+    final nextEpisode = series.episodes.firstWhere(
+      (e) => e.number == nextEpisodeNumber,
+      orElse: () => series.episodes.first,
+    );
+    
+    // Mark current episode as completed
+    await progressService.markEpisodeCompleted(
+      currentEpisode.seriesId, 
+      currentEpisode.episodeNumber,
+    );
+    
+    // Show loading overlay
+    setState(() {
+      _isLoadingNextEpisode = true;
+      _episodeLoadingMessage = 'Lade Episode $nextEpisodeNumber...';
+      _episodeLoadingProgress = 0.0;
+    });
+    
+    // Wait for UI to render
+    await Future.delayed(const Duration(milliseconds: 50));
+    if (!mounted) return;
+    
+    try {
+      // Step 1: Load Episode story (0% -> 15%)
+      setState(() {
+        _episodeLoadingProgress = 0.05;
+      });
+      
+      final story = await repository.getEpisodeStory(series.seriesId, nextEpisodeNumber);
+      
+      if (!mounted) return;
+      
+      setState(() {
+        _episodeLoadingProgress = 0.15;
+        _episodeLoadingMessage = 'Berechne Layouts...';
+      });
+      
+      // Step 2: Get viewport size
+      final mediaQuery = MediaQuery.of(context);
+      final screenSize = mediaQuery.size;
+      final contentHeight = screenSize.height 
+          - mediaQuery.padding.top
+          - 56
+          - mediaQuery.padding.bottom;
+      
+      // Step 3: Start progress animation (15% -> 85%)
+      final estimatedTime = Duration(milliseconds: story.knots.length * 15);
+      final updateInterval = estimatedTime.inMilliseconds ~/ 70;
+      
+      _episodeProgressTimer?.cancel();
+      _episodeProgressTimer = Timer.periodic(
+        Duration(milliseconds: updateInterval.clamp(50, 200)),
+        (timer) {
+          if (!mounted) {
+            timer.cancel();
+            return;
+          }
+          setState(() {
+            _episodeLoadingProgress = (_episodeLoadingProgress + 0.01).clamp(0.15, 0.85);
+            if (_episodeLoadingProgress > 0.5 && _episodeLoadingProgress < 0.7) {
+              _episodeLoadingMessage = 'Optimiere Text...';
+            } else if (_episodeLoadingProgress >= 0.7) {
+              _episodeLoadingMessage = 'Fast fertig...';
+            }
+          });
+        },
+      );
+      
+      // Step 4: Calculate pages
+      final hyphenator = ref.read(hyphenatorServiceProvider);
+      if (!hyphenator.isInitialized) {
+        await hyphenator.initialize();
+      }
+      
+      final analyzer = PageAnalyzer(config: PageLayoutConfig(
+        fontFamily: settings.fontFamily,
+        fontSize: settings.fontSizeValue,
+      ));
+      
+      final pagedBook = await analyzer.analyzeInkStory(
+        story: story,
+        bookId: '${series.seriesId}_episode_$nextEpisodeNumber',
+        viewportWidth: screenSize.width,
+        viewportHeight: contentHeight,
+        hyphenator: hyphenator,
+      );
+      
+      _episodeProgressTimer?.cancel();
+      
+      if (!mounted) return;
+      
+      // Step 5: Update providers
+      final episodeBookId = '${series.seriesId}_episode_$nextEpisodeNumber';
+      final params = PageAnalysisParams(
+        bookId: episodeBookId,
+        viewportWidth: screenSize.width,
+        viewportHeight: contentHeight,
+        fontFamily: settings.fontFamily,
+        fontSize: settings.fontSizeValue,
+      );
+      
+      // Store in pre-calculated provider
+      ref.read(preCalculatedBookProvider.notifier).state = PreCalculatedBook(
+        book: pagedBook,
+        params: params,
+      );
+      
+      // Update current episode info
+      ref.read(currentEpisodeInfoProvider.notifier).state = (
+        seriesId: series.seriesId,
+        episodeNumber: nextEpisodeNumber,
+        totalEpisodes: series.episodeCount,
+      );
+      
+      // Save current episode
+      await progressService.setCurrentEpisode(series.seriesId, nextEpisodeNumber);
+      
+      // Reset page index
+      ref.read(currentPageIndexProvider.notifier).state = 0;
+      
+      // Reset backgrounds
+      _currentBackground = null;
+      _previousBackground = null;
+      
+      setState(() {
+        _episodeLoadingMessage = 'Bereit!';
+        _episodeLoadingProgress = 1.0;
+      });
+      
+      await Future.delayed(const Duration(milliseconds: 300));
+      
+      if (!mounted) return;
+      
+      setState(() {
+        _isLoadingNextEpisode = false;
+        _showingEndScreen = false;
+      });
+      
+    } catch (e) {
+      _episodeProgressTimer?.cancel();
+      if (!mounted) return;
+      
+      setState(() {
+        _isLoadingNextEpisode = false;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Fehler beim Laden: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   void _resetStory() {
-    _currentBackground = null;
-    _previousBackground = null;
+    setState(() {
+      _showingEndScreen = false;
+      _currentBackground = null;
+      _previousBackground = null;
+    });
     ref.read(currentPageIndexProvider.notifier).state = 0;
     ref.read(readingStateProvider.notifier).reset();
   }
