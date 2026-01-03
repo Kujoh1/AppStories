@@ -4,9 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../core/services/device_service.dart';
 import '../../../../data/repositories/book_repository.dart';
 import '../../../../domain/models/series_metadata.dart';
 import '../../../settings/providers/settings_provider.dart';
+import '../../../diamonds/presentation/widgets/diamond_balance_widget.dart';
+import '../../../diamonds/presentation/pages/diamond_purchase_page.dart';
+import '../../../admin/presentation/pages/admin_page.dart';
 import '../../providers/book_provider.dart';
 import '../../providers/chapter_provider.dart';
 import '../../providers/reading_progress_provider.dart';
@@ -521,7 +525,54 @@ class _HomePageState extends ConsumerState<HomePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const SizedBox(height: AppConstants.paddingXLarge),
+                      const SizedBox(height: AppConstants.paddingMedium),
+                      
+                      // Top bar with admin button (if admin) and diamond balance
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Admin button (only visible for admin device)
+                          Consumer(
+                            builder: (context, ref, _) {
+                              final isAdminAsync = ref.watch(isAdminDeviceProvider);
+                              return isAdminAsync.when(
+                                data: (isAdmin) => isAdmin
+                                    ? GestureDetector(
+                                        onTap: () => Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => const AdminPage(),
+                                          ),
+                                        ),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withOpacity(0.05),
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                          child: const Icon(
+                                            Icons.admin_panel_settings,
+                                            color: Color(0xFF4ECDC4),
+                                            size: 20,
+                                          ),
+                                        ),
+                                      )
+                                    : const SizedBox.shrink(),
+                                loading: () => const SizedBox.shrink(),
+                                error: (_, __) => const SizedBox.shrink(),
+                              );
+                            },
+                          ),
+                          // Diamond balance
+                          DiamondBalanceWidget(
+                            compact: true,
+                            onTap: () => DiamondPurchasePage.show(context),
+                          ),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: AppConstants.paddingMedium),
+                      
                       // App Icon/Logo
                       Icon(
                         Icons.auto_stories,

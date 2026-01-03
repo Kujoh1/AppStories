@@ -7,8 +7,10 @@ import 'core/constants/app_constants.dart';
 import 'core/widgets/debug_overlay.dart';
 import 'core/widgets/preloader.dart';
 import 'core/utils/custom_scroll_behavior.dart';
+import 'core/services/device_service.dart';
 import 'features/reader/providers/book_provider.dart';
 import 'features/settings/providers/settings_provider.dart';
+import 'features/diamonds/providers/diamond_providers.dart';
 
 void main() {
   runApp(
@@ -48,6 +50,12 @@ class _AppStoriesAppState extends ConsumerState<AppStoriesApp> {
 
     // Preload settings first and wait for SharedPreferences to load
     await ref.read(settingsProvider.notifier).initialized;
+    
+    // Initialize diamond repository
+    await ref.read(diamondRepositoryProvider).init();
+    
+    // Initialize device service (for admin detection)
+    await ref.read(deviceServiceProvider).init();
     
     if (!mounted) return;
     setState(() {

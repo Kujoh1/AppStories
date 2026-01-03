@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../domain/models/series_metadata.dart';
+import '../../../../domain/models/diamond_models.dart';
 import '../../providers/reading_progress_provider.dart';
+import '../../../diamonds/providers/diamond_providers.dart';
+import '../../../diamonds/presentation/widgets/episode_unlock_dialog.dart';
+import '../../../diamonds/presentation/widgets/diamond_balance_widget.dart';
 
 /// Sheet for selecting an episode from a series
 class EpisodeSelectionSheet extends ConsumerStatefulWidget {
@@ -37,6 +41,7 @@ class EpisodeSelectionSheet extends ConsumerStatefulWidget {
 
 class _EpisodeSelectionSheetState extends ConsumerState<EpisodeSelectionSheet> {
   Set<int> _completedEpisodes = {};
+  Set<int> _unlockedEpisodes = {};
   int _currentEpisode = 1;
   bool _isLoading = true;
 
@@ -47,16 +52,45 @@ class _EpisodeSelectionSheetState extends ConsumerState<EpisodeSelectionSheet> {
   }
 
   Future<void> _loadProgress() async {
-    final progressService = ref.read(readingProgressServiceProvider);
-    final completed = await progressService.getCompletedEpisodes(widget.series.seriesId);
-    final current = await progressService.getCurrentEpisode(widget.series.seriesId);
-    
-    if (mounted) {
-      setState(() {
-        _completedEpisodes = completed;
-        _currentEpisode = current;
-        _isLoading = false;
-      });
+    try {
+      final progressService = ref.read(readingProgressServiceProvider);
+      
+      // Load progress data (fast, from SharedPreferences)
+      final completed = await progressService.getCompletedEpisodes(widget.series.seriesId);
+      final current = await progressService.getCurrentEpisode(widget.series.seriesId);
+      
+      // Update UI immediately with progress data
+      if (mounted) {
+        setState(() {
+          _completedEpisodes = completed;
+          _currentEpisode = current;
+          _isLoading = false;
+        });
+      }
+      
+      // Load unlock data in background (optional, only matters for episodes > 3)
+      _loadUnlockedEpisodes();
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+  
+  Future<void> _loadUnlockedEpisodes() async {
+    try {
+      final diamondRepo = ref.read(diamondRepositoryProvider);
+      final unlocked = await diamondRepo.getUnlockedEpisodes(widget.series.seriesId);
+      
+      if (mounted) {
+        setState(() {
+          _unlockedEpisodes = unlocked;
+        });
+      }
+    } catch (e) {
+      // Ignore - episodes 1-3 are free anyway
     }
   }
 
@@ -67,8 +101,47 @@ class _EpisodeSelectionSheetState extends ConsumerState<EpisodeSelectionSheet> {
     if (episode.number == _currentEpisode) {
       return EpisodeStatus.inProgress;
     }
-    // All episodes are always available
+    // All episodes are available (no locking)
     return EpisodeStatus.available;
+  }
+
+  bool _isEpisodeFree(int episodeNumber) {
+    return episodeNumber <= EpisodeUnlockStatus.freeEpisodeCount;
+  }
+
+  bool _isEpisodeUnlocked(int episodeNumber) {
+    // First 3 episodes are always free
+    if (_isEpisodeFree(episodeNumber)) return true;
+    // Check if unlocked with diamonds
+    return _unlockedEpisodes.contains(episodeNumber);
+  }
+
+  Future<void> _handleEpisodeTap(EpisodeInfo episode) async {
+    if (_isEpisodeUnlocked(episode.number)) {
+      // Episode is free or already unlocked
+      widget.onEpisodeSelected(episode);
+    } else {
+      // Show unlock dialog
+      final unlocked = await EpisodeUnlockDialog.show(
+        context,
+        seriesId: widget.series.seriesId,
+        episodeNumber: episode.number,
+        episodeTitle: episode.title,
+        onUnlocked: () {
+          // Add to local unlocked set immediately
+          if (mounted) {
+            setState(() {
+              _unlockedEpisodes.add(episode.number);
+            });
+          }
+        },
+      );
+      
+      if (unlocked && mounted) {
+        // Auto-start the episode after unlock
+        widget.onEpisodeSelected(episode);
+      }
+    }
   }
 
   @override
@@ -115,6 +188,19 @@ class _EpisodeSelectionSheetState extends ConsumerState<EpisodeSelectionSheet> {
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
+                  // Diamond balance at top right
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      const DiamondBalanceWidget(
+                        compact: true,
+                        // No onTap = no plus icon shown
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  
                   // Series icon
                   Container(
                     width: 56,
@@ -218,12 +304,15 @@ class _EpisodeSelectionSheetState extends ConsumerState<EpisodeSelectionSheet> {
                       itemBuilder: (context, index) {
                         final episode = widget.series.episodes[index];
                         final status = _getEpisodeStatus(episode);
+                        final isFree = _isEpisodeFree(episode.number);
+                        final isUnlocked = _isEpisodeUnlocked(episode.number);
                         return _EpisodeCard(
                           episode: episode,
                           status: status,
-                          onTap: status != EpisodeStatus.locked
-                              ? () => widget.onEpisodeSelected(episode)
-                              : null,
+                          isFree: isFree,
+                          isUnlocked: isUnlocked,
+                          unlockCost: isFree ? 0 : EpisodeUnlockStatus.standardUnlockCost,
+                          onTap: () => _handleEpisodeTap(episode),
                         );
                       },
                     ),
@@ -240,18 +329,24 @@ class _EpisodeSelectionSheetState extends ConsumerState<EpisodeSelectionSheet> {
 class _EpisodeCard extends StatelessWidget {
   final EpisodeInfo episode;
   final EpisodeStatus status;
+  final bool isFree;
+  final bool isUnlocked;
+  final int unlockCost;
   final VoidCallback? onTap;
 
   const _EpisodeCard({
     required this.episode,
     required this.status,
+    required this.isFree,
+    required this.isUnlocked,
+    required this.unlockCost,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isLocked = status == EpisodeStatus.locked;
+    final needsUnlock = !isFree && !isUnlocked;
     final isCompleted = status == EpisodeStatus.completed;
     final isInProgress = status == EpisodeStatus.inProgress;
 
@@ -268,14 +363,18 @@ class _EpisodeCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: isInProgress
                   ? theme.colorScheme.primary.withOpacity(0.15)
-                  : Colors.white.withOpacity(isLocked ? 0.02 : 0.05),
+                  : needsUnlock
+                      ? const Color(0xFF1E1E2E)
+                      : Colors.white.withOpacity(0.05),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isInProgress
                     ? theme.colorScheme.primary.withOpacity(0.4)
                     : isCompleted
                         ? Colors.green.withOpacity(0.3)
-                        : Colors.white.withOpacity(isLocked ? 0.05 : 0.1),
+                        : needsUnlock
+                            ? const Color(0xFF4ECDC4).withOpacity(0.3)
+                            : Colors.white.withOpacity(0.1),
                 width: isInProgress ? 2 : 1,
               ),
             ),
@@ -286,8 +385,10 @@ class _EpisodeCard extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    gradient: isLocked
-                        ? null
+                    gradient: needsUnlock
+                        ? const LinearGradient(
+                            colors: [Color(0xFF2D4A3E), Color(0xFF1E3A2F)],
+                          )
                         : LinearGradient(
                             colors: isCompleted
                                 ? [Colors.green.withOpacity(0.3), Colors.green.withOpacity(0.1)]
@@ -295,14 +396,13 @@ class _EpisodeCard extends StatelessWidget {
                                     ? [theme.colorScheme.primary.withOpacity(0.4), theme.colorScheme.primary.withOpacity(0.2)]
                                     : [Colors.white.withOpacity(0.15), Colors.white.withOpacity(0.05)],
                           ),
-                    color: isLocked ? Colors.white.withOpacity(0.05) : null,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(
-                    child: isLocked
-                        ? Icon(
-                            Icons.lock_rounded,
-                            color: Colors.white.withOpacity(0.3),
+                    child: needsUnlock
+                        ? const Icon(
+                            Icons.diamond_outlined,
+                            color: Color(0xFF4ECDC4),
                             size: 20,
                           )
                         : isCompleted
@@ -333,12 +433,10 @@ class _EpisodeCard extends StatelessWidget {
                     children: [
                       Text(
                         episode.title,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: isLocked
-                              ? Colors.white.withOpacity(0.4)
-                              : const Color(0xFFFDF0FF),
+                          color: Color(0xFFFDF0FF),
                         ),
                       ),
                       if (episode.description != null) ...[
@@ -347,13 +445,13 @@ class _EpisodeCard extends StatelessWidget {
                           episode.description!,
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.white.withOpacity(isLocked ? 0.25 : 0.5),
+                            color: Colors.white.withOpacity(0.5),
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ],
-                      if (episode.estimatedMinutes != null && !isLocked) ...[
+                      if (episode.estimatedMinutes != null) ...[
                         const SizedBox(height: 6),
                         Row(
                           children: [
@@ -377,8 +475,54 @@ class _EpisodeCard extends StatelessWidget {
                   ),
                 ),
                 
-                // Action indicator
-                if (!isLocked)
+                // Action indicator or price
+                if (needsUnlock)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF4ECDC4), Color(0xFF44A08D)],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.diamond,
+                          color: Colors.white,
+                          size: 14,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$unlockCost',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else if (isFree && !isCompleted && !isInProgress)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'GRATIS',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  )
+                else
                   Container(
                     width: 36,
                     height: 36,

@@ -27,6 +27,7 @@ dependencies:
   
   # Text Processing
   hyphenatorx: ^1.0.1
+  
 
 dev_dependencies:
   flutter_test:
