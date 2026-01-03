@@ -299,10 +299,22 @@ class InkParser {
     String title = 'Unbekannte Geschichte';
     String author = 'Unbekannt';
     
-    // Extract title from first comment
-    final titleMatch = RegExp(r'//.*?—\s*(.+?)\s*\(').firstMatch(content);
-    if (titleMatch != null) {
-      title = titleMatch.group(1)?.trim() ?? title;
+    // Extract title from #TITLE tag first (priority)
+    final titleTagMatch = RegExp(r'#TITLE:\s*(.+)').firstMatch(content);
+    if (titleTagMatch != null) {
+      title = titleTagMatch.group(1)?.trim() ?? title;
+    } else {
+      // Fallback: Extract title from first comment (old format)
+      final titleMatch = RegExp(r'//.*?—\s*(.+?)\s*\(').firstMatch(content);
+      if (titleMatch != null) {
+        title = titleMatch.group(1)?.trim() ?? title;
+      }
+    }
+    
+    // Extract author from #AUTHOR tag
+    final authorTagMatch = RegExp(r'#AUTHOR:\s*(.+)').firstMatch(content);
+    if (authorTagMatch != null) {
+      author = authorTagMatch.group(1)?.trim() ?? author;
     }
     
     // Parse global variables
@@ -477,14 +489,30 @@ class InkParser {
   static Future<({String title, String author, int knotCount})> getMetadata(String assetPath) async {
     final content = await rootBundle.loadString(assetPath);
     
-    // Extract title
-    final titleMatch = RegExp(r'//.*?—\s*(.+?)\s*\(').firstMatch(content);
-    final title = titleMatch?.group(1)?.trim() ?? 'Unbekannte Geschichte';
+    // Extract title from #TITLE tag first
+    String title = 'Unbekannte Geschichte';
+    final titleTagMatch = RegExp(r'#TITLE:\s*(.+)').firstMatch(content);
+    if (titleTagMatch != null) {
+      title = titleTagMatch.group(1)?.trim() ?? title;
+    } else {
+      // Fallback to old format
+      final titleMatch = RegExp(r'//.*?—\s*(.+?)\s*\(').firstMatch(content);
+      if (titleMatch != null) {
+        title = titleMatch.group(1)?.trim() ?? title;
+      }
+    }
+    
+    // Extract author from #AUTHOR tag
+    String author = 'Unbekannt';
+    final authorTagMatch = RegExp(r'#AUTHOR:\s*(.+)').firstMatch(content);
+    if (authorTagMatch != null) {
+      author = authorTagMatch.group(1)?.trim() ?? author;
+    }
     
     // Count knots
     final knotCount = _knotPattern.allMatches(content).length;
     
-    return (title: title, author: 'Unbekannt', knotCount: knotCount);
+    return (title: title, author: author, knotCount: knotCount);
   }
 }
 

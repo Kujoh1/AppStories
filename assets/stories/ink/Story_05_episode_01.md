@@ -1,7 +1,7 @@
-# ECHOES OF THE FIRST DAWN
+# DAS ECHO DER URZEIT
 ## Ein interaktives Buch
 
-#TITLE: Echoes of the First Dawn
+#TITLE: Das Echo der Urzeit
 #AUTHOR: AppStories
 #MOOD:noir
 
@@ -28,18 +28,36 @@ VAR romance_marcus = false
 
 === prolog ===
 
+#MOOD:noir
+
+Mein Name ist Dr. Lena Vasquez. Ich bin Archäologin.
+
+Vor zwanzig Jahren verschwand mein Vater bei einer Expedition in die Antarktis. Er war überzeugt davon, dass unter dem ewigen Eis etwas Uraltes schlummert – Überreste einer Zivilisation, die lange vor unserer Zeit existierte. Die wissenschaftliche Gemeinschaft hielt ihn für verrückt. Seine Kollegen distanzierten sich von ihm. Und dann, eines Tages, war er einfach weg.
+
+Alles, was er mir hinterließ, war ein seltsames Amulett aus einem Metall, das kein Labor identifizieren konnte – und Notizbücher voller kryptischer Hinweise.
+
+Ich habe mein ganzes Leben damit verbracht, seine Arbeit fortzuführen. Nicht, weil ich an seine Theorien glaubte. Sondern weil ich verstehen wollte, was ihn so besessen hatte, dass er alles dafür aufgab. Sogar mich.
+
+Jetzt, im Jahr 2054, leite ich eine Ausgrabung im Rahmen von »Projekt GENESIS« – einem geheimen Forschungsprogramm der Vereinten Nationen. Offiziell untersuchen wir »geologische Anomalien«. Inoffiziell... suchen wir nach dem, was mein Vater nie gefunden hat.
+
+Drei Monate sind wir nun hier. Drei Monate Eis, Dunkelheit und Isolation. Und heute Nacht, mitten im schlimmsten Schneesturm der Saison, passiert endlich etwas.
+
+-> prolog_storm
+
+=== prolog_storm ===
+
 #IMG:station_blizzard
 #MOOD:noir
 
 Die Antarktis will mich töten.
 
-Der Wind peitscht Eiskristalle gegen meine Gesichtsmaske, jeder einzelne ein winziger Nadelstich. Minus fünfzig Grad, hat ARIA gesagt. Windchill macht es schlimmer. Viel schlimmer.
+Der Wind peitscht Eiskristalle gegen meine Gesichtsmaske, jeder einzelne ein winziger Nadelstich. Minus fünfzig Grad, hat ARIA gesagt – unsere Künstliche Intelligenz, die jeden Aspekt der Station überwacht. Der Windchill macht es schlimmer. Viel schlimmer.
 
 Ich kämpfe mich vorwärts, einen Schritt nach dem anderen. Die Lichter der Aurora-Station flackern irgendwo vor mir im weißen Nichts – oder ich bilde mir ein, sie zu sehen. Nach drei Monaten hier unten weiß ich nicht mehr, was real ist.
 
 Unter meiner Thermojacke, direkt auf der Haut, pulsiert das Amulett meines Vaters. Warm. Zu warm für totes Metall.
 
-Das ist neu.
+Das ist neu. In all den Jahren, die ich es trage, war es nie warm.
 
 »Dr. Vasquez.« ARIAs Stimme in meinem Ohrknopf, perfekt moduliert, als würde sie mir die Wettervorhersage für einen Sonntagsausflug geben. »Ihre Vitalzeichen zeigen erste Anzeichen von Unterkühlung. Ich empfehle sofortige Rückkehr zur Basis.«
 
@@ -149,11 +167,15 @@ Bevor ich fragen kann, was er meint, bricht die Verbindung ab.
 
 Die Aurora-Station empfängt mich mit künstlicher Wärme und dem leisen Summen von Lebenserhaltungssystemen.
 
+Die Station ist unser Zuhause seit drei Monaten – ein Labyrinth aus Modulen, verbunden durch isolierte Korridore. Zwölf Wissenschaftler leben hier, jeder ein Spezialist auf seinem Gebiet. Geologen, Linguisten, Biologen, Physiker. Und ich – die Archäologin, die das ganze Projekt zusammenhält.
+
 Ich streife die gefrorene Außenschicht ab, während meine Gedanken rasen. Die Strukturen, die ARIA beschrieben hat. Das Amulett, das zum Leben erwacht ist. Und – falls ich nicht halluziniert habe – die Vision von einer Stadt, die es nicht geben sollte.
 
 »Dr. Vasquez.« 
 
-Dr. Yuki Tanaka erscheint in der Dekontaminationsschleuse. Die Geologin sieht aus, als hätte sie die letzte Nacht durchgearbeitet – wieder einmal.
+Dr. Yuki Tanaka erscheint in der Dekontaminationsschleuse. Sie ist unsere Chefgeologin – eine brillante Wissenschaftlerin aus Tokio, die ihre Karriere der Erforschung prähistorischer Formationen gewidmet hat. Sie war die erste, die meinen Theorien über uralte Strukturen unter dem Eis Glauben schenkte.
+
+Tanaka sieht aus, als hätte sie die letzte Nacht durchgearbeitet – wieder einmal. Dunkle Ringe unter den Augen, aber ein Funkeln, das ich nur zu gut kenne. Aufregung. Angst. Oder beides.
 
 »Die Daten, die ARIA gesendet hat«, sagt sie ohne Vorrede. »Ich habe sie analysiert. Dreimal.«
 
@@ -161,15 +183,19 @@ Dr. Yuki Tanaka erscheint in der Dekontaminationsschleuse. Die Geologin sieht au
 
 Sie schüttelt den Kopf. Nicht ungläubig – verstört.
 
-»Die Formationen sind mindestens 250.000 Jahre alt. Vielleicht älter. Und sie sind...« Sie sucht nach Worten. »Lena, sie sind gebaut. Von jemandem. Oder etwas.«
+»Die Formationen sind mindestens 250.000 Jahre alt. Vielleicht älter.« Sie lässt die Worte wirken. Vor 250.000 Jahren gab es keine Zivilisation auf der Erde. Die frühesten Hochkulturen entstanden vor etwa 6.000 Jahren. Was Tanaka beschreibt, ist unmöglich.
 
-Das sollte mich erschüttern. Stattdessen fühle ich eine seltsame Ruhe.
+»Und sie sind...« Sie sucht nach Worten. »Lena, sie sind gebaut. Von jemandem. Oder etwas.«
+
+Das sollte mich erschüttern. Stattdessen fühle ich eine seltsame Ruhe. Als hätte ich mein ganzes Leben auf diesen Moment gewartet.
 
 »Wo ist Marcus?«
 
+Marcus Chen ist unser Linguist und Symbolexperte. Er und ich kennen uns seit dem Studium. Er war einer der wenigen, die nie aufgehört haben, an meine Suche zu glauben – auch wenn er nie ganz verstanden hat, warum ich sie führe.
+
 »Im Linguistik-Labor. Er arbeitet an den Symbolen, die wir letzte Woche gefunden haben.« Tanaka zögert. »Lena... Admiral Okonkwo hat angerufen. Dreimal. Sie will einen Bericht.«
 
-Admiral Helena Okonkwo. Leiterin von Projekt GENESIS, dessen offizielles Ziel die »Erforschung antarktischer Anomalien« ist. Ich habe nie geglaubt, dass das die ganze Wahrheit ist.
+Admiral Helena Okonkwo. Sie leitet Projekt GENESIS von Washington aus. Offiziell ist das Ziel die »Erforschung antarktischer Anomalien«. Aber ich habe nie geglaubt, dass das die ganze Wahrheit ist. Okonkwo weiß mehr, als sie uns sagt. Das spüre ich bei jedem Gespräch mit ihr.
 
 * [Zu Marcus gehen – er muss das sofort erfahren.]
     ~ marcus_trust = marcus_trust + 1

@@ -1355,12 +1355,35 @@ class _InkReaderPageState extends ConsumerState<InkReaderPage>
 
   void _showSceneOverview(PagedBook pagedBook) {
     final currentIndex = ref.read(currentPageIndexProvider);
+    final episodeInfo = ref.read(currentEpisodeInfoProvider);
+    final repository = ref.read(bookRepositoryProvider);
+    
+    // Get episode title and book title from series metadata if available
+    String? episodeTitle;
+    String? bookTitle;
+    if (episodeInfo != null) {
+      print('DEBUG _showSceneOverview: episodeInfo.seriesId = ${episodeInfo.seriesId}');
+      final series = repository.getSeriesMetadata(episodeInfo.seriesId);
+      print('DEBUG _showSceneOverview: series = $series, series?.title = ${series?.title}');
+      if (series != null) {
+        bookTitle = series.title;
+        final episode = series.getEpisode(episodeInfo.episodeNumber);
+        episodeTitle = episode?.title;
+      }
+    } else {
+      print('DEBUG _showSceneOverview: episodeInfo is NULL!');
+    }
+    
+    print('DEBUG _showSceneOverview: bookTitle = $bookTitle, pagedBook.title = ${pagedBook.title}');
     
     PageOverviewDialog.show(
       context,
       pagedBook: pagedBook,
       currentPageIndex: currentIndex.clamp(0, pagedBook.pages.length - 1),
       isInkStory: true,
+      episodeNumber: episodeInfo?.episodeNumber,
+      episodeTitle: episodeTitle,
+      bookTitle: bookTitle,
       onNavigate: (pageIndex) {
         ref.read(currentPageIndexProvider.notifier).state = pageIndex;
       },

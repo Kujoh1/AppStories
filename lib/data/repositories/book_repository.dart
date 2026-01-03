@@ -62,7 +62,7 @@ class DocxBookRepository implements BookRepository {
   static final Map<String, SeriesMetadata> _seriesMetadata = {
     'echoes_first_dawn': SeriesMetadata(
       seriesId: 'echoes_first_dawn',
-      title: 'Echoes of the First Dawn',
+      title: 'Das Echo der Urzeit',
       author: 'AppStories',
       episodes: [
         const EpisodeInfo(
@@ -137,7 +137,7 @@ class DocxBookRepository implements BookRepository {
       'format': StoryFormat.ink,
     },
     'echoes_first_dawn': {
-      'title': 'Echoes of the First Dawn',
+      'title': 'Das Echo der Urzeit',
       'author': 'AppStories',
       'path': 'assets/stories/ink/Story_05_final.md',
       'format': StoryFormat.ink,

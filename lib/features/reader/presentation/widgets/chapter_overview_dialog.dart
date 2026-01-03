@@ -9,6 +9,9 @@ class PageOverviewDialog extends ConsumerStatefulWidget {
   final int currentPageIndex;
   final void Function(int pageIndex) onNavigate;
   final bool isInkStory;
+  final int? episodeNumber;
+  final String? episodeTitle;
+  final String? bookTitle; // Explicit book title override
 
   const PageOverviewDialog({
     super.key,
@@ -16,6 +19,9 @@ class PageOverviewDialog extends ConsumerStatefulWidget {
     required this.currentPageIndex,
     required this.onNavigate,
     this.isInkStory = false,
+    this.episodeNumber,
+    this.episodeTitle,
+    this.bookTitle,
   });
 
   static Future<void> show(
@@ -24,6 +30,9 @@ class PageOverviewDialog extends ConsumerStatefulWidget {
     required int currentPageIndex,
     required void Function(int pageIndex) onNavigate,
     bool isInkStory = false,
+    int? episodeNumber,
+    String? episodeTitle,
+    String? bookTitle,
   }) {
     // Clamp the index to valid range
     final safeIndex = currentPageIndex.clamp(0, pagedBook.pages.length - 1);
@@ -38,6 +47,9 @@ class PageOverviewDialog extends ConsumerStatefulWidget {
         currentPageIndex: safeIndex,
         onNavigate: onNavigate,
         isInkStory: isInkStory,
+        episodeNumber: episodeNumber,
+        episodeTitle: episodeTitle,
+        bookTitle: bookTitle,
       ),
     );
   }
@@ -245,30 +257,76 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          // Title row
+          // Title row with optional episode subtitle
           Row(
             children: [
-              const Icon(
-                Icons.menu_book_rounded,
-                color: Color(0xFFFDF0FF),
-                size: 24,
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFBB86FC).withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.menu_book_rounded,
+                  color: Color(0xFFBB86FC),
+                  size: 22,
+                ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.pagedBook.title,
+                      widget.bookTitle ?? widget.pagedBook.title,
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 17,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFFFDF0FF),
                         fontFamily: 'Mynerve',
+                        letterSpacing: 0.3,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    if (widget.episodeNumber != null) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFBB86FC).withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              'Episode ${widget.episodeNumber}',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFFBB86FC),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                          if (widget.episodeTitle != null) ...[
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                widget.episodeTitle!,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.white.withOpacity(0.7),
+                                  fontStyle: FontStyle.italic,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -388,7 +446,8 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
     final isExpanded = _expandedScenes.contains(scene.sceneId);
     final isCurrentScene = _currentPage.sceneId == scene.sceneId;
     final isCompleted = scene.endPageIndex < _safeCurrentIndex;
-    final isLocked = scene.startPageIndex > _safeCurrentIndex;
+    // All scenes are always unlocked for free navigation
+    const isLocked = false;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -592,7 +651,8 @@ class _PageOverviewDialogState extends ConsumerState<PageOverviewDialog> {
           final page = widget.pagedBook.pages[pageIndex];
           final isCurrent = pageIndex == _safeCurrentIndex;
           final isCompleted = pageIndex < _safeCurrentIndex;
-          final isLocked = pageIndex > _safeCurrentIndex;
+          // All pages are always unlocked for free navigation
+          const isLocked = false;
 
           return Material(
             color: Colors.transparent,

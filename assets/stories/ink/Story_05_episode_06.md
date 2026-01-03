@@ -1,4 +1,4 @@
-# ECHOES OF THE FIRST DAWN
+# DAS ECHO DER URZEIT
 ## Episode 6: Das Vermächtnis
 
 #TITLE: Echoes - Episode 6

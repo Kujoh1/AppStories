@@ -1,4 +1,4 @@
-# ECHOES OF THE FIRST DAWN
+# DAS ECHO DER URZEIT
 ## Episode 3: Die Dunkelheit erwacht
 
 #TITLE: Echoes - Episode 3

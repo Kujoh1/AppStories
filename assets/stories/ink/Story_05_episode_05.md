@@ -1,4 +1,4 @@
-# ECHOES OF THE FIRST DAWN
+# DAS ECHO DER URZEIT
 ## Episode 5: Der Abstieg
 
 #TITLE: Echoes - Episode 5

@@ -1,4 +1,4 @@
-# ECHOES OF THE FIRST DAWN
+# DAS ECHO DER URZEIT
 ## Episode 2: Die Stadt der Ersten
 
 #TITLE: Echoes - Episode 2

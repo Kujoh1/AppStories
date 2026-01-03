@@ -1,4 +1,4 @@
-# ECHOES OF THE FIRST DAWN
+# DAS ECHO DER URZEIT
 ## Episode 4: Die Konfrontation
 
 #TITLE: Echoes - Episode 4
