@@ -30,7 +30,6 @@ Hier ist eine massive Erweiterung von **Kapitel 11: Der Schlüssel**. Ich habe d
 
 #IMG:dark_clouds_gathering
 #MOOD:noir
-#MUSIC low_cello_drone
 
 Der Flug ist kein Reisen mehr. Es ist ein Schwebezustand zwischen Existenz und Entropie.
 
@@ -90,14 +89,7 @@ Das Flugzeug neigt sich abrupt. Die Landeklappen fahren mit einem ächzenden Ger
 Wir haben gewählt. Der Pfad hinter uns ist verbrannt. Jetzt müssen wir durch das Feuer gehen.
 
 // ROUTER FÜR DEN GEWÄHLTEN PFAD AUS KAPITEL 10
-{ 
-    - father_path: 
-        -> pfad_b_mariana_start
-    - not father_path and not walker_alive: 
-        -> pfad_router_entscheidung
-    - else:
-        -> pfad_router_entscheidung
-}
+-> pfad_b_mariana_start
 
 === pfad_router_entscheidung ===
 // Fallback-Router für Debugging oder fehlende States
@@ -117,7 +109,6 @@ Wir haben gewählt. Der Pfad hinter uns ist verbrannt. Jetzt müssen wir durch d
 
 #IMG:giza_sandstorm
 #MOOD:action
-#SOUND wind_howling_violent
 
 Der Sandsturm über Gizeh ist nicht natürlich. Er ist eine meteorologische Anomalie, eine Wunde im Himmel.
 
@@ -291,7 +282,6 @@ Es ist ein Hologramm von Ashford, so hochauflösend, dass man den Staub auf sein
 
 #IMG:deep_sea_descent
 #MOOD:sci-fi
-#SOUND submarine_creaking
 
 Druck.
 
@@ -471,7 +461,6 @@ Dann erscheint Ashford.
 
 #IMG:prometheus_fortress_storm
 #MOOD:action
-#SOUND heavy_rain_storm
 
 Der Indische Ozean tobt. Ein Hurrikan der Kategorie 5, ein Monster aus Wind und Wasser, und wir fliegen direkt hinein.
 
@@ -572,7 +561,6 @@ Der Boden unter uns wird transparent. Wir stehen auf einem Kraftfeld. Darunter, 
 
 #IMG:key_activation
 #MOOD:noir
-#MUSIC tension_rising
 
 Egal wo wir sind – in der staubigen Kammer der Sphinx, in der versunkenen Stadt oder im Turm der Festung – Ashford hat die Kontrolle.
 
@@ -590,23 +578,15 @@ Ein Bild erscheint groß im Raum. Eine Live-Übertragung.
 
 Es zeigt eine Zelle. Kaltes Licht. Darin sitzt jemand.
 
-{ father_path:
-    Es ist Sergeant Walker. Er lebt. Aber er sieht furchtbar aus. Sein Gesicht ist eingefallen, sein Körper übersät mit Narben. Er ist an Maschinen angeschlossen, Schläuche pumpen eine schwarze Flüssigkeit in seinen Arm. Die Dunkelheit kriecht durch die Schläuche in ihn hinein.
-    
-    »James!«, entfährt es mir. Der Schock trifft mich wie ein Schlag in den Magen.
-    
-    »Der gute Sergeant«, sagt Ashford. »Er ist zäh. Ein perfektes Subjekt für die Integration. Er hat lange widerstanden, aber jeder bricht irgendwann.«
-    Walker hebt den Kopf. Er sieht direkt in die Kamera. »Tu es nicht, Lena...«, krächzt er. »Lass mich sterben.«
-}
+Es ist Sergeant Walker. Er lebt. Aber er sieht furchtbar aus. Sein Gesicht ist eingefallen, sein Körper übersät mit Narben. Er ist an Maschinen angeschlossen, Schläuche pumpen eine schwarze Flüssigkeit in seinen Arm. Die Dunkelheit kriecht durch die Schläuche in ihn hinein.
+»James!«, entfährt es mir. Der Schock trifft mich wie ein Schlag in den Magen.
+»Der gute Sergeant«, sagt Ashford. »Er ist zäh. Ein perfektes Subjekt für die Integration. Er hat lange widerstanden, aber jeder bricht irgendwann.«
+Walker hebt den Kopf. Er sieht direkt in die Kamera. »Tu es nicht, Lena...«, krächzt er. »Lass mich sterben.«
 
-{ not father_path:
-    Es ist mein Vater. Eduardo Vasquez. Er kniet am Boden, eine Waffe an seiner Schläfe, gehalten von einem dieser Schatten-Soldaten, deren Gesicht nur aus Rauch besteht.
-    
-    »Papa!«, schreie ich. Meine Hände ballen sich zu Fäusten, Funken sprühen.
-    
-    »Eduardo war immer ein Idealist«, sagt Ashford fast traurig. »Schade, dass Idealisten so leicht zerbrechen.«
-    Mein Vater blickt stoisch drein. »Der Schlüssel, Lena. Beschütze den Schlüssel.«
-}
+Es ist mein Vater. Eduardo Vasquez. Er kniet am Boden, eine Waffe an seiner Schläfe, gehalten von einem dieser Schatten-Soldaten, deren Gesicht nur aus Rauch besteht.
+»Papa!«, schreie ich. Meine Hände ballen sich zu Fäusten, Funken sprühen.
+»Eduardo war immer ein Idealist«, sagt Ashford fast traurig. »Schade, dass Idealisten so leicht zerbrechen.«
+Mein Vater blickt stoisch drein. »Der Schlüssel, Lena. Beschütze den Schlüssel.«
 
 »Das ist Ihr Angebot?«, frage ich, meine Stimme zitternd vor unterdrückter Wut, die kurz davor ist, als pure Energie zu explodieren. »Ein Leben gegen das Schicksal der Welt?«
 
@@ -731,7 +711,6 @@ Ich entfessle die Leere.
 
 #IMG:portal_collapse
 #MOOD:action
-#SOUND explosion_silence
 
 Die Welt wird weiß.
 
@@ -821,7 +800,6 @@ Hier ist eine massive Erweiterung des 12. Kapitels. Ich habe die Struktur beibeh
 
 #IMG:alien_sky_awakening
 #MOOD:cosmic_horror
-#MUSIC ambient_drone_glitch
 
 Das Bewusstsein kehrt nicht wie ein Sonnenaufgang zurück, sondern wie ein Systemneustart nach einem fatalen Fehler. Schwarz. Flimmern. Dann Datenstrom.
 
@@ -969,7 +947,6 @@ Ich blinzle. Die normale, graue Welt kehrt zurück. Aber das Wissen bleibt. Ein 
 
 #IMG:himalaya_anomalies
 #MOOD:mystery
-#MUSIC tense_climactic
 
 Der Aufstieg ist ein Albtraum aus Geometrie und Kälte.
 Wir klettern nicht einfach einen Berg hinauf. Wir navigieren durch ein Labyrinth aus gebrochenem Raum.
@@ -1113,10 +1090,8 @@ Sie verwandelt sich.
 Plötzlich steht mein Vater vor mir. Eduard Vasquez. Aber er ist tot, verwest, so wie wir ihn gefunden haben. Erde rieselt aus seinem Mund.
 *»Du hast mich geopfert«*, sagt das Ding mit Eduards Stimme, gurgelnd. *»Für deine Mission. War ich es wert, Lena? War der Schlüssel es wert?«*
 
-{kael_awakened:
-    Dann flackert das Bild. Es ist Kael.
-    *»Du bist zu schwach. Du wirst zerbrechen, wie ich zerbrochen bin. Die Dunkelheit frisst zuerst die, die glauben, sie könnten sie kontrollieren.«*
-}
+Dann flackert das Bild. Es ist Kael.
+*»Du bist zu schwach. Du wirst zerbrechen, wie ich zerbrochen bin. Die Dunkelheit frisst zuerst die, die glauben, sie könnten sie kontrollieren.«*
 
 »Haltet den Mund«, flüstere ich. Tränen stechen in meinen Augen.
 
@@ -1188,7 +1163,6 @@ Effizient. Kalt.
 
 #IMG:ashford_confrontation
 #MOOD:noir
-#MUSIC boss_theme_ominous
 
 Die Prüfung ist vorbei. Der Spiegel wird wieder flüssig, zieht sich zusammen und formt sich zu einer Konsole aus schwebenden Ringen.
 Ich trete heran. Ich lege meine Hand darauf. Die Schlüssel synchronisieren sich mit der Tempeltechnik.
@@ -1322,7 +1296,6 @@ Der Tempel explodiert hinter uns im Kreuzfeuer.
 
 #IMG:mountain_crash
 #MOOD:noir
-#MUSIC sorrowful_piano
 
 Der Aufprall ist hart, aber wir landen im tiefen Schnee, weit unterhalb des Gipfels, in einer Senke, die uns vor dem schlimmsten Wind schützt.
 Der Tempel über uns explodiert in einem Feuerwerk aus goldenem Licht und schwarzen Trümmern, das langsam am Himmel verlischt.
@@ -1997,6 +1970,5 @@ Und ich bin bereit für den Krieg.
 ~ romance_marcus = true
 
 -> kapitel_14
-
 
 -> END

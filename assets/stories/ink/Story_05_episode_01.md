@@ -1313,11 +1313,9 @@ Ich stehe auf. Entferne mich von ihm.
 
 »Nein.« Er steht ebenfalls auf. »Die Gefühle sind real, Lena. Alles, was ich für dich empfinde – das war nie Teil des Auftrags.« Er tritt näher. »Ich hätte es dir früher sagen sollen. Ich weiß. Aber ich hatte Angst, dich zu verlieren.«
 
-{romance_marcus:
-    Ich sehe in seine Augen. Suche nach der Lüge.
-    Finde keine.
-    -> kapitel_3_marcus_verzeihen
-}
+Ich sehe in seine Augen. Suche nach der Lüge.
+Finde keine.
+-> kapitel_3_marcus_verzeihen
 
 -> kapitel_3_marcus_entscheidung
 
@@ -1447,8 +1445,7 @@ Die Jagd beginnt.
 
 ENDE AKT I
 
-* [Weiter zu Akt II: Die Stadt der Ersten]
-    -> akt_2_placeholder
+-> akt_2_placeholder
 
 === akt_2_placeholder ===
 
@@ -1461,6 +1458,4 @@ ENDE AKT I
 Das Abenteuer geht weiter...
 
 -> END
-
-
 

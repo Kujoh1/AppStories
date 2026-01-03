@@ -1101,10 +1101,8 @@ Er sieht mich an. In seinen Augen liegt etwas, das ich nicht ganz verstehe. Stol
     -> kapitel_6_aufbruch
     
 * [»Ich muss erst Kael fragen.«]
-    {kael_awakened:
-        ~ darkness_connection = darkness_connection + 1
+    ~ darkness_connection = darkness_connection + 1
         -> kapitel_6_kael
-    }
     -> kapitel_6_aufbruch
 
 === kapitel_6_preis ===
@@ -1273,9 +1271,7 @@ Massive Tore aus dem Material der Ersten, überwachsen von Moos und Zeit. Aber a
 
 Ich sehe mein Team an. Walker, mürrisch, aber loyal. Reyes, angespannt. Marcus, besorgt. Mein Vater, der mir zunickt.
 
-{kael_awakened: 
-    Und Kael, dessen Augen etwas sagen, das ich nicht ganz verstehe.
-}
+Und Kael, dessen Augen etwas sagen, das ich nicht ganz verstehe.
 
 »Ich komme zurück«, sage ich.
 
@@ -1647,8 +1643,7 @@ Wir landen. Die Jagd geht weiter.
 
 ENDE AKT II, TEIL 1
 
-* [Weiter zu Akt II, Teil 2]
-    -> akt_2_teil_2_placeholder
+-> akt_2_teil_2_placeholder
 
 === akt_2_teil_2_placeholder ===
 
@@ -1659,8 +1654,6 @@ ENDE AKT II, TEIL 1
 [Die Geschichte wird fortgesetzt...]
 
 -> END
-
-
 
 Hier ist die massiv erweiterte Version von Kapitel 8. Ich habe die Struktur vertieft, die Atmosphäre verdichtet und zahlreiche neue Interaktionen, Lore-Details und Charakter-Momente hinzugefügt, um die Welt lebendiger und die Bedrohung greifbarer zu machen.
 

@@ -1138,14 +1138,10 @@ Marcus schüttelt den Kopf. Er sieht müde aus, der Staub der Flucht liegt in se
 
 Ich sehe Marcus in die Augen. Ich sehe seine Angst um mich, nackt und ungeschützt.
 
-{romance_marcus:
-    Er tritt dicht an mich heran, ignoriert die anderen. Seine Hand legt sich an meine Wange, sein Daumen streicht über den Schmutz auf meiner Haut.
-    »Ich will dich nicht verlieren, Lena. Nicht jetzt. Nicht, wo wir gerade erst angefangen haben.«
-    
-    Ich lege meine Hand auf seine. »Du verlierst mich nicht«, flüstere ich, auch wenn ich mir selbst nicht sicher bin. »Ich komme zurück. Halt mir einfach den Rücken frei, wie immer.«
-    
-    Er lehnt seine Stirn gegen meine. »Immer.«
-}
+Er tritt dicht an mich heran, ignoriert die anderen. Seine Hand legt sich an meine Wange, sein Daumen streicht über den Schmutz auf meiner Haut.
+»Ich will dich nicht verlieren, Lena. Nicht jetzt. Nicht, wo wir gerade erst angefangen haben.«
+Ich lege meine Hand auf seine. »Du verlierst mich nicht«, flüstere ich, auch wenn ich mir selbst nicht sicher bin. »Ich komme zurück. Halt mir einfach den Rücken frei, wie immer.«
+Er lehnt seine Stirn gegen meine. »Immer.«
 
 »Es gibt keinen anderen Weg«, sage ich laut und löse mich von ihm. »Ich muss es tun.«
 
@@ -2139,6 +2135,5 @@ Draußen, unter uns, in der Dunkelheit der Welt, beginnen die Lichter der Städt
 ~ reyes_alive = true 
 
 -> kapitel_11
-
 
 -> END

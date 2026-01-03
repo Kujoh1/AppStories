@@ -64,8 +64,8 @@ Ich drehe mich um. Ein Mann tritt aus dem Schatten des Hangars, dort, wo das Lic
 »Wir haben das Signal empfangen«, sagt er ruhig. Er trägt keine Waffe, aber die Luft um ihn herum flimmert leicht. »Die Sammlung ist vollständig? Die Harmonie ist hergestellt?«
 
 Ich klopfe auf meine Brust. Das metallische Klingen unter meiner Jacke ist Antwort genug. Aber es ist mehr als das.
-{keys_collected >= 10: Die Schlüssel singen in mir. Ein Chor aus dreizehn Stimmen, der nach Befreiung schreit. Ich muss mich konzentrieren, um nicht zu leuchten.}
-{keys_collected < 10: Die Schlüssel liegen schwer in mir. Eine Last, die meine Knochen zu zermahlen droht.}
+Die Schlüssel singen in mir. Ein Chor aus dreizehn Stimmen, der nach Befreiung schreit. Ich muss mich konzentrieren, um nicht zu leuchten.
+Die Schlüssel liegen schwer in mir. Eine Last, die meine Knochen zu zermahlen droht.
 
 »Ich bin nicht mehr nur eine Trägerin, Silas«, sage ich und meine Stimme klingt fremd, verzerrt durch die Macht. »Ich bin der Tresor. Und der Schlüsselmeister.«
 
@@ -801,15 +801,11 @@ Und wir sind nicht allein.
 
 Aus dem Boden schälen sich Ashfords Wachen. Aber es sind keine Menschen mehr. Die Prätorianer haben ihre Rüstungen abgelegt – oder sie sind mit ihnen verschmolzen. Ihre Haut ist grau, durchzogen von violetten Adern, die im Takt der Nadel pulsieren. Ihre Gesichter sind glatt, ohne Augen, nur Münder, die lautlose Schreie formen. Ihre Waffen sind organische Auswüchse ihrer Arme, Knochenkanonen, die Plasma spucken.
 
-{walker_alive:
-    Walker stürmt neben mir vor, sein schweres MG im Anschlag. »Was zur Hölle sind diese Dinger?«, brüllt er.
-    »Ziele auf die leuchtenden Adern!«, rufe ich zurück.
-}
+Walker stürmt neben mir vor, sein schweres MG im Anschlag. »Was zur Hölle sind diese Dinger?«, brüllt er.
+»Ziele auf die leuchtenden Adern!«, rufe ich zurück.
 
-{reyes_alive:
-    Reyes sichert die Flanke, ihr Scharfschützengewehr donnert rhythmisch. »Sie fallen nicht! Ich habe ihm den Kopf weggeschossen und er kommt immer noch!«
-    »Zerstört den Rumpf!«, antworte ich.
-}
+Reyes sichert die Flanke, ihr Scharfschützengewehr donnert rhythmisch. »Sie fallen nicht! Ich habe ihm den Kopf weggeschossen und er kommt immer noch!«
+»Zerstört den Rumpf!«, antworte ich.
 
 »Feuer frei!«, schreit Okonkwos Stimme über Funk.
 

@@ -22,7 +22,6 @@ VAR romance_marcus = false
 
 #IMG:interdimensional_void_fractal
 #MOOD:cosmic_horror
-#MUSIC ambient_void_drone
 
 Es gibt keinen Boden. Es gibt keinen Himmel. Es gibt nicht einmal mehr das Konzept von »Hier« oder »Dort«.
 Es gibt nur das *Dazwischen*. Ein Ozean aus Nicht-Existenz, der gegen die Ufer meines Bewusstseins brandet.
@@ -41,10 +40,8 @@ Ich schwebe. Oder stehe ich? Begriffe wie »oben«, »unten«, »fallen« oder �
 Ich betrachte meine Hände.
 Sie sind durchscheinend. Unter der Haut, die schimmert wie Perlmutt, sehe ich keine Knochen, kein Fleisch, keine Sehnen. Ich sehe Sternenstaub, der in komplexen Algorithmen wirbelt. Ich sehe Code-Kaskaden, die meine DNA neu schreiben. Ich sehe die zwölf Schlüssel, die jetzt Teil meiner Anatomie sind. Sie leuchten wie Chakren entlang meiner Wirbelsäule, vibrieren in einer Frequenz, die meine Zähne zum Klappern bringt.
 
-{keys_collected >= 10:
-    Die Macht ist berauschend. Ich fühle mich nicht mehr wie ein Mensch. Ich fühle mich wie ein Gefäß, das kurz davor steht, überzulaufen.
-    | Die Last ist erdrückend. Wie konnte Kael das ertragen? Wie kann ein einzelner Verstand so viel Daten verarbeiten, ohne zu zerbrechen?
-}
+Die Macht ist berauschend. Ich fühle mich nicht mehr wie ein Mensch. Ich fühle mich wie ein Gefäß, das kurz davor steht, überzulaufen.
+| Die Last ist erdrückend. Wie konnte Kael das ertragen? Wie kann ein einzelner Verstand so viel Daten verarbeiten, ohne zu zerbrechen?
 
 Und der dreizehnte Schlüssel – der Dämpfer, der Stein, das Herz der Maschine – schlägt in meiner Brust. Kein organisches Pochen, sondern das harte, rhythmische Hämmern eines schwarzen Diamanten gegen die Wände der Realität.
 
@@ -222,7 +219,6 @@ Das Wesen deutet in die Ferne, wo ein Klumpen aus chaotischer, violetter Energie
 
 #IMG:ashford_dissolving
 #MOOD:horror
-#MUSIC discordant_screams
 
 Ich nicke, obwohl sich mein Magen umdreht. Das Wesen winkt lässig mit der Hand, und die Distanz kollabiert wie ein Kartenhaus.
 Wir stehen direkt vor dem Energie-Klumpen. Die Hitze ist unerträglich, eine Kälte, die brennt.
@@ -347,7 +343,7 @@ Es deutet auf drei gigantische Spiegel, die aus dem Nebel ragen.
 
 Ein Schauer läuft mir über den Rücken. Das hier ist der Moment. Alles, was wir getan haben, führt hierher.
 
-* [Ich trete vor den ersten Spiegel.] -> vision_mirror_1
+-> vision_mirror_1
 
 === vision_mirror_1 ===
 ### SPIEGEL 1: DER GESCHLOSSENE KREIS
@@ -367,7 +363,7 @@ Aber er blickt nie zu den Sternen. Die Sterne sind tabu. Das Wissen ist vergesse
 
 »Ein Käfig«, flüstere ich. »Ein goldener Käfig.«
 
-* [Zum nächsten Spiegel.] -> vision_mirror_2
+-> vision_mirror_2
 
 === vision_mirror_2 ===
 ### SPIEGEL 2: DER OFFENE HIMMEL
@@ -388,7 +384,7 @@ Ich sehe mein eigenes Gesicht auf gigantischen Statuen. Eine Kriegsgöttin mit k
 
 »Freiheit«, sage ich. »Aber zu welchem Preis?«
 
-* [Zum letzten Spiegel.] -> vision_mirror_3
+-> vision_mirror_3
 
 === vision_mirror_3 ===
 ### SPIEGEL 3: DAS EWIGE ORAKEL
@@ -428,7 +424,6 @@ Zwei neue Gestalten betreten die Bühne. Sie kommen nicht aus der Dunkelheit. Si
 
 #IMG:kael_father_reunion
 #MOOD:emotional
-#MUSIC emotional_piano
 
 »Lass dich nicht von ihm einschüchtern, Mija. Mathematik ist nur eine Sprache, nicht die Geschichte.«
 
@@ -584,13 +579,11 @@ Ich sehe den ersten Start der *Aurora*. Das Rütteln der Triebwerke, das Gefühl
 
 Plötzlich taucht eine dunklere Erinnerung auf. Ein Schattenriss.
 
-{walker_alive:
-    Es ist Sergeant Walker, wie er mir im Maschinenraum die Hand reicht. »Wir schaffen das, Ma'am«, sagt sein Echo. Er lebt, aber sein Geist ist gezeichnet.
-    -> speicher_walker_lebt
+Es ist Sergeant Walker, wie er mir im Maschinenraum die Hand reicht. »Wir schaffen das, Ma'am«, sagt sein Echo. Er lebt, aber sein Geist ist gezeichnet.
+-> speicher_walker_lebt
 - else:
-    Es ist Walkers Leiche, treibend im All, das Visier geborsten. Sein gefrorener Schrei ist ein stummer Vorwurf. »War es das wert, Lena?«, fragt das tote Universum.
-    -> speicher_walker_tot
-}
+Es ist Walkers Leiche, treibend im All, das Visier geborsten. Sein gefrorener Schrei ist ein stummer Vorwurf. »War es das wert, Lena?«, fragt das tote Universum.
+-> speicher_walker_tot
 
 === speicher_walker_lebt ===
 Ich berühre das Abbild. Es ist warm.
@@ -610,12 +603,10 @@ Ein weiteres Fragment schiebt sich in den Vordergrund. Es ist intimer.
 Es ist Marcus. Nicht der Soldat, nicht der Verräter, sondern der Mann.
 Wir liegen im Gras, irgendwo in einer Simulation der Erde auf der Station. Er streicht mir eine Haarsträhne aus dem Gesicht.
 
-{romance_marcus:
-    »Egal was passiert«, sagt sein Echo, und seine Stimme ist wie Samt, »du bist mein Anker.«
-    Ich spüre den Phantomschmerz seiner Berührung auf meiner Haut. Es ist fast unerträglich schön.
+»Egal was passiert«, sagt sein Echo, und seine Stimme ist wie Samt, »du bist mein Anker.«
+Ich spüre den Phantomschmerz seiner Berührung auf meiner Haut. Es ist fast unerträglich schön.
 - else:
-    »Wir sind Partner«, sagt er fest. »Bis zum Ende der Linie.« Es ist eine platonische, aber unzerbrechliche Verbindung.
-}
+»Wir sind Partner«, sagt er fest. »Bis zum Ende der Linie.« Es ist eine platonische, aber unzerbrechliche Verbindung.
 
 Ich muss weiter. Wenn ich hier verweile, verliere ich mich in der Nostalgie. Der Nexus versucht mich zu binden, mich zu einem Teil seiner Bibliothek zu machen.
 
@@ -650,7 +641,7 @@ Welchen Pfad soll ich zuerst untersuchen? Jeder von ihnen singt ein anderes Lied
 * [Der rechte Pfad: Ein Thron aus ewigem Eis. (Das Opfer)]
     Es riecht nach gar nichts. Absolute Sterilität. Absolute Stille. Ewigkeit.
     -> pfad_opfer_inspizieren
-+ {pfad_schliessen_inspizieren && pfad_oeffnen_inspizieren && pfad_opfer_inspizieren} [Ich habe gesehen, was ich sehen muss. Ich bin bereit für die Stimmen.]
+* [Ich habe gesehen, was ich sehen muss. Ich bin bereit für die Stimmen.]
     -> szene_17_2_die_stimmen
 
 === pfad_schliessen_inspizieren ===
@@ -773,10 +764,10 @@ Er sieht aus wie in dem Moment, als wir uns das erste Mal im Lagerraum der *Auro
 
 »Lena«, sagt er. Seine Stimme bricht mir fast das Herz. Sie ist so real.
 
-* {marcus_trust > 7} [Er lächelt sanft, voller Liebe.]
+* [Er lächelt sanft, voller Liebe.]
     Er tritt näher, ignoriert die kosmische Strahlung.
     »Du hast genug getan. Sieh dich an. Du trägst die Last der Welt auf Schultern, die dafür nicht gemacht wurden. Aber du bist kein Gott, Lena. Du bist eine Frau, die Kaffee hasst, wenn er kalt ist, und die im Schlaf redet, wenn sie Alpträume hat. Komm zurück. Wähle das Eisen. Lass uns vergessen. Lass uns einfach... leben. Ich baue uns das Haus. Ich verspreche es.«
-* {marcus_trust <= 7} [Er sieht besorgt und schuldbewusst aus.]
+* [Er sieht besorgt und schuldbewusst aus.]
     Er hält Abstand, als ob er Angst hätte, mich zu verbrennen.
     »Ich weiß, ich habe kein Recht, dich zu bitten. Nach all meinen Lügen, nach Ashford... Aber bitte... verliere dich nicht. Das Feuer wird dich verbrennen. Der Thron wird dich erstarren lassen. Wähle das Ende. Damit wir neu anfangen können. Gib mir die Chance, es wiedergutzumachen.«
 
@@ -869,7 +860,7 @@ Ich stehe am Abgrund. Ich muss springen.
 * [Ich setze mich auf den Thron. Ich werde die Hüterin sein. (ENDE C: TRANSZENDENZ)]
     Ich rette sie alle. Ich trage die Last. Alleine.
     -> entscheidung_opfern
-* {can_synthesize} [Ich gehe... dazwischen. Ich nutze den Dämpfer, um die Gegensätze zu verschmelzen. (ENDE E: SYNTHESE)]
+* [Ich gehe... dazwischen. Ich nutze den Dämpfer, um die Gegensätze zu verschmelzen. (ENDE E: SYNTHESE)]
     Ich sehe einen vierten Weg. Einen, den niemand geplant hat.
     -> entscheidung_synthese
 
@@ -1077,15 +1068,15 @@ Der Aufprall ist anders, je nachdem, welchen Pfad ich gewählt habe. Die Realit�
 Wo lande ich?
 Wer bin ich jetzt?
 
-* {kapitel_18_ende_a} [Der Staub legt sich. (Gehe zu Ende A: Neuanfang)]
+* [Der Staub legt sich. (Gehe zu Ende A: Neuanfang)]
     -> kapitel_18_ende_a_intro
-* {kapitel_18_ende_b} [Die Systeme fahren hoch. (Gehe zu Ende B: Aufbruch)]
+* [Die Systeme fahren hoch. (Gehe zu Ende B: Aufbruch)]
     -> kapitel_18_ende_b_intro
-* {kapitel_18_ende_c} [Das Eis schließt sich. (Gehe zu Ende C: Transzendenz)]
+* [Das Eis schließt sich. (Gehe zu Ende C: Transzendenz)]
     -> kapitel_18_ende_c_intro
-* {kapitel_18_ende_e} [Ich atme das Neue. (Gehe zu Ende E: Synthese)]
+* [Ich atme das Neue. (Gehe zu Ende E: Synthese)]
     -> kapitel_18_ende_e_intro
-* {not kapitel_18_ende_a && not kapitel_18_ende_b && not kapitel_18_ende_c && not kapitel_18_ende_e} [Die Dunkelheit war zu stark. (Gehe zu Ende D)]
+* [Die Dunkelheit war zu stark. (Gehe zu Ende D)]
     -> kapitel_18_ende_d
 
 // -----------------------------------------------------------------------------
@@ -1160,7 +1151,7 @@ Sie blickt in den Rückspiegel. Ihre Augen sind traurig, aber klar, befreit von 
 
 »Ja«, sagt Okonkwo, und in ihrer Stimme schwingt eine Mischung aus Bitterkeit und Erleichterung mit. »Das tun wir. Die Frage ist nur: War es das wert? Wir haben die Sterne gegen das Überleben getauscht.«
 
-* {okonkwo_trust > 5} [»Wir werden wieder aufbauen. Aber diesmal richtig.«]
+* [»Wir werden wieder aufbauen. Aber diesmal richtig.«]
     Okonkwo nickt knapp. »Vielleicht. Wenn wir uns nicht vorher gegenseitig für die letzten Konservendosen umbringen.«
 * [»Die Sterne waren bereit, uns zu fressen.«]
     »Eine Bedrohung gegen eine andere getauscht«, murmelt sie.
@@ -1262,7 +1253,6 @@ Weltzustand: Heilend, aber vernarbt.
 
 -> END
 
-
 // -----------------------------------------------------------------------------
 // ENDE B: AUFBRUCH (Der Pfad des Öffnens)
 // -----------------------------------------------------------------------------
@@ -1320,7 +1310,7 @@ Ashford hatte recht mit der Gefahr. Aber er lag falsch mit der Methode. Wir werd
 
 »Stehen Sie auf, Admiral«, sage ich. »Wir haben Arbeit vor uns. Wir müssen einen ganzen Planeten in eine Festung verwandeln.«
 
-* {romance_marcus} [Ich reiche Marcus die Hand.]
+* [Ich reiche Marcus die Hand.]
     »Komm an meine Seite. Wir regieren zusammen.«
     Er zögert, dann nimmt er sie. Seine Hand ist kalt, aber sein Griff ist fest. »Ich lasse dich nicht allein in diesem Licht.«
 * [Ich ignoriere Marcus.]
@@ -1412,7 +1402,6 @@ Gesellschaft: Hive-Mind-Hierarchie.
 *»Das Licht vertreibt die Schatten, aber wenn es zu hell wird, blendet es mehr als die Dunkelheit.«*
 
 -> END
-
 
 // -----------------------------------------------------------------------------
 // ENDE C: TRANSZENDENZ (Der Pfad des Opfers)
@@ -1539,7 +1528,6 @@ Technologie: Magie für die Massen, Last für den Träger.
 
 -> END
 
-
 // -----------------------------------------------------------------------------
 // ENDE D: DUNKELHEIT (Bad End / Fail State)
 // -----------------------------------------------------------------------------
@@ -1596,7 +1584,6 @@ Realität: Formatiert.
 *»Und als sie in den Abgrund blickte, blinzelte der Abgrund. Und lächelte.«*
 
 -> END
-
 
 // -----------------------------------------------------------------------------
 // ENDE E: SYNTHESE (Das Geheime Ende)
@@ -1679,8 +1666,7 @@ Ich blicke in die Unendlichkeit. Wir sind keine Wächter. Wir sind keine Erobere
 Wir sind die Brücke zwischen dem, was war, und dem, was sein kann.
 Wir sind die Kinder der Dämmerung.
 
-* [Ich lächle in die Ewigkeit.]
-    -> ende_e_schluss
+-> ende_e_schluss
 
 === ende_e_schluss ===
 #IMG:ending_screen_synthese_eye
@@ -1702,6 +1688,5 @@ Playthrough: **PERFEKT**.
 
 -> END
 ```
-
 
 -> END
