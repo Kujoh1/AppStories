@@ -30,10 +30,10 @@ class PageLayoutConfig {
 
   const PageLayoutConfig({
     this.fontSize = 18.0,
-    this.lineHeight = 1.9,
+    this.lineHeight = 1.5,            // Match PageViewWidget lineHeight
     this.letterSpacing = 0.45,
     this.horizontalPadding = 16.0,
-    this.fontFamily = 'Mynerve',
+    this.fontFamily = 'EBGaramond',   // Match PageViewWidget default font
     this.imageHeight = 180.0,
     this.imageSpacing = 20.0,
     this.choiceButtonHeight = 240.0,  // Increased for new gradient design with more padding
@@ -49,6 +49,7 @@ class PageLayoutConfig {
     fontSize: fontSize,
     height: lineHeight,
     letterSpacing: letterSpacing,
+    fontVariations: const [FontVariation('wght', 600)], // Match PageViewWidget fontWeight
   );
   
   double get lineHeightPixels => fontSize * lineHeight;

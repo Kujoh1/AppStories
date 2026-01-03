@@ -17,7 +17,7 @@ class _AnimConfig {
   // - Sofort: skipAnimation=true, kein delay
   static const int charDelayMs = 12;
   static const int glowDurationMs = 1200;
-  static const double lineHeight = 1.9;
+  static const double lineHeight = 1.5;
   static const double letterSpacing = 0.45;
   static const Color glowColor = Color(0xFFFDF0FF);
   static const Color darkTextColor = Color(0xFFFDF0FF);
@@ -309,6 +309,7 @@ class _PageViewWidgetState extends State<PageViewWidget>
       height: _AnimConfig.lineHeight,
       letterSpacing: _AnimConfig.letterSpacing,
       color: _textColor,
+      fontVariations: const [FontVariation('wght', 600)],
     );
 
     // Always render full text for correct justified layout

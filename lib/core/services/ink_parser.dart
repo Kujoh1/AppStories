@@ -332,8 +332,12 @@ class InkParser {
       }
     }
     
-    // Find starting divert
-    final startMatch = RegExp(r'^->\s*(\w+)', multiLine: true).firstMatch(content);
+    // Find starting divert - only if it appears BEFORE the first knot
+    final firstKnotMatch = _knotPattern.firstMatch(content);
+    final contentBeforeFirstKnot = firstKnotMatch != null 
+        ? content.substring(0, firstKnotMatch.start) 
+        : content;
+    final startMatch = RegExp(r'^->\s*(\w+)', multiLine: true).firstMatch(contentBeforeFirstKnot);
     if (startMatch != null) {
       startKnot = startMatch.group(1);
     }
