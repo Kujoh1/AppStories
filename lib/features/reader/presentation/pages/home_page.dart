@@ -17,6 +17,7 @@ import '../../providers/reading_progress_provider.dart';
 import '../../providers/page_state_provider.dart';
 import '../widgets/continue_reading_sheet.dart';
 import '../widgets/episode_selection_sheet.dart';
+import '../widgets/book_card.dart';
 
 /// Home page / landing page of the app
 class HomePage extends ConsumerStatefulWidget {
@@ -638,11 +639,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                             
                             return ListView.builder(
                               itemCount: books.length,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
                               itemBuilder: (context, index) {
                                 final book = books[index];
                                 final isSelected = selectedBookId == book.id;
-                                final format = repository.getStoryFormat(book.id);
-                                final isInk = format == StoryFormat.ink;
                                 
                                 // Check if this is a series book
                                 final isSeries = repository.isSeriesBook(book.id);
@@ -654,131 +654,17 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 ) ?? 0;
                                 final isLoadingChapters = allIndexesAsync.isLoading;
                               
-                              return Card(
-                                margin: const EdgeInsets.only(bottom: AppConstants.paddingMedium),
-                                clipBehavior: Clip.antiAlias,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  side: isSelected 
-                                    ? BorderSide(color: theme.colorScheme.primary, width: 2)
-                                    : BorderSide.none,
-                                ),
-                                child: InkWell(
-                                  onTap: _isLoading ? null : () {
+                                return BookCard(
+                                  book: book,
+                                  isSelected: isSelected,
+                                  isSeries: isSeries,
+                                  seriesMetadata: seriesMetadata,
+                                  chapterCount: chapterCount,
+                                  isLoadingChapters: isLoadingChapters,
+                                  onTap: _isLoading ? () {} : () {
                                     ref.read(selectedBookIdProvider.notifier).state = book.id;
                                   },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(AppConstants.paddingLarge),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                book.title,
-                                                style: theme.textTheme.titleLarge?.copyWith(
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                            // Show "Serie" badge for series, "Interaktiv" for regular ink
-                                            if (isSeries)
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(
-                                                  horizontal: 8,
-                                                  vertical: 4,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  gradient: LinearGradient(
-                                                    colors: [
-                                                      theme.colorScheme.primary.withOpacity(0.8),
-                                                      theme.colorScheme.primary.withOpacity(0.6),
-                                                    ],
-                                                  ),
-                                                  borderRadius: BorderRadius.circular(8),
-                                                ),
-                                                child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    const Icon(
-                                                      Icons.movie_filter_rounded,
-                                                      size: 12,
-                                                      color: Colors.white,
-                                                    ),
-                                                    const SizedBox(width: 4),
-                                                    Text(
-                                                      'Serie',
-                                                      style: theme.textTheme.labelSmall?.copyWith(
-                                                        color: Colors.white,
-                                                        fontWeight: FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              )
-                                            else if (isInk)
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(
-                                                  horizontal: 8,
-                                                  vertical: 4,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: theme.colorScheme.primaryContainer,
-                                                  borderRadius: BorderRadius.circular(8),
-                                                ),
-                                                child: Text(
-                                                  'Interaktiv',
-                                                  style: theme.textTheme.labelSmall?.copyWith(
-                                                    color: theme.colorScheme.onPrimaryContainer,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'von ${book.author}',
-                                          style: theme.textTheme.bodyMedium?.copyWith(
-                                            color: theme.colorScheme.onSurfaceVariant,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 12),
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              isSeries 
-                                                  ? Icons.play_circle_outline_rounded
-                                                  : isInk ? Icons.gamepad : Icons.menu_book,
-                                              size: 16,
-                                              color: theme.colorScheme.primary,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            if (isSeries && seriesMetadata != null)
-                                              _SeriesProgressText(
-                                                seriesId: seriesMetadata.seriesId,
-                                                totalEpisodes: seriesMetadata.episodeCount,
-                                              )
-                                            else
-                                              Text(
-                                                _getChapterDisplayText(isInk, chapterCount, isLoadingChapters),
-                                                style: theme.textTheme.bodySmall,
-                                              ),
-                                            const Spacer(),
-                                            if (isSelected)
-                                              Icon(
-                                                Icons.check_circle,
-                                                color: theme.colorScheme.primary,
-                                                size: 20,
-                                              ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
+                                );
                               },
                             );
                           },
